@@ -1,13 +1,10 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { Link } from 'react-router-dom'
 import './App.css'
 
 // Import All Images
 import * as images from './figmages/index.js'
 
-export default function Homebase() {
+export default function HomePage() {
   return (
     <div className="bg-[#FFF] min-w-screen min-h-screen overflow-hidden">
       <img
@@ -210,28 +207,18 @@ export default function Homebase() {
         }}
         alt="ShopSign"
       />
-      <img
-        src={images.Friends}
-        style={{
-          position: "absolute",
-          left: -35,
-          top: 210,
-          width: 173,
-          height: 234,
-        }}
-        alt="Friends"
-      />
-      <p style={{
-        color: "#000",
-        fontFamily: "Piedra",
-        fontSize: "22px",
-        width: 31,
-        height: 29,
-        position: "absolute",
-        left: 363,
-        top: 723,
-        letterSpacing: "0.07em"
-      }}>
+      <Link
+        to="/friends"
+        aria-label="Open friends page"
+        className="absolute -left-[35px] top-[210px] block h-[234px] w-[173px]"
+      >
+        <img
+          src={images.Friends}
+          className="h-full w-full max-w-none"
+          alt="Friends"
+        />
+      </Link>
+      <p className="text-[#000] font-piedra text-[22px] w-[31px] h-[29px] absolute left-[363px] top-[723px] tracking-[0.07em]">
         ##
       </p>
       <p style={{
