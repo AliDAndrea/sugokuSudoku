@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-piedra: var(--font-piedra);
+  --font-victorMono: var(--font-victor-mono);
+  --font-intelOneMono: var(--font-intel-one-mono);
+  --font-oxygenMono: var(--font-oxygen-mono);
+  --font-libertinusMono: var(--font-libertinus-mono);
+  --font-kodeMono: var(--font-kode-mono);
+  --font-redHatMono: var(--font-red-hat-mono);
+  --font-spaceMono: var(--font-space-mono);
+  --font-syneMono: var(--font-syne-mono);
+  --font-xanhMono: var(--font-xanh-mono);
+  --font-cutiveMono: var(--font-cutive-mono);
+  --font-chivoMono: var(--font-chivo-mono);
+  --font-inter: var(--font-inter);
+}
