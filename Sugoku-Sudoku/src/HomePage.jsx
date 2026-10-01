@@ -6,205 +6,93 @@ import * as images from './figmages/index.js'
 
 export default function HomePage() {
   return (
-    <div className="bg-[#FFF] min-w-screen min-h-screen overflow-hidden">
+    <div className="bg-white min-w-screen min-h-screen overflow-hidden">
       <img
         src={images.BgHome}
         className="w-full h-full absolute left-0 top-0 max-w-none"
         alt="bgDeco"
       />
-      <div style={{
-        width: "92px",
-        height: "352px",
-        position: "absolute",
-        left: "380px",
-        top: "515px"
-      }}>
+      <div className="w-[92px] h-[352px] absolute left-[380px] top-[515px]">
         <img
           src={images.MultiPen}
-          style={{
-            position: "absolute",
-            display: "flex",
-            justifyContent: "center", // Horizontally centers
-            alignItems: "center",
-            left: 0,
-            top: 0,
-            width: 343,
-            height: 87,
-            
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="multi_pen"
         />
         <img
           src={images.CrayonPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="crayon_pen"
         />
         <img
           src={images.BrushPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="brush_pen"
         />
         <img
           src={images.MarkerPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute -left-[9px] top-0 max-w-none"
           alt="marker_pen"
         />
         <img
           src={images.PenPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-0 max-w-none"
           alt="pen_pen"
         />
         <img
           src={images.InkPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute -left-[3px] top-[5px] max-w-none"
           alt="ink_pen"
         />
         <img
           src={images.CheapPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="cheap_pen"
         />
         <img
           src={images.QuillPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 344,
-          }}
+          className="w-[87px] h-[344px] absolute left-0 top-[5px] max-w-none"
           alt="quill_pen"
         />
         <img
           src={images.MechPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="mech_pen"
         />
         <img
           src={images.YatatePen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="yatate_pen"
         />
         <img
           src={images.StylusPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="stylus_pen"
         />
         <img
           src={images.PencilPen}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: 87,
-            height: 343,
-          }}
+          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
           alt="pencil_pen"
         />
       </div>
-      <div style={{
-        position: "absolute",
-        left: 343,
-        top: 2,
-        width: 50,
-        height: 51,
-      }}></div>
+      <div className="w-[50px] h-[51px] absolute left-[343px] top-2"></div>
       <img
         src={images.Puzzledesk}
-        style={{
-          position: "absolute",
-          left: -65,
-          top: 622,
-          width: 539,
-          height: 252,
-        }}
+        className="w-[539px] h-[252px] absolute -left-[65px] top-[622px] max-w-none"
         alt="PuzzleDesk"
       />
       <img
         src={images.Levelprogressbar}
-        style={{
-          position: "absolute",
-          left: -35,
-          top: 676,
-          width: 133,
-          height: 97,
-        }}
+        className="w-[133px] h-[97px] absolute -left-[35px] top-[676px] max-w-none"
         alt="LevelProgressBar"
       />
       <img
         src={images.Shopdesk}
-        style={{
-          position: "absolute",
-          left: 300,
-          top: 310,
-          width: 228,
-          height: 155,
-        }}
+        className="w-[228px] h-[155px] absolute left-[300px] top-[310px] max-w-none"
         alt="ShopDesk"
       />
       <img
         src={images.Shopsign}
-        style={{
-          position: "absolute",
-          left: 329,
-          top: 193,
-          width: 81,
-          height: 83,
-        }}
+        className="w-[81px] h-[83px] absolute left-[329px] top-[193px] max-w-none"
         alt="ShopSign"
       />
       <Link
@@ -221,30 +109,10 @@ export default function HomePage() {
       <p className="text-[#000] font-piedra text-[22px] w-[31px] h-[29px] absolute left-[363px] top-[723px] tracking-[0.07em]">
         ##
       </p>
-      <p style={{
-        color: "#000",
-        fontFamily: "Piedra",
-        fontSize: "22px",
-        width: 31,
-        height: 29,
-        position: "absolute",
-        left: 52,
-        top: 653,
-        letterSpacing: "0.07em"
-      }}>
+      <p className="text-[#000] font-piedra text-[22px] w-[31px] h-[29px] absolute left-[52px] top-[653px] tracking-[0.07em]">
         ##
       </p>
-      <p style={{
-        color: "#000",
-        fontFamily: "Piedra",
-        fontSize: "xl",
-        width: 31,
-        height: 26,
-        position: "absolute",
-        left: 329,
-        top: 672,
-        letterSpacing: "0.07em"
-      }}>
+      <p className="text-[#000] font-piedra text-xl w-[31px] h-[26px] absolute left-[329px] top-[672px] tracking-[0.07em]">
         ##
       </p>
     </div>
