@@ -27,7 +27,11 @@ export default function HomePage() {
           Create
         </span>
       </Link>
-      <div style={{ width: '50px', height: '51px', position: 'absolute', left: '343px', top: '8px' }}></div>
+      <Link
+        to="/profile"
+        aria-label="Open profile"
+        style={{ width: '50px', height: '50px', position: 'absolute', right: '8px', top: '8px', borderRadius: '50%', backgroundColor: '#F8F3F2', border: '2px solid #000', boxSizing: 'border-box', display: 'block', zIndex: 10 }}
+      />
       <Link
         to="/puzzle-reserve"
         aria-label="Open puzzle reserve"

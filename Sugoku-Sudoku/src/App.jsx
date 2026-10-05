@@ -6,6 +6,7 @@ import BoardCreatorPage from './BoardCreatorPage.jsx'
 import ShopPagePensTab from './ShopPagePensTab.jsx'
 import ShopPagePacksTab from './ShopPagePacksTab.jsx'
 import ShopPageCurrencyTab from './ShopPageCurrencyTab.jsx'
+import ProfilePage from './ProfilePage.jsx'
 
 export default function App() {
 	return (
@@ -17,6 +18,7 @@ export default function App() {
 			<Route path="/shop/pens" element={<ShopPagePensTab />} />
 			<Route path="/shop/packs" element={<ShopPagePacksTab />} />
 			<Route path="/shop/currency" element={<ShopPageCurrencyTab />} />
+			<Route path="/profile" element={<ProfilePage />} />
 		</Routes>
 	)
 }
