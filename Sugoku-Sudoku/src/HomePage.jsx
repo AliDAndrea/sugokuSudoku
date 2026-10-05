@@ -44,11 +44,17 @@ export default function HomePage() {
         style={{ width: '133px', height: '97px', position: 'absolute', left: '-35px', top: '676px' }}
         alt="LevelProgressBar"
       />
-      <img
-        src={images.Shopdesk}
-        style={{ width: '228px', height: '155px', position: 'absolute', left: '300px', top: '310px' }}
-        alt="ShopDesk"
-      />
+      <Link
+        to="/shop/pens"
+        aria-label="Open pen shop"
+        style={{ width: '228px', height: '155px', position: 'absolute', left: '300px', top: '310px', display: 'block' }}
+      >
+        <img
+          src={images.Shopdesk}
+          style={{ width: '100%', height: '100%' }}
+          alt="ShopDesk"
+        />
+      </Link>
       <img
         src={images.Shopsign}
         style={{ width: '81px', height: '83px', position: 'absolute', left: '329px', top: '193px' }}
