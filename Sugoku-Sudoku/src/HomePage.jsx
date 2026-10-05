@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import './App.css'
+import { mainPen } from './PenItem.jsx'
 
 // Import All Images
 import * as images from './figmages/index.js'
@@ -7,14 +8,7 @@ import * as images from './figmages/index.js'
 export default function HomePage() {
   return (
     <div
-      style={{
-        backgroundColor: '#fff',
-        width: '100%',
-        maxWidth: '390px',
-        aspectRatio: '390 / 844',
-        position: 'relative',
-        overflow: 'hidden',
-        margin: '0 auto',
+      style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',
       }}
     >
       <img
@@ -26,9 +20,9 @@ export default function HomePage() {
       <div
         style={{width: '400px',height: '100px',position: 'absolute',left: '50%',top: '475px',transform: 'translateX(-50%)',}}>
         <img
-          src={images.MultiPen}
+          src={mainPen.image}
           style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: '5px', maxWidth: 'none' }}
-          alt="multi_pen"
+          alt={mainPen.name}
         />
         <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '40px', letterSpacing: '0.07em', zIndex: 1 }}>
           Create
