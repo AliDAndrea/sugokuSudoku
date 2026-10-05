@@ -3,6 +3,9 @@ import FriendsPage from './FriendsPage.jsx'
 import HomePage from './HomePage.jsx'
 import PuzzleReserve from './PuzzleReservePage.jsx'
 import BoardCreatorPage from './BoardCreatorPage.jsx'
+import ShopPagePensTab from './ShopPagePensTab.jsx'
+import ShopPagePacksTab from './ShopPagePacksTab.jsx'
+import ShopPageCurrencyTab from './ShopPageCurrencyTab.jsx'
 
 export default function App() {
 	return (
@@ -11,6 +14,9 @@ export default function App() {
 			<Route path="/friends" element={<FriendsPage />} />
 			<Route path="/puzzle-reserve" element={<PuzzleReserve />} />
 			<Route path="/board-creator" element={<BoardCreatorPage />} />
+			<Route path="/shop/pens" element={<ShopPagePensTab />} />
+			<Route path="/shop/packs" element={<ShopPagePacksTab />} />
+			<Route path="/shop/currency" element={<ShopPageCurrencyTab />} />
 		</Routes>
 	)
 }
