@@ -75,11 +75,17 @@ export default function HomePage() {
         />
       </div>
       <div className="w-[50px] h-[51px] absolute left-[343px] top-2"></div>
-      <img
-        src={images.Puzzledesk}
-        className="w-[539px] h-[252px] absolute -left-[65px] top-[622px] max-w-none"
-        alt="PuzzleDesk"
-      />
+      <Link
+        to="/puzzle-reserve"
+        aria-label="Open puzzle reserve"
+        className="absolute -left-[65px] top-[622px] block h-[252px] w-[539px]"
+      >
+        <img
+          src={images.Puzzledesk}
+          className="h-full w-full max-w-none"
+          alt="PuzzleDesk"
+        />
+      </Link>
       <img
         src={images.Levelprogressbar}
         className="w-[133px] h-[97px] absolute -left-[35px] top-[676px] max-w-none"
