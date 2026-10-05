@@ -7,10 +7,7 @@ import * as images from './figmages/index.js'
 
 export default function HomePage() {
   return (
-    <div
-      style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',
-      }}
-    >
+    <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
       <img
         src={images.BgHome}
         alt="Home background"
