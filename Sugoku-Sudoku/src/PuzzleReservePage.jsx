@@ -10,7 +10,7 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
   const visibleBoards = boards.slice(0, MAX_BOARDS)
   const visibleFriendBoards = friendBoards.slice(0, MAX_FRIEND_BOARDS)
   return (
-    <div style={{ backgroundColor: '#FFF', width: '100%', maxWidth: '404px', minHeight: '883px', position: 'relative', overflow: 'hidden', margin: '0 auto', flexShrink: 0 }}>
+    <div style={{ backgroundColor: '#FFF', minWidth: '100%', minHeight: '100%', overflow: 'hidden' }}>
       <img
         src={images.BgMyPuzzles}
         style={{ width: '1511px', height: '1050px', position: 'absolute', left: '-545px', top: '-2px', maxWidth: 'none' }}

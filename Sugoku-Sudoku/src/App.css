@@ -226,3 +226,34 @@
     border-right-color: var(--border);
   }
 }
+
+.profile-page-transition {
+  position: relative;
+}
+
+.profile-panel {
+  transition: left 400ms ease, top 400ms ease;
+}
+
+.profile-arrow {
+  animation: profile-arrow-fade-in 400ms ease both;
+}
+
+@keyframes profile-arrow-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-panel,
+  .profile-arrow {
+    transition: none;
+    animation: none;
+    opacity: 1;
+  }
+}

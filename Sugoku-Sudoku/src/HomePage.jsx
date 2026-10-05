@@ -75,10 +75,12 @@ export default function HomePage() {
           alt="Friends"
         />
       </Link>
+      {/*hint*/}
       <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '363px', top: '723px', letterSpacing: '0.07em' }}>
         ##
       </p>
-      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '52px', top: '653px', letterSpacing: '0.07em' }}>
+      {/* lvl */}
+      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '52px', top: '655px', letterSpacing: '0.07em' }}>
         ##
       </p>
       <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '329px', top: '672px', letterSpacing: '0.07em' }}>
