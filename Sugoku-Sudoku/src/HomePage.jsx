@@ -6,115 +6,75 @@ import * as images from './figmages/index.js'
 
 export default function HomePage() {
   return (
-    <div className="bg-white min-w-screen min-h-screen overflow-hidden">
+    <div
+      style={{
+        backgroundColor: '#fff',
+        width: '100%',
+        maxWidth: '390px',
+        aspectRatio: '390 / 844',
+        position: 'relative',
+        overflow: 'hidden',
+        margin: '0 auto',
+      }}
+    >
       <img
         src={images.BgHome}
-        className="w-full h-full absolute left-0 top-0 max-w-none"
-        alt="bgDeco"
+        alt="Home background"
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
-      <div className="w-[92px] h-[352px] absolute left-[380px] top-[515px]">
+
+      <div
+        style={{width: '400px',height: '100px',position: 'absolute',left: '50%',top: '475px',transform: 'translateX(-50%)',}}>
         <img
           src={images.MultiPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
+          style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: '5px', maxWidth: 'none' }}
           alt="multi_pen"
         />
-        <img
-          src={images.CrayonPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="crayon_pen"
-        />
-        <img
-          src={images.BrushPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="brush_pen"
-        />
-        <img
-          src={images.MarkerPen}
-          className="w-[87px] h-[343px] absolute -left-[9px] top-0 max-w-none"
-          alt="marker_pen"
-        />
-        <img
-          src={images.PenPen}
-          className="w-[87px] h-[343px] absolute left-0 top-0 max-w-none"
-          alt="pen_pen"
-        />
-        <img
-          src={images.InkPen}
-          className="w-[87px] h-[343px] absolute -left-[3px] top-[5px] max-w-none"
-          alt="ink_pen"
-        />
-        <img
-          src={images.CheapPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="cheap_pen"
-        />
-        <img
-          src={images.QuillPen}
-          className="w-[87px] h-[344px] absolute left-0 top-[5px] max-w-none"
-          alt="quill_pen"
-        />
-        <img
-          src={images.MechPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="mech_pen"
-        />
-        <img
-          src={images.YatatePen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="yatate_pen"
-        />
-        <img
-          src={images.StylusPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="stylus_pen"
-        />
-        <img
-          src={images.PencilPen}
-          className="w-[87px] h-[343px] absolute left-0 top-[5px] max-w-none"
-          alt="pencil_pen"
-        />
+        <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '40px', letterSpacing: '0.07em', zIndex: 1 }}>
+          Create
+        </span>
       </div>
-      <div className="w-[50px] h-[51px] absolute left-[343px] top-2"></div>
+      <div style={{ width: '50px', height: '51px', position: 'absolute', left: '343px', top: '8px' }}></div>
       <img
         src={images.Puzzledesk}
-        className="w-[539px] h-[252px] absolute -left-[65px] top-[622px] max-w-none"
+        style={{ width: '539px', height: '252px', position: 'absolute', left: '-65px', top: '622px' }}
         alt="PuzzleDesk"
       />
       <img
         src={images.Levelprogressbar}
-        className="w-[133px] h-[97px] absolute -left-[35px] top-[676px] max-w-none"
+        style={{ width: '133px', height: '97px', position: 'absolute', left: '-35px', top: '676px' }}
         alt="LevelProgressBar"
       />
       <img
         src={images.Shopdesk}
-        className="w-[228px] h-[155px] absolute left-[300px] top-[310px] max-w-none"
+        style={{ width: '228px', height: '155px', position: 'absolute', left: '300px', top: '310px' }}
         alt="ShopDesk"
       />
       <img
         src={images.Shopsign}
-        className="w-[81px] h-[83px] absolute left-[329px] top-[193px] max-w-none"
+        style={{ width: '81px', height: '83px', position: 'absolute', left: '329px', top: '193px' }}
         alt="ShopSign"
       />
       <Link
         to="/friends"
         aria-label="Open friends page"
-        className="absolute -left-[35px] top-[210px] block h-[234px] w-[173px]"
+        style={{ width: '173px', height: '234px', position: 'absolute', left: '-35px', top: '210px' }}
       >
         <img
           src={images.Friends}
-          className="h-full w-full max-w-none"
+          style={{ height: '100%', width: '100%', maxWidth: 'none' }}
           alt="Friends"
         />
       </Link>
-      <p className="text-[#000] font-piedra text-[22px] w-[31px] h-[29px] absolute left-[363px] top-[723px] tracking-[0.07em]">
+      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '363px', top: '723px', letterSpacing: '0.07em' }}>
         ##
       </p>
-      <p className="text-[#000] font-piedra text-[22px] w-[31px] h-[29px] absolute left-[52px] top-[653px] tracking-[0.07em]">
+      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '52px', top: '653px', letterSpacing: '0.07em' }}>
         ##
       </p>
-      <p className="text-[#000] font-piedra text-xl w-[31px] h-[26px] absolute left-[329px] top-[672px] tracking-[0.07em]">
+      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '329px', top: '672px', letterSpacing: '0.07em' }}>
         ##
       </p>
     </div>
-  );
+  )
 }

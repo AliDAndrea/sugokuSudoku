@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "sugokuSudoku",
+			"path": "../.."
+		},
+		{
+			"name": "figma_images",
+			"path": "../../../../Downloads/figma_images"
+		}
+	],
+	"settings": {}
+}
