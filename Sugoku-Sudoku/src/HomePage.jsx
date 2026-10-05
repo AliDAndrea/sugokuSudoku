@@ -17,7 +17,9 @@ export default function HomePage() {
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
 
-      <div
+      <Link
+        to="/board-creator"
+        aria-label="Open board creator"
         style={{width: '400px',height: '100px',position: 'absolute',left: '50%',top: '475px',transform: 'translateX(-50%)',}}>
         <img
           src={mainPen.image}
@@ -27,7 +29,7 @@ export default function HomePage() {
         <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '40px', letterSpacing: '0.07em', zIndex: 1 }}>
           Create
         </span>
-      </div>
+      </Link>
       <div style={{ width: '50px', height: '51px', position: 'absolute', left: '343px', top: '8px' }}></div>
       <Link
         to="/puzzle-reserve"
