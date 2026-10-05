@@ -43,14 +43,14 @@ function ProfileDetails({ view }) {
             style={{ width: '396px', height: '549px', position: 'absolute', left: 0, top: 0, maxWidth: 'none' }}
             alt="Profile"
           />
-          <ProfileField label="Username: " value={user.username} top="118px" labelWidth="133px" />
-          <ProfileField label="Level: " value={user.level} top="176px" labelWidth="74px" />
-          <ProfileField label="Daily Streak: " value={user.dailyStreak} top="234px" labelWidth="162px" />
-          <ProfileField label="Puzzles Complete: " value={user.puzzlesCompleted} top="294px" labelWidth="227px" />
+          <ProfileField label="Username: " value={user.username} top="108px" labelWidth="133px" />
+          <ProfileField label="Level: " value={user.level} top="167px" labelWidth="74px" />
+          <ProfileField label="Daily Streak: " value={user.dailyStreak} top="224px" labelWidth="162px" />
+          <ProfileField label="Puzzles Complete: " value={user.puzzlesCompleted} top="282px" labelWidth="227px" />
           <ProfileField
-            label="Fastest Time: "
+            label="Fastest Time:" 
             value={user.fastestTime}
-            top="350px"
+            top="339px"
             labelWidth="166px"
           />
         </>
@@ -93,9 +93,6 @@ function ChangePasswordPanel({ view }) {
             style={{ width: '180px', height: '60px', position: 'absolute', left: '140px', top: '297px', maxWidth: 'none' }}
             alt="Confirm"
           />
-          <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '25px', width: '183px', height: '33px', position: 'absolute', left: '28px', top: '108px', whiteSpace: 'nowrap' }}>
-            Current Password:
-          </p>
           <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '25px', width: '154px', height: '33px', position: 'absolute', left: '28px', top: '168px', whiteSpace: 'nowrap' }}>
             New Password:
           </p>

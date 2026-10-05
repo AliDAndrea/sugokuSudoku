@@ -23,7 +23,7 @@ export default function HomePage() {
           style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: '5px', maxWidth: 'none' }}
           alt={mainPen.name}
         />
-        <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '42px', letterSpacing: '0.07em', zIndex: 1 }}>
+        <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '44px', letterSpacing: '0.07em', zIndex: 1 }}>
           Create
         </span>
       </Link>
