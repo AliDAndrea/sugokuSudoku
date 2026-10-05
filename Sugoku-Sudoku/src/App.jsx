@@ -1,7 +1,8 @@
 import { Route, Routes } from 'react-router-dom'
 import FriendsPage from './FriendsPage.jsx'
 import HomePage from './HomePage.jsx'
-import PuzzleReserve from './PuzzleReserve.jsx'
+import PuzzleReserve from './PuzzleReservePage.jsx'
+import BoardCreatorPage from './BoardCreatorPage.jsx'
 
 export default function App() {
 	return (
@@ -9,6 +10,7 @@ export default function App() {
 			<Route path="/" element={<HomePage />} />
 			<Route path="/friends" element={<FriendsPage />} />
 			<Route path="/puzzle-reserve" element={<PuzzleReserve />} />
+			<Route path="/board-creator" element={<BoardCreatorPage />} />
 		</Routes>
 	)
 }
