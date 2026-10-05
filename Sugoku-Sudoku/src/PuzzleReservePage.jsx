@@ -10,7 +10,7 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
   const visibleBoards = boards.slice(0, MAX_BOARDS)
   const visibleFriendBoards = friendBoards.slice(0, MAX_FRIEND_BOARDS)
   return (
-    <div style={{ backgroundColor: '#FFF', minWidth: '100%', minHeight: '100%', overflow: 'hidden' }}>
+    <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
       <img
         src={images.BgMyPuzzles}
         style={{ width: '1511px', height: '1050px', position: 'absolute', left: '-545px', top: '-2px', maxWidth: 'none' }}
@@ -24,7 +24,7 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
       <Link
         to="/"
         aria-label="Return to home page"
-        style={{ width: '50px', height: '34px', position: 'absolute', left: '176px', top: '833px', display: 'block', zIndex: 10 }}
+        style={{ width: '50px', height: '34px', position: 'absolute', left: '176px', top: '800px', display: 'block', zIndex: 10 }}
       >
         <img
           src={images.MainmenuArrow}
@@ -34,57 +34,74 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
       </Link>
       <img
         src={images.Trash}
-        style={{ width: '74px', height: '84px', position: 'absolute', left: '326px', top: '796px', maxWidth: 'none' }}
+        style={{ width: '74px', height: '84px', position: 'absolute', left: '318px', top: '767px', maxWidth: 'none' }}
         alt="Trash"
       />
-      <img
-        src={images.ArchiveChallengePacksBackground}
-        style={{ width: '1261px', height: '534px', position: 'absolute', left: '-842px', top: '278px', maxWidth: 'none' }}
-        alt="ArchiveChallengePacksBackground"
-      />
+      <div
+        aria-hidden="true"
+        style={{
+          width: '416px',
+          height: '100%',
+          position: 'absolute',
+          left: '-7px',
+          top: '9px',
+          maskImage: `url(${images.BgPuzzlesDrawer})`,
+          maskSize: '100% 100%',
+          maskRepeat: 'no-repeat',
+          WebkitMaskImage: `url(${images.BgPuzzlesDrawer})`,
+          WebkitMaskSize: '100% 100%',
+          WebkitMaskRepeat: 'no-repeat',
+        }}
+      >
+        <img
+          src={images.ArchiveChallengePacksBackground}
+          style={{ width: '1261px', height: '515px', position: 'absolute', left: '-848px', top: '259px', maxWidth: 'none' }}
+          alt=""
+        />
+      </div>
       <img
         src={images.ChallangePackTemplate}
-        style={{ width: '73px', height: '72px', position: 'absolute', left: '13px', top: '706px', maxWidth: 'none' }}
+        style={{ width: '73px', height: '72px', position: 'absolute', left: '13px', top: '683px', maxWidth: 'none' }}
         alt="ChallangePackTemplate"
       />
       <img
         src={images.ChallangePackTemplate}
-        style={{ width: '73px', height: '72px', position: 'absolute', left: '103px', top: '706px', maxWidth: 'none' }}
+        style={{ width: '73px', height: '72px', position: 'absolute', left: '103px', top: '683px', maxWidth: 'none' }}
         alt="ChallangePackTemplate"
       />
       <img
         src={images.ChallangePackTemplate}
-        style={{ width: '73px', height: '72px', position: 'absolute', left: '193px', top: '706px', maxWidth: 'none' }}
+        style={{ width: '73px', height: '72px', position: 'absolute', left: '193px', top: '683px', maxWidth: 'none' }}
         alt="ChallangePackTemplate"
       />
       <img
         src={images.ChallangePacksLabel}
-        style={{ width: '256px', height: '46px', position: 'absolute', left: '28px', top: '651px', maxWidth: 'none' }}
+        style={{ width: '256px', height: '46px', position: 'absolute', left: '28px', top: '625px', maxWidth: 'none' }}
         alt="ChallangePacksLabel"
       />
       <img
         src={images.Puzzlearchivetemplate}
-        style={{ width: '75px', height: '71px', position: 'absolute', left: '312px', top: '342px', maxWidth: 'none' }}
+        style={{ width: '75px', height: '71px', position: 'absolute', left: '300px', top: '330px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
       <img
         src={images.Puzzlearchivetemplate}
-        style={{ width: '75px', height: '71px', position: 'absolute', left: '312px', top: '428px', maxWidth: 'none' }}
+        style={{ width: '75px', height: '71px', position: 'absolute', left: '300px', top: '416px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
       <img
         src={images.Puzzlearchivetemplate}
-        style={{ width: '75px', height: '71px', position: 'absolute', left: '312px', top: '514px', maxWidth: 'none' }}
+        style={{ width: '75px', height: '71px', position: 'absolute', left: '300px', top: '502px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
       <img
         src={images.Puzzlearchivetemplate}
-        style={{ width: '75px', height: '71px', position: 'absolute', left: '312px', top: '600px', maxWidth: 'none' }}
+        style={{ width: '75px', height: '71px', position: 'absolute', left: '300px', top: '588px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
       <img
         src={images.Puzzlearchivetemplate}
-        style={{ width: '75px', height: '71px', position: 'absolute', left: '312px', top: '686px', maxWidth: 'none' }}
+        style={{ width: '75px', height: '71px', position: 'absolute', left: '300px', top: '674px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
       <div
@@ -92,7 +109,7 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
         role="region"
         aria-label="Saved boards, maximum 30"
         tabIndex={0}
-        style={{ width: '293px', height: '365px', position: 'absolute', left: 0, top: '292px', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', boxSizing: 'border-box' }}
+        style={{ width: '283px', height: '353px', position: 'absolute', left: -5, top: '280px', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', boxSizing: 'border-box' }}
       >
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 74px)', columnGap: '20.5px', rowGap: '8px', padding: '10px 9px', width: 'fit-content' }}>
           {visibleBoards.map((board, index) => (
@@ -133,7 +150,3 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
     </div>
   );
 }
-
-
-
-

@@ -23,7 +23,7 @@ export default function HomePage() {
           style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: '5px', maxWidth: 'none' }}
           alt={mainPen.name}
         />
-        <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '40px', letterSpacing: '0.07em', zIndex: 1 }}>
+        <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '42px', letterSpacing: '0.07em', zIndex: 1 }}>
           Create
         </span>
       </Link>
@@ -51,7 +51,7 @@ export default function HomePage() {
       <Link
         to="/shop/pens"
         aria-label="Open pen shop"
-        style={{ width: '228px', height: '155px', position: 'absolute', left: '300px', top: '310px', display: 'block' }}
+        style={{ width: '228px', height: '155px', position: 'absolute', left: '286px', top: '299px', display: 'block' }}
       >
         <img
           src={images.Shopdesk}
@@ -61,7 +61,7 @@ export default function HomePage() {
       </Link>
       <img
         src={images.Shopsign}
-        style={{ width: '81px', height: '83px', position: 'absolute', left: '329px', top: '193px' }}
+        style={{ width: '81px', height: '83px', position: 'absolute', left: '320px', top: '187px' }}
         alt="ShopSign"
       />
       <Link
@@ -76,14 +76,14 @@ export default function HomePage() {
         />
       </Link>
       {/*hint*/}
-      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '363px', top: '723px', letterSpacing: '0.07em' }}>
+      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '358px', top: '723px', letterSpacing: '0.07em' }}>
         ##
       </p>
       {/* lvl */}
       <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '52px', top: '655px', letterSpacing: '0.07em' }}>
         ##
       </p>
-      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '329px', top: '672px', letterSpacing: '0.07em' }}>
+      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '328px', top: '672px', letterSpacing: '0.07em' }}>
         ##
       </p>
     </div>
