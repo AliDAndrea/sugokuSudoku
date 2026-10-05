@@ -3,7 +3,7 @@ import * as images from './figmages/index.js'
 
 export default function PuzzleReserve() {
   return (
-    <div style={{ backgroundColor: '#FFF', minWidth: '100%', minHeight: '100%', overflow: 'hidden' }}>
+    <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
       <img
         src={images.BgMyPuzzles}
         style={{ width: '1511px', height: '1050px', position: 'absolute', left: '-545px', top: '-2px', maxWidth: 'none' }}
