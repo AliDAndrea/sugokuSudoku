@@ -1,5 +1,3 @@
-// TODO: Need to add link to this page from main menu
-
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 

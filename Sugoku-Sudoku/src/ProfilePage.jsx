@@ -31,16 +31,20 @@ export default function ProfilePage() {
           Fastest Time:
         </p>
       </div>
-      <img
-        src={images.ChangePassword}
-        style={{ width: "100%", height: "562px", position: "absolute", left: "-2px", top: "525px", maxWidth: "none" }}
-        alt="ChangePasswordPage"
-      />
-      <img
-        src={images.ChangeEmail}
-        style={{ width: "413px", height: "573px", position: "absolute", left: "-4px", top: "690px", maxWidth: "none" }}
-        alt="ChangeEmailPage"
-      />
+      <Link
+        to="/profile/change-password"
+        aria-label="Change password"
+        style={{ width: "100%", height: "562px", position: "absolute", left: "-2px", top: "525px", display: "block" }}
+      >
+        <img
+          src={images.ChangePassword}
+          style={{ width: "100%", height: "100%", maxWidth: "none" }}
+          alt="ChangePasswordPage"
+        />
+      </Link>
+      <Link to="/profile/change-email" aria-label="Change email" style={{ width: "413px", height: "573px", position: "absolute", left: "-4px", top: "690px", maxWidth: "none" , display: "block", zIndex: 2 }}>
+        <img src={images.ChangeEmail} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="ChangeEmailPage" />
+      </Link>
       <Link
         to="/"
         aria-label="Return to home page"
@@ -55,4 +59,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 

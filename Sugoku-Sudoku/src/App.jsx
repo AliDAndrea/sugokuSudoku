@@ -7,6 +7,8 @@ import ShopPagePensTab from './ShopPagePensTab.jsx'
 import ShopPagePacksTab from './ShopPagePacksTab.jsx'
 import ShopPageCurrencyTab from './ShopPageCurrencyTab.jsx'
 import ProfilePage from './ProfilePage.jsx'
+import ProfileChangePasswordPage from './ProfilePageChangePassword.jsx'
+import ProfilePageChangeEmail from './ProfilePageChangeEmail.jsx'
 
 export default function App() {
 	return (
@@ -19,6 +21,8 @@ export default function App() {
 			<Route path="/shop/packs" element={<ShopPagePacksTab />} />
 			<Route path="/shop/currency" element={<ShopPageCurrencyTab />} />
 			<Route path="/profile" element={<ProfilePage />} />
+			<Route path="/profile/change-password" element={<ProfileChangePasswordPage />} />
+			<Route path="/profile/change-email" element={<ProfilePageChangeEmail />} />
 		</Routes>
 	)
 }
