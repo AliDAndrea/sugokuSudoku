@@ -1,9 +1,16 @@
 ﻿import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 
-export default function PuzzleReserve() {
+const MAX_BOARDS = 30
+const MAX_FRIEND_BOARDS = 10
+const defaultFriendBoards = Array.from({ length: MAX_FRIEND_BOARDS }, (_, index) => ({ id: index + 1 }))
+const defaultBoards = Array.from({ length: MAX_BOARDS }, (_, index) => ({ id: index + 1 }))
+
+export default function PuzzleReserve({ boards = defaultBoards, friendBoards = defaultFriendBoards }) {
+  const visibleBoards = boards.slice(0, MAX_BOARDS)
+  const visibleFriendBoards = friendBoards.slice(0, MAX_FRIEND_BOARDS)
   return (
-    <div style={{ backgroundColor: '#FFF', minWidth: '100%', minHeight: '100%', overflow: 'hidden' }}>
+    <div style={{ backgroundColor: '#FFF', width: '100%', maxWidth: '404px', minHeight: '883px', position: 'relative', overflow: 'hidden', margin: '0 auto', flexShrink: 0 }}>
       <img
         src={images.BgMyPuzzles}
         style={{ width: '1511px', height: '1050px', position: 'absolute', left: '-545px', top: '-2px', maxWidth: 'none' }}
@@ -17,10 +24,10 @@ export default function PuzzleReserve() {
       <Link
         to="/"
         aria-label="Return to home page"
-        style={{ width: '50px', height: '34px', position: 'absolute', left: '44px', top: '833px', display: 'block', zIndex: 10 }}
+        style={{ width: '50px', height: '34px', position: 'absolute', left: '176px', top: '833px', display: 'block', zIndex: 10 }}
       >
         <img
-          src={images.Mainmenubutton}
+          src={images.MainmenuArrow}
           style={{ width: '100%', height: '100%', maxWidth: 'none' }}
           alt="MainMenuButton"
         />
@@ -80,111 +87,53 @@ export default function PuzzleReserve() {
         style={{ width: '75px', height: '71px', position: 'absolute', left: '312px', top: '686px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
-      <div style={{ width: '293px', height: '365px', position: 'absolute', left: '0', top: '292px', overflow: 'hidden' }}>
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '9px', top: '2.5px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '9px', top: '89px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '9px', top: '168px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '9px', top: '247px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '9px', top: '326px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '104px', top: '2.5px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '104px', top: '89px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '104px', top: '168px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '104px', top: '247px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '104px', top: '326px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '198px', top: '2.5px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '198px', top: '89px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '198px', top: '168px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '198px', top: '247px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
-        <img
-          src={images.Puzzleselecttemplate}
-          style={{ width: '74px', height: '71px', position: 'absolute', left: '198px', top: '326px', maxWidth: 'none' }}
-          alt="PuzzleSelectTemplate"
-        />
+      <div
+        className="saved-boards-scroll"
+        role="region"
+        aria-label="Saved boards, maximum 30"
+        tabIndex={0}
+        style={{ width: '293px', height: '365px', position: 'absolute', left: 0, top: '292px', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', boxSizing: 'border-box' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 74px)', columnGap: '20.5px', rowGap: '8px', padding: '10px 9px', width: 'fit-content' }}>
+          {visibleBoards.map((board, index) => (
+            <img
+              key={board.id ?? index}
+              src={images.Puzzleselecttemplate}
+              style={{ width: '74px', height: '71px', display: 'block', maxWidth: 'none' }}
+              alt={`Board ${index + 1}`}
+              draggable={false}
+            />
+          ))}
+        </div>
       </div>
       <img
         src={images.BgFriend}
         style={{ width: '337px', height: '174px', position: 'absolute', left: '31px', top: '26px', maxWidth: 'none' }}
         alt="friendBg"
       />
-      <div style={{ display: 'inline-flex', paddingTop: '50px', paddingRight: '0', paddingBottom: '22px', paddingLeft: '2.5px', justifyContent: 'flex-end', alignItems: 'flex-start', gap: '3px', width: '310px', height: '143px', position: 'absolute', left: '11px', top: '41px', overflow: 'hidden' }}>
-        <img
-          src={images.FriendPuzzleTemplate}
-          style={{ width: '71px', height: '71px', position: 'absolute', left: '2.5px', top: '50px', maxWidth: 'none' }}
-          alt="FriendPuzzleTemplate"
-        />
-        <img
-          src={images.FriendPuzzleTemplate}
-          style={{ width: '71px', height: '71px', position: 'absolute', left: '93px', top: '50px', maxWidth: 'none' }}
-          alt="FriendPuzzleTemplate"
-        />
-        <img
-          src={images.FriendPuzzleTemplate}
-          style={{ width: '71px', height: '71px', position: 'absolute', left: '104px', top: '50px', maxWidth: 'none' }}
-          alt="FriendPuzzleTemplate"
-        />
-        <img
-          src={images.FriendPuzzleTemplate}
-          style={{ width: '71px', height: '71px', position: 'absolute', left: '259px', top: '50px', maxWidth: 'none' }}
-          alt="FriendPuzzleTemplate"
-        />
+      <div
+        className="friend-boards-scroll"
+        role="region"
+        aria-label="Friends' puzzles, maximum 10 boards"
+        tabIndex={0}
+        style={{ width: '310px', height: '93px', position: 'absolute', left: '44px', top: '91px', overflowX: 'auto', overflowY: 'hidden', overscrollBehaviorX: 'contain', boxSizing: 'border-box' }}
+      >
+        <div style={{ display: 'flex', gap: '12px', padding: '0 10px 8px', width: 'max-content' }}>
+          {visibleFriendBoards.map((board, index) => (
+            <img
+              key={board.id ?? index}
+              src={images.FriendPuzzleTemplate}
+              style={{ width: '71px', height: '71px', display: 'block', flexShrink: 0, maxWidth: 'none' }}
+              alt={`Friend's board ${index + 1}`}
+              draggable={false}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
 }
+
+
+
 

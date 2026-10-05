@@ -1,3 +1,47 @@
+.saved-boards-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #50352c transparent;
+}
+
+.saved-boards-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.saved-boards-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.saved-boards-scroll::-webkit-scrollbar-thumb {
+  background: #50352c;
+  border-radius: 6px;
+}
+
+.saved-boards-scroll::-webkit-scrollbar-thumb:hover {
+  background: #38251f;
+}
+
+.friend-boards-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #f18199 transparent;
+}
+
+.friend-boards-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.friend-boards-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.friend-boards-scroll::-webkit-scrollbar-thumb {
+  background: #f18199;
+  border-radius: 6px;
+}
+
+.friend-boards-scroll::-webkit-scrollbar-thumb:hover {
+  background: #d96982;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
