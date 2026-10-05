@@ -57,7 +57,7 @@ export default function BoardCreatorPage() {
         <div style={{ opacity: 0.4, backgroundColor:'#06FFFF', width:'105px', height:'21px', position:'absolute', left:'79px', top:'429px' }}></div>
       
         {/* create button */}
-        <div style={{ opacity: 0.4, backgroundColor:'#06FFFF', width:'167px', height:'44px', position:'absolute', left:'216px', top:'367px' }}></div>
+        <Link to="/board" aria-label="Create board" style={{ opacity: 0.4, backgroundColor:'#06FFFF', width:'167px', height:'44px', position:'absolute', left:'216px', top:'367px', display: 'block' }} />
 
       </div>
     </div>
