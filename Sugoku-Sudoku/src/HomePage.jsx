@@ -49,7 +49,7 @@ export default function HomePage() {
         alt="LevelProgressBar"
       />
       <Link
-        to="/shop/pens"
+        to="/shop"
         aria-label="Open pen shop"
         style={{ width: '228px', height: '155px', position: 'absolute', left: '286px', top: '299px', display: 'block' }}
       >
