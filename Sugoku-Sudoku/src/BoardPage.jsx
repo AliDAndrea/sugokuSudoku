@@ -1,7 +1,16 @@
-﻿import { useLayoutEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 
+const boardPenStyle = {
+  width: '158px',
+  height: '40px',
+  position: 'absolute',
+  left: '50%',
+  top: '50%',
+  maxWidth: 'none',
+  transform: 'translate(-50%, -50%) rotate(270deg)',
+}
 export default function BoardPage() {
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
@@ -110,62 +119,62 @@ export default function BoardPage() {
       <div style={{ width: "43px", height: "162px", position: "absolute", left: "30px", top: "539px" }}>
         <img
           src={images.MultiPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="multi_pen"
         />
         <img
           src={images.CrayonPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="crayon_pen"
         />
         <img
           src={images.BrushPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="brush_pen"
         />
         <img
           src={images.MarkerPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "0px", top: "4px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="marker_pen"
         />
         <img
           src={images.PenPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "0px", top: "0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="pen_pen"
         />
         <img
           src={images.InkPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "1px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="ink_pen"
         />
         <img
           src={images.CheapPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="cheap_pen"
         />
         <img
           src={images.QuillPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="quill_pen"
         />
         <img
           src={images.MechPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="mech_pen"
         />
         <img
           src={images.YatatePen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="yatate_pen"
         />
         <img
           src={images.StylusPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="stylus_pen"
         />
         <img
           src={images.PencilPen}
-          style={{ width: "158px", height: "40px", position: "absolute", left: "3px", top: "-0px", maxWidth: "none", transform: "rotate(270deg)" }}
+          style={boardPenStyle}
           alt="pencil_pen"
         />
       </div>
