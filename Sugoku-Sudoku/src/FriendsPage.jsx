@@ -16,12 +16,18 @@ const sampleRequests = Array.from({ length: 8 }, (_, index) => ({
   name: 'friendO_135x7',
 }))
 
-function FriendRow({ friend, small = false }) {
+const FRIENDS_PER_PAGE = 6
+
+function FriendRow({ friend, small = false, onRemove }) {
   return (
     <div className={`friends-row${small ? ' friends-row-small' : ''}`}>
       <span className="friends-avatar" aria-hidden="true" />
       <span className="friends-name">{friend.name}</span>
-      <span className="friends-dot" aria-hidden="true" />
+      {onRemove ? (
+        <button type="button" className="friends-dot friends-remove" aria-label={`Remove ${friend.name}`} onClick={() => onRemove(friend.id)} />
+      ) : (
+        <span className="friends-dot" aria-hidden="true" />
+      )}
     </div>
   )
 }
@@ -29,6 +35,17 @@ function FriendRow({ friend, small = false }) {
 export default function FriendManagement({ friends = sampleFriends, searchResults = sampleResults, friendRequests = sampleRequests }) {
   const [menu, setMenu] = useState('find')
   const [search, setSearch] = useState('')
+  const [removedIds, setRemovedIds] = useState([])
+  const [page, setPage] = useState(0)
+  const remainingFriends = friends.filter((friend) => !removedIds.includes(friend.id))
+  const pageCount = Math.max(1, Math.ceil(remainingFriends.length / FRIENDS_PER_PAGE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pageFriends = remainingFriends.slice(currentPage * FRIENDS_PER_PAGE, (currentPage + 1) * FRIENDS_PER_PAGE)
+  const removeFriend = (id) => {
+    setRemovedIds((ids) => [...ids, id])
+    const nextCount = remainingFriends.filter((friend) => friend.id !== id).length
+    setPage(Math.min(currentPage, Math.max(0, Math.ceil(nextCount / FRIENDS_PER_PAGE) - 1)))
+  }
   const results = searchResults.filter((friend) => friend.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
@@ -48,11 +65,15 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
       >
         <img src={images.PhoneButton} alt="" />
       </button>
-      <div className="friends-list friends-scroll" role="region" aria-label="Friends list" tabIndex={0}>
+      <div className="friends-list" role="region" aria-label="Friends list">
         <div className="friends-rows">
-          {friends.map((friend) => <FriendRow key={friend.id} friend={friend} />)}
+          {pageFriends.map((friend) => <FriendRow key={friend.id} friend={friend} onRemove={removeFriend} />)}
+          {remainingFriends.length === 0 && <p className="friends-empty">No friends yet.</p>}
         </div>
       </div>
+      <button type="button" className="friends-page-arrow friends-page-previous" aria-label="Previous friends page" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)} />
+      <span className="friends-page-number" aria-live="polite">{currentPage + 1} / {pageCount}</span>
+      <button type="button" className="friends-page-arrow friends-page-next" aria-label="Next friends page" disabled={currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)} />
       <section id="friends-menu" aria-label={menu === 'find' ? 'Find friends' : 'Friend requests'}>
       <img src={menu === 'find' ? images.FindFriends : images.FriendRequests} className="friends-search-art" alt={menu === 'find' ? 'Find friends' : 'Friend requests'} />
       {menu === 'find' && (

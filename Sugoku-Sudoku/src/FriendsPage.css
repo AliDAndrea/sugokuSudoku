@@ -70,10 +70,49 @@
 
 .friends-list {
   width: 263px;
-  height: 350px;
+  height: 354px;
   position: absolute;
   left: 35px;
   top: 414px;
+  overflow: hidden;
+}
+
+.friends-page-arrow {
+  position: absolute;
+  bottom: 14px;
+  width: 55px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.friends-page-previous { left: 15px; }
+.friends-page-next { right: 49px; }
+.friends-page-arrow:disabled { cursor: default; }
+
+.friends-page-number {
+  position: absolute;
+  left: 115px;
+  bottom: 31px;
+  width: 120px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.friends-remove {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.friends-remove:hover { background: #d91943; }
+
+.friends-page-arrow:focus-visible,
+.friends-remove:focus-visible {
+  outline: 2px solid #555;
+  outline-offset: 2px;
 }
 
 .friends-search-art {
@@ -90,7 +129,7 @@
   position: absolute;
   left: 85px;
   top: 68px;
-  border: 0;
+  border: 1px solid #000;
   border-radius: 9px;
   background: #eee9e8;
   padding: 0 12px;
@@ -117,7 +156,7 @@
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
-  scrollbar-color: #d96982 transparent;
+  scrollbar-color: #888 transparent;
 }
 
 .friends-scroll::-webkit-scrollbar {
@@ -129,32 +168,42 @@
 }
 
 .friends-scroll::-webkit-scrollbar-thumb {
-  background: #d96982;
+  background: #888;
   border-radius: 5px;
 }
 
 .friends-scroll::-webkit-scrollbar-thumb:hover {
-  background: #af4d64;
+  background: #666;
 }
 
 .friends-rows {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 2px 6px 2px 0;
+  padding: 4px 7px 4px 4px;
 }
 
 .friends-row {
+  position: relative;
   min-height: 50px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
-  border: 2px solid #000;
+  border: 2px solid transparent;
   border-radius: 14px;
   background: #f8f3f2;
+  background-clip: padding-box;
   box-sizing: border-box;
+}
+
+.friends-row::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: url('./figmages/FriendGraphiteBorder.svg') center / 100% 100% no-repeat;
+  pointer-events: none;
 }
 
 .friends-avatar {
@@ -187,7 +236,11 @@
 
 .friends-results .friends-rows {
   gap: 8px;
-  padding-top: 0;
+  padding-top: 4px;
+}
+
+.friends-list .friends-rows {
+  gap: 9px;
 }
 
 .friends-row-small {
@@ -234,6 +287,6 @@
 
 .friends-scroll:focus-visible,
 .friends-search:focus-visible {
-  outline: 2px solid #af4d64;
+  outline: 2px solid #000;
   outline-offset: 2px;
 }
