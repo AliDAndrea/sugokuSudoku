@@ -3,136 +3,138 @@ import * as images from './figmages/index.js'
 
 export default function ShopPageCurrencyTab() {
   return (
-    <div className="bg-[#FFF] min-w-screen min-h-screen overflow-hidden">
+    <div style={{ backgroundColor: "#FFF", width: "100%", minHeight: "882px", maxWidth: "404px", position: "relative", margin: "0 auto", flexShrink: 0, textAlign: "left", overflow: "hidden" }}>
       <img
         src={images.BgShop}
-        className="w-[1269px] h-[882px] absolute -left-[440px] -top-px max-w-none"
+        style={{ width: "1269px", height: "882px", position: "absolute", left: "-440px", top: "-1px", maxWidth: "none" }}
         alt="bgDeco"
       />
-      <Link to="/shop/currency" aria-label="Open currency tab" className="w-[120px] h-[115px] absolute left-[293px] -top-px block z-10">
-        <img src={images.CurrencyTab} className="w-full h-full max-w-none" alt="CurrencyTab" />
+      <Link to="/shop/currency" aria-label="Open currency tab" style={{ width: "120px", height: "115px", position: "absolute", left: "293px", top: "-1px", display: "block", zIndex: 10 }}>
+        <img src={images.CurrencyTab} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="CurrencyTab" />
       </Link>
-      <Link to="/shop/packs" aria-label="Open packs tab" className="w-[120px] h-[115px] absolute left-[184px] -top-[21px] block z-10">
-        <img src={images.Packstab} className="w-full h-full max-w-none" alt="PacksTab" />
+      <Link to="/shop/packs" aria-label="Open packs tab" style={{ width: "120px", height: "115px", position: "absolute", left: "184px", top: "-21px", display: "block", zIndex: 10 }}>
+        <img src={images.Packstab} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="PacksTab" />
       </Link>
-      <Link to="/shop/pens" aria-label="Open pens tab" className="w-[120px] h-[115px] absolute left-[75px] -top-[21px] block z-10">
-        <img src={images.Penstab} className="w-full h-full max-w-none" alt="PensTab" />
+      <Link to="/shop/pens" aria-label="Open pens tab" style={{ width: "120px", height: "115px", position: "absolute", left: "75px", top: "-21px", display: "block", zIndex: 10 }}>
+        <img src={images.Penstab} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="PensTab" />
       </Link>
       <img
         src={images.BuyButton}
-        className="w-[167px] h-[102px] absolute left-[237px] top-[775px] max-w-none"
+        style={{ width: "167px", height: "102px", position: "absolute", left: "237px", top: "775px", maxWidth: "none" }}
         alt="BuyButton"
       />
-      <Link to="/" aria-label="Return to home page" className="w-[60px] h-[60px] absolute left-2 top-[11px] block z-10">
-        <img src={images.BackButton} className="w-full h-full max-w-none" alt="BackButton" />
+      <Link to="/" aria-label="Return to home page" style={{ width: "60px", height: "60px", position: "absolute", left: "8px", top: "11px", display: "block", zIndex: 10 }}>
+        <img src={images.BackButton} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="BackButton" />
       </Link>
       <img
         src={images.HintsLabel}
-        className="w-[185px] h-[75px] absolute left-[102px] top-[102px] max-w-none"
+        style={{ width: "185px", height: "75px", position: "absolute", left: "102px", top: "102px", maxWidth: "none" }}
         alt="HintsLabel"
       />
-      <div className="w-[119px] h-[83px] absolute left-[9px] top-[436px]">
+      <div style={{ width: "119px", height: "83px", position: "absolute", left: "9px", top: "436px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[116px] h-[83px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.SudoPurchaseFrame}
+          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Sudo purchase frame"
         />
-        <p className="text-[#000] font-piedra text-3xl w-24 h-[26px] absolute left-[23px] top-6">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 100
         </p>
       </div>
-      <p className="text-[#000] font-piedra text-[80px] w-[162px] h-[26px] absolute left-[35px] top-[726px]">
+      <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "80px", width: "162px", height: "26px", position: "absolute", left: "35px", top: "726px" }}>
         S100
       </p>
-      <div className="w-[117px] h-[83px] absolute left-[139px] top-[436px]">
+      <div style={{ width: "117px", height: "83px", position: "absolute", left: "139px", top: "436px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[116px] h-[83px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.SudoPurchaseFrame}
+          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Sudo purchase frame"
         />
-        <p className="text-[#000] font-piedra text-3xl w-24 h-[26px] absolute left-[21px] top-6">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 500
         </p>
       </div>
-      <div className="w-[113px] h-[105px] absolute left-[15px] top-52">
+      <div style={{ width: "113px", height: "105px", position: "absolute", left: "15px", top: "208px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[105px] h-[105px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.HintPurchaseFrame}
+          style={{ width: "105px", height: "105px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Hint purchase frame"
         />
-        <p className="text-[#000] font-piedra text-[47px] w-[21px] h-[46px] absolute left-8 top-[15px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "47px", lineHeight: 1, width: "48px", height: "68px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           1
         </p>
-        <p className="text-[#000] font-piedra text-[25px] w-24 h-[26px] absolute left-[17px] top-[74px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "22px", lineHeight: 1, width: "95px", height: "22px", position: "absolute", left: "5px", top: "79px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 75
         </p>
       </div>
-      <div className="w-[113px] h-[105px] absolute left-[148px] top-52">
+      <div style={{ width: "113px", height: "105px", position: "absolute", left: "148px", top: "208px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[105px] h-[105px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.HintPurchaseFrame}
+          style={{ width: "105px", height: "105px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Hint purchase frame"
         />
-        <p className="text-[#000] font-piedra text-[47px] w-[21px] h-[46px] absolute left-8 top-[15px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "47px", lineHeight: 1, width: "48px", height: "68px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           5
         </p>
-        <p className="text-[#000] font-piedra text-[25px] w-24 h-[26px] absolute left-[17px] top-[74px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "22px", lineHeight: 1, width: "95px", height: "22px", position: "absolute", left: "5px", top: "79px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 375
         </p>
       </div>
-      <div className="w-[113px] h-[105px] absolute left-[281px] top-52">
+      <div style={{ width: "113px", height: "105px", position: "absolute", left: "281px", top: "208px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[105px] h-[105px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.HintPurchaseFrame}
+          style={{ width: "105px", height: "105px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Hint purchase frame"
         />
-        <p className="text-[#000] font-piedra text-[47px] w-11 h-[46px] absolute left-[13px] top-[15px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "47px", lineHeight: 1, width: "48px", height: "68px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           10
         </p>
-        <p className="text-[#000] font-piedra text-[25px] w-24 h-[26px] absolute left-[17px] top-[74px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "22px", lineHeight: 1, width: "95px", height: "22px", position: "absolute", left: "5px", top: "79px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 750
         </p>
       </div>
-      <div className="w-[116px] h-[83px] absolute left-[72px] top-[540px]">
+      <div style={{ width: "116px", height: "83px", position: "absolute", left: "72px", top: "540px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[116px] h-[83px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.SudoPurchaseFrame}
+          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Sudo purchase frame"
         />
-        <p className="text-[#000] font-piedra text-3xl w-24 h-[26px] absolute left-3.5 top-6">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 2500
         </p>
       </div>
-      <div className="w-[116px] h-[83px] absolute left-[269px] top-[436px]">
+      <div style={{ width: "116px", height: "83px", position: "absolute", left: "269px", top: "436px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[116px] h-[83px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.SudoPurchaseFrame}
+          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Sudo purchase frame"
         />
-        <p className="text-[#000] font-piedra text-3xl w-24 h-[26px] absolute left-[17px] top-6">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 1000
         </p>
       </div>
-      <div className="w-[116px] h-[83px] absolute left-[202px] top-[540px]">
+      <div style={{ width: "116px", height: "83px", position: "absolute", left: "202px", top: "540px" }}>
         <img
-          src={images.PenPurchaseFrame}
-          className="w-[116px] h-[83px] absolute left-0 top-0 max-w-none"
-          alt="Frame"
+          src={images.SudoPurchaseFrame}
+          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
+          alt="Sudo purchase frame"
         />
-        <p className="text-[#000] font-piedra text-3xl w-[99px] h-[39px] absolute left-[9px] top-6">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
           S 10000
         </p>
       </div>
-      <p className="text-[#000] font-piedra text-5xl w-[146px] h-[26px] absolute left-[250px] top-[697px]">
+      <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "48px", lineHeight: "1", width: "146px", height: "26px", position: "absolute", left: "250px", top: "697px" }}>
         $####
       </p>
       <img
         src={images.SudoLabel}
-        className="w-[442px] h-[76px] absolute -left-2.5 top-[342px] max-w-none"
+        style={{ width: "442px", height: "76px", position: "absolute", left: "-10px", top: "342px", maxWidth: "none" }}
         alt="image 1"
       />
     </div>
   );
 }
+
+
 
 

@@ -3,264 +3,267 @@ import * as images from './figmages/index.js'
 
 export default function ShopPagePensTab() {
   return (
-    <div className="bg-[#FFF] min-w-screen min-h-screen overflow-hidden">
+    <div style={{ backgroundColor: "#FFF", width: "100%", minHeight: "882px", maxWidth: "404px", position: "relative", margin: "0 auto", flexShrink: 0, textAlign: "left", overflow: "hidden" }}>
       <img
         src={images.BgShop}
-        className="w-[1269px] h-[882px] absolute -left-[440px] -top-px max-w-none"
+        style={{ width: "1269px", height: "882px", position: "absolute", left: "-440px", top: "-1px", maxWidth: "none" }}
         alt="BackgroundColor"
       />
-      <Link to="/shop/currency" aria-label="Open currency tab" className="w-[120px] h-[115px] absolute left-[292px] -top-[21px] block z-10">
-        <img src={images.CurrencyTab} className="w-full h-full max-w-none" alt="CurrencyTab" />
+      <Link to="/shop/currency" aria-label="Open currency tab" style={{ width: "120px", height: "115px", position: "absolute", left: "292px", top: "-21px", display: "block", zIndex: 10 }}>
+        <img src={images.CurrencyTab} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="CurrencyTab" />
       </Link>
       <Link
         to="/shop/packs"
         aria-label="Open packs tab"
-        className="w-[120px] h-[115px] absolute left-[184px] -top-[21px] block z-10"
+        style={{ width: "120px", height: "115px", position: "absolute", left: "184px", top: "-21px", display: "block", zIndex: 10 }}
       >
         <img
           src={images.Packstab}
-          className="w-full h-full max-w-none"
+          style={{ width: "100%", height: "100%", maxWidth: "none" }}
           alt="PacksTab"
         />
       </Link>
-      <Link to="/shop/pens" aria-label="Open pens tab" className="w-[120px] h-[115px] absolute left-[75px] top-0 block z-10">
-        <img src={images.Penstab} className="w-full h-full max-w-none" alt="PensTab" />
+      <Link to="/shop/pens" aria-label="Open pens tab" style={{ width: "120px", height: "115px", position: "absolute", left: "75px", top: "0px", display: "block", zIndex: 10 }}>
+        <img src={images.Penstab} style={{ width: "100%", height: "100%", maxWidth: "none" }} alt="PensTab" />
       </Link>
       <img
         src={images.BuyButton}
-        className="w-[167px] h-[102px] absolute left-[237px] top-[775px] max-w-none"
+        style={{ width: "167px", height: "102px", position: "absolute", left: "237px", top: "775px", maxWidth: "none" }}
         alt="BuyButton"
       />
       <Link
         to="/"
         aria-label="Return to home page"
-        className="w-[60px] h-[60px] absolute left-2 top-[11px] block z-10"
+        style={{ width: "60px", height: "60px", position: "absolute", left: "8px", top: "11px", display: "block", zIndex: 10 }}
       >
         <img
           src={images.BackButton}
-          className="w-full h-full max-w-none"
+          style={{ width: "100%", height: "100%", maxWidth: "none" }}
           alt="BackButton"
         />
       </Link>
-      <div className="w-[50px] h-[198px] absolute left-px top-[675px]">
+      <div style={{ width: "50px", height: "207px", position: "absolute", left: "10px", top: "675px" }}>
         <img
           src={images.PencilPen}
-          className="w-[50px] h-[198px] absolute -left-0 -top-0 max-w-none"
+          style={{ width: "198px", height: "50px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-90deg)" }}
           alt="pencil_pen"
         />
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[23px] top-[120px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "23px", top: "120px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl opacity-50 w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", opacity: 0.5, width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.PencilPen}
-            className="w-[26px] h-[102px] absolute left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="pencil_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[148px] top-[534px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "148px", top: "534px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-2">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.InkPen}
-            className="w-[26px] h-[102px] absolute left-0 -top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="ink_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[148px] top-[120px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "148px", top: "120px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.MechPen}
-            className="w-[26px] h-[102px] absolute left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="mech_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[148px] top-[258px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "148px", top: "258px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.BrushPen}
-            className="w-[26px] h-[102px] absolute left-0 -top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="brush_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[273px] top-[396px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "273px", top: "396px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.StylusPen}
-            className="w-[26px] h-[102px] absolute left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="stylus_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[148px] top-[396px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "148px", top: "396px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[86px] top-1.5">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.PenPen}
-            className="w-[26px] h-[102px] absolute -left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="pen_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[23px] top-[534px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "23px", top: "534px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.QuillPen}
-            className="w-[26px] h-[102px] absolute -left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="quill_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[23px] top-[258px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "23px", top: "258px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.CrayonPen}
-            className="w-[26px] h-[102px] absolute left-0 -top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="crayon_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[273px] top-[258px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "273px", top: "258px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.YatatePen}
-            className="w-[26px] h-[102px] absolute left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="yatate_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[23px] top-[396px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "23px", top: "396px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[84px] top-2">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.MarkerPen}
-            className="w-[26px] h-[102px] absolute left-0 -top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="marker_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[273px] top-[120px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "273px", top: "120px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.CheapPen}
-            className="w-[26px] h-[102px] absolute left-0 top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="cheap_pen"
           />
         </div>
       </div>
-      <div className="w-[106px] h-[122px] absolute left-[273px] top-[534px]">
+      <div style={{ width: "106px", height: "122px", position: "absolute", left: "273px", top: "534px" }}>
         <img
           src={images.PenPurchaseFrame}
-          className="w-[106px] h-[122px] absolute left-0 top-0 max-w-none"
+          style={{ width: "106px", height: "122px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt="Frame"
         />
-        <p className="text-[#000] font-piedra text-2xl w-[85px] h-[26px] absolute left-[17px] top-[91px]">
+        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "24px", lineHeight: "32px", width: "85px", height: "26px", position: "absolute", left: "17px", top: "91px" }}>
           S####
         </p>
-        <div className="opacity-50 w-[26px] h-[102px] absolute left-[87px] top-[7px]">
+        <div style={{ opacity: 0.5, width: "106px", height: "90px", position: "absolute", left: 0, top: 0 }}>
           <img
             src={images.MultiPen}
-            className="w-[26px] h-[102px] absolute left-0 -top-0 max-w-none"
+            style={{ width: "102px", height: "26px", position: "absolute", left: "50%", top: "50%", maxWidth: "none", transform: "translate(-50%, -50%) rotate(-45deg)", transformOrigin: "center" }}
             alt="multi_pen"
           />
         </div>
       </div>
-      <p className="text-[#000] font-piedra text-5xl w-[146px] h-[26px] absolute left-[251px] top-[697px]">
+      <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "48px", lineHeight: "1", width: "146px", height: "26px", position: "absolute", left: "251px", top: "697px" }}>
         S####
       </p>
-      <p className="text-[#000] font-intelOneMono text-[40px] w-[172px] h-[165px] absolute left-[53px] top-[691px]">
-        1 2 3 4 5 6 7 8 9
-      </p>
+      <div style={{ color: "#000", fontFamily: "'Intel One Mono', monospace", fontSize: "40px", lineHeight: 1, width: "155px", height: "182px", position: "absolute", left: "70px", top: "691px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridTemplateRows: "repeat(3, 1fr)", placeItems: "center" }}>
+        {Array.from({ length: 9 }, (_, index) => (
+          <span key={index}>{index + 1}</span>
+        ))}
+      </div>
     </div>
   );
 }
+
 
 
