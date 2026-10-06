@@ -7,6 +7,7 @@ export const penItems = [
     boldness: 'bold',
     image: images.MultiPen,
     price: 100,
+    owned: false,
   },
   {
     name: 'Crayon Pen',
@@ -14,6 +15,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.CrayonPen,
     price: 50,
+    owned: false,
   },
   {
     name: 'Brush Pen',
@@ -21,6 +23,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.BrushPen,
     price: 75,
+    owned: false,
   },
   {
     name: 'Cheap Pen',
@@ -28,6 +31,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.CheapPen,
     price: 25,
+    owned: false,
   },
   {
     name: 'Ink Pen',
@@ -35,6 +39,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.InkPen,
     price: 125,
+    owned: false,
   },
   {
     name: 'Marker Pen',
@@ -42,6 +47,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.MarkerPen,
     price: 100,
+    owned: false,
   },
   {
     name: 'Mechanical Pen',
@@ -49,6 +55,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.MechPen,
     price: 150,
+    owned: false,
   },
   {
     name: 'Pen Pen',
@@ -56,6 +63,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.PenPen,
     price: 50,
+    owned: false,
   },
   {
     name: 'Pencil Pen',
@@ -63,6 +71,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.PencilPen,
     price: 75,
+    owned: true,
   },
   {
     name: 'Quill Pen',
@@ -70,6 +79,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.QuillPen,
     price: 200,
+    owned: false,
   },
   {
     name: 'Stylus Pen',
@@ -77,6 +87,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.StylusPen,
     price: 175,
+    owned: false,
   },
   {
     name: 'Yatate Pen',
@@ -84,6 +95,7 @@ export const penItems = [
     boldness: 'normal',
     image: images.YatatePen,
     price: 225,
+    owned: false,
   },
 ]
 
