@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import './FriendsPage.css'
@@ -17,6 +17,24 @@ const sampleRequests = Array.from({ length: 8 }, (_, index) => ({
 }))
 
 const FRIENDS_PER_PAGE = 6
+
+function RemoveFriendDialog({ friend, onCancel, onConfirm }) {
+  const dialogRef = useRef(null)
+  useEffect(() => {
+    const dialog = dialogRef.current
+    dialog.showModal()
+    return () => dialog.close()
+  }, [])
+  return (
+    <dialog ref={dialogRef} className="friends-confirm" aria-labelledby="remove-friend-description" onCancel={onCancel}>
+      <p id="remove-friend-description">Remove <strong>{friend.name}</strong> from your friends?</p>
+      <div className="friends-confirm-actions">
+        <button type="button" className="friends-confirm-button friends-confirm-cancel" aria-label="Cancel removal" title="Cancel" autoFocus onClick={onCancel} />
+        <button type="button" className="friends-confirm-button friends-confirm-remove" aria-label={`Remove ${friend.name}`} title="Remove" onClick={onConfirm} />
+      </div>
+    </dialog>
+  )
+}
 
 function FriendRow({ friend, small = false, onRemove }) {
   return (
@@ -37,6 +55,7 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
   const [search, setSearch] = useState('')
   const [removedIds, setRemovedIds] = useState([])
   const [page, setPage] = useState(0)
+  const [pendingRemoval, setPendingRemoval] = useState(null)
   const remainingFriends = friends.filter((friend) => !removedIds.includes(friend.id))
   const pageCount = Math.max(1, Math.ceil(remainingFriends.length / FRIENDS_PER_PAGE))
   const currentPage = Math.min(page, pageCount - 1)
@@ -67,7 +86,7 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
       </button>
       <div className="friends-list" role="region" aria-label="Friends list">
         <div className="friends-rows">
-          {pageFriends.map((friend) => <FriendRow key={friend.id} friend={friend} onRemove={removeFriend} />)}
+          {pageFriends.map((friend) => <FriendRow key={friend.id} friend={friend} onRemove={() => setPendingRemoval(friend)} />)}
           {remainingFriends.length === 0 && <p className="friends-empty">No friends yet.</p>}
         </div>
       </div>
@@ -97,6 +116,17 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
       <Link to="/" aria-label="Return to home page" className="friends-home">
         <img src={images.Mainmenubutton} alt="Main menu" />
       </Link>
+      {pendingRemoval && (
+        <RemoveFriendDialog
+          friend={pendingRemoval}
+          onCancel={() => setPendingRemoval(null)}
+          onConfirm={() => {
+            removeFriend(pendingRemoval.id)
+            setPendingRemoval(null)
+          }}
+        />
+      )}
     </div>
   )
 }
+

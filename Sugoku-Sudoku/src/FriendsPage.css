@@ -290,3 +290,50 @@
   outline: 2px solid #000;
   outline-offset: 2px;
 }
+
+.friends-confirm {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(310px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  padding: 26px 22px 22px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 17px 14px 19px 13px;
+  background: transparent;
+  isolation: isolate;
+  color: #171614;
+  font-family: var(--font-piedra);
+  text-align: center;
+  overflow: auto;
+}
+.friends-confirm::backdrop { background: rgb(23 22 20 / 45%); }
+.friends-confirm::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('./figmages/FriendConfirmBorder.svg') center / 100% 100% no-repeat;
+  z-index: -1;
+  pointer-events: none;
+}
+.friends-confirm p { font-size: 18px; line-height: 1.5; overflow-wrap: anywhere; }
+.friends-confirm strong { font-weight: 400; }
+.friends-confirm-actions { display: flex; justify-content: center; gap: 44px; margin-top: 22px; }
+.friends-confirm-button {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #79ff69;
+  color: #171614;
+  font: 18px/1 var(--font-piedra);
+  cursor: pointer;
+}
+.friends-confirm-cancel { background: #ff2856; }
+.friends-confirm-remove { background: #79ff69; }
+.friends-confirm-button:hover { filter: brightness(0.94); }
+.friends-confirm-button:focus-visible { outline: 2px solid #171614; outline-offset: 3px; }
