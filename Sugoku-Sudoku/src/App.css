@@ -236,7 +236,24 @@
 }
 
 .profile-arrow {
-  animation: profile-arrow-fade-in 400ms ease both;
+  transition: opacity 400ms ease;
+}
+
+.profile-panel-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+
+.profile-panel-content[data-active='true'] {
+  opacity: 1;
+}
+
+@starting-style {
+  .profile-panel-content[data-active='true'] { opacity: 0; }
 }
 
 @keyframes profile-arrow-fade-in {
@@ -251,9 +268,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .profile-panel,
-  .profile-arrow {
+  .profile-arrow,
+  .profile-panel-content {
     transition: none;
     animation: none;
-    opacity: 1;
   }
 }
