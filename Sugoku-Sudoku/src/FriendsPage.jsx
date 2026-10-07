@@ -29,20 +29,32 @@ function RemoveFriendDialog({ friend, onCancel, onConfirm }) {
     <dialog ref={dialogRef} className="friends-confirm" aria-labelledby="remove-friend-description" onCancel={onCancel}>
       <p id="remove-friend-description">Remove <strong>{friend.name}</strong> from your friends?</p>
       <div className="friends-confirm-actions">
-        <button type="button" className="friends-confirm-button friends-confirm-remove" aria-label={`Remove ${friend.name}`} title="Remove" onClick={onConfirm} />
-        <button type="button" className="friends-confirm-button friends-confirm-cancel" aria-label="Cancel removal" title="Cancel" autoFocus onClick={onCancel} />
+        <button type="button" className="friends-confirm-button friends-confirm-remove" aria-label={`Remove ${friend.name}`} title="Remove" onClick={onConfirm}>
+          <img src={images.confirmIcon} alt="" aria-hidden="true" />
+        </button>
+        <button type="button" className="friends-confirm-button friends-confirm-cancel" aria-label="Cancel removal" title="Cancel" autoFocus onClick={onCancel}>
+          <img src={images.cancelIcon} alt="" aria-hidden="true" />
+        </button>
       </div>
     </dialog>
   )
 }
 
 function FriendRow({ friend, small = false, onRemove }) {
+  const hasRemoveAction = Boolean(onRemove)
+
   return (
     <div className={`friends-row${small ? ' friends-row-small' : ''}`}>
       <span className="friends-avatar" aria-hidden="true" />
       <span className="friends-name">{friend.name}</span>
-      {onRemove ? (
-        <button type="button" className="friends-dot friends-remove" aria-label={`Remove ${friend.name}`} onClick={() => onRemove(friend.id)} />
+      {hasRemoveAction ? (
+        <button type="button" className="friends-remove" aria-label={`Remove ${friend.name}`} onClick={() => onRemove(friend.id)}>
+          <img src={images.cancelIcon} alt="" aria-hidden="true" />
+        </button>
+      ) : small ? (
+        <span className="friends-dot friends-dot-confirm" aria-hidden="true">
+          <img src={images.confirmIcon} alt="" aria-hidden="true" />
+        </span>
       ) : (
         <span className="friends-dot" aria-hidden="true" />
       )}
