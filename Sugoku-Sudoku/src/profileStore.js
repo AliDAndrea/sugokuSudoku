@@ -25,3 +25,15 @@ export async function saveProfile(updates) {
   profile = { ...profile, ...publicUpdates }
   listeners.forEach((listener) => listener())
 }
+
+export async function accessAccount(credentials) {
+  const response = await fetch('/api/account', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials),
+  })
+  const result = await response.json().catch(() => ({ error: 'Start the app with npm run dev to access accounts.' }))
+  if (!response.ok || !result.ok) throw new Error(result.error || 'Could not access account.')
+  profile = result.profile
+  listeners.forEach((listener) => listener())
+}

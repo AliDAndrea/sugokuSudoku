@@ -315,3 +315,20 @@
   outline: 2px solid #171614;
   outline-offset: 3px;
 }
+
+.profile-logout {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  padding: 6px 14px;
+  border: 2px solid #171614;
+  border-radius: 9px 12px 8px 11px;
+  background: #f8f3f2;
+  color: #000;
+  font: 18px var(--font-piedra);
+  cursor: pointer;
+}
+
+.profile-logout:hover { background: #eee9e8; }
+.profile-logout:focus-visible { outline: 2px solid #171614; outline-offset: 3px; }

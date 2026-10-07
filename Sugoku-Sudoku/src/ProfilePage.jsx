@@ -1,5 +1,5 @@
 ﻿import { useLayoutEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import user from './user.js'
 import { saveProfile, useProfile } from './profileStore.js'
@@ -229,6 +229,7 @@ function BackToHome({ left, top, active }) {
 }
 
 export default function ProfilePage() {
+  const navigate = useNavigate()
   const { pathname } = useLocation()
   const view = pathname.endsWith('/change-password')
     ? 'change-password'
@@ -243,6 +244,7 @@ export default function ProfilePage() {
   return (
     <div className="profile-page-transition" style={pageStyle}>
       <img src={images.BgSettings} style={backgroundStyle} alt="" />
+      <button type="button" className="profile-logout" onClick={() => navigate('/sign-in', { replace: true })}>Logout</button>
 
       <ProfileDetails view={view} />
       <ChangePasswordPanel view={view} />

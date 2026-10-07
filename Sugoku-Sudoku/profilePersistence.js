@@ -1,12 +1,17 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { Buffer } from 'node:buffer'
 
+const usernameKey = (username) => username.trim().toLowerCase()
+const publicProfile = ({ username, email, profileImage }) => ({ username, email, profileImage })
+
 export default function profilePersistence(userFile = new URL('./src/user.js', import.meta.url)) {
   let writes = Promise.resolve()
   return {
     name: 'local-profile-persistence',
     configureServer(server) {
-      server.middlewares.use('/api/profile', async (request, response) => {
+      server.middlewares.use('/api', async (request, response, next) => {
+        const route = request.url?.split('?')[0]
+        if (!['/profile', '/account'].includes(route)) return next()
         response.setHeader('Content-Type', 'application/json')
         if (request.method !== 'POST' || !request.headers['content-type']?.startsWith('application/json')) {
           response.statusCode = 405
@@ -18,36 +23,56 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           let size = 0
           for await (const chunk of request) {
             size += chunk.length
-            if (size > 4 * 1024 * 1024) throw new Error('Please choose an image smaller than 3 MB.')
+            if (size > 4 * 1024 * 1024) throw new Error('Request is too large.')
             chunks.push(chunk)
           }
           const updates = JSON.parse(Buffer.concat(chunks).toString())
           if (!updates || typeof updates !== 'object' || Array.isArray(updates)) throw new Error('Invalid profile update.')
+          if ('username' in updates) {
+            if (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 30) throw new Error('Username must contain 1?30 characters.')
+            updates.username = updates.username.trim()
+          }
+          if ('password' in updates && (typeof updates.password !== 'string' || !updates.password.trim())) throw new Error('Password must contain at least 1 character.')
           if ('email' in updates) {
             if (typeof updates.email !== 'string' || updates.email.trim().length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email.trim())) throw new Error('Enter a valid email address.')
             updates.email = updates.email.trim()
           }
-          if ('password' in updates && (typeof updates.password !== 'string' || updates.password.length < 1 || !updates.password.trim())) throw new Error('Password must contain at least 1 character.')
-          if ('username' in updates && (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 30)) {
-            throw new Error('Username must contain 1–30 characters.')
-          }
-          if ('profileImage' in updates && updates.profileImage !== null && (typeof updates.profileImage !== 'string' || !/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(updates.profileImage))) {
-            throw new Error('Choose a PNG, JPEG, WebP, or GIF image.')
-          }
+          if ('profileImage' in updates && updates.profileImage !== null && (typeof updates.profileImage !== 'string' || !/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(updates.profileImage))) throw new Error('Choose a PNG, JPEG, WebP, or GIF image.')
+          if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || !updates.password)) throw new Error('Enter your username and password.')
+          let result
           const write = writes.then(async () => {
-            let source = await readFile(userFile, 'utf8')
-            for (const field of ['username', 'profileImage', 'email', 'password']) {
-              if (!(field in updates)) continue
-              const pattern = new RegExp(`(\\b${field}:\\s*)(?:null|'(?:\\\\.|[^'\\\\])*'|"(?:\\\\.|[^"\\\\])*")`)
-              if (!pattern.test(source)) throw new Error(`Cannot find ${field} in user.js.`)
-              const value = field === 'username' ? updates[field].trim() : updates[field]
-              source = source.replace(pattern, (_, prefix) => prefix + JSON.stringify(value))
+            const source = await readFile(userFile, 'utf8')
+            const { default: saved } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
+            const { accounts: savedAccounts, ...current } = structuredClone(saved)
+            const accounts = savedAccounts || [current]
+            const currentIndex = accounts.findIndex((account) => usernameKey(account.username) === usernameKey(current.username))
+            if (currentIndex >= 0) accounts[currentIndex] = current
+            else accounts.push(current)
+            let selected
+            if (route === '/account') {
+              const existing = accounts.find((account) => usernameKey(account.username) === usernameKey(updates.username))
+              if (updates.action === 'signup') {
+                if (existing) throw new Error('That username is already taken. Choose another username.')
+                selected = { username: updates.username, password: updates.password, email: '', profileImage: null, level: 1, dailyStreak: 0, puzzlesCompleted: 0, fastestTime: 0, totalXp: 0 }
+                accounts.push(selected)
+              } else {
+                if (!existing || existing.password !== updates.password) throw new Error('Incorrect username or password.')
+                selected = existing
+              }
+            } else {
+              if ('username' in updates && accounts.some((account, index) => index !== currentIndex && usernameKey(account.username) === usernameKey(updates.username))) throw new Error('That username is already taken. Choose another username.')
+              selected = { ...current }
+              for (const field of ['username', 'email', 'password', 'profileImage']) {
+                if (field in updates) selected[field] = updates[field]
+              }
+              accounts[currentIndex] = selected
             }
-            await writeFile(userFile, source, 'utf8')
+            await writeFile(userFile, `const user = ${JSON.stringify({ ...selected, accounts }, null, 2)}\n\nexport default user\n`, 'utf8')
+            result = publicProfile(selected)
           })
           writes = write.catch(() => {})
           await write
-          response.end(JSON.stringify({ ok: true }))
+          response.end(JSON.stringify({ ok: true, profile: result }))
         } catch (error) {
           response.statusCode = 400
           response.end(JSON.stringify({ error: error.message }))

@@ -6,6 +6,7 @@ import BoardCreatorPage from './BoardCreatorPage.jsx'
 import BoardPage from './BoardPage.jsx'
 import ShopPage from './ShopPage.jsx'
 import ProfilePage from './ProfilePage.jsx'
+import AuthPage from './AuthPage.jsx'
 
 export default function App() {
 	return (
@@ -19,6 +20,8 @@ export default function App() {
 			<Route path="/shop/pens" element={<ShopPage key="pens" initialTab="pens" />} />
 			<Route path="/shop/packs" element={<ShopPage key="packs" initialTab="packs" />} />
 			<Route path="/shop/currency" element={<ShopPage key="currency" initialTab="currency" />} />
+			<Route path="/sign-in" element={<AuthPage />} />
+			<Route path="/sign-up" element={<AuthPage />} />
 			<Route path="/profile" element={<ProfilePage />} />
 			<Route path="/profile/change-password" element={<ProfilePage />} />
 			<Route path="/profile/change-email" element={<ProfilePage />} />
