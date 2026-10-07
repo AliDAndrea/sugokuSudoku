@@ -121,64 +121,94 @@ function ReplacementNotebook({ src, alt }) {
   )
 }
 
+function ProfileInput({ label, top, ...props }) {
+  return (
+    <label style={{ position: 'absolute', left: '28px', top, width: '280px', fontSize: '22px' }}>
+      {label}
+      <span className="profile-input-frame">
+        <input {...props} required className="profile-input" />
+      </span>
+    </label>
+  )
+}
+
+function ProfileConfirm({ top, saving, label = 'Confirm' }) {
+  return <button type="submit" disabled={saving} aria-label={label} style={{ position: 'absolute', left: '140px', top, width: '180px', height: '60px', padding: 0, border: 0, background: 'transparent', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
+    <img src={images.ConfirmButton} alt={label} style={{ width: '100%', height: '100%' }} />
+  </button>
+}
+
 function ChangePasswordPanel({ view }) {
   const active = view === 'change-password'
-  const position = {
-    left: '-2px',
-    top: active ? '188px' : view === 'change-email' ? '191px' : '525px',
+  const [password, setPassword] = useState('')
+  const [confirmation, setConfirmation] = useState('')
+  const [status, setStatus] = useState('')
+  const [saving, setSaving] = useState(false)
+  const submit = async (event) => {
+    event.preventDefault()
+    if (saving) return
+    if (password !== confirmation) { setStatus('Passwords must match.'); return }
+    setSaving(true)
+    try {
+      await saveProfile({ password })
+      setPassword('')
+      setConfirmation('')
+      setStatus('Password changed.')
+    } catch (error) { setStatus(error.message) }
+    finally { setSaving(false) }
   }
-
   return (
-    <div className="profile-panel" style={{ ...position, width: '100%', height: '562px', position: 'absolute', zIndex: 1 }}>
+    <div className="profile-panel" style={{ left: '-2px', top: active ? '188px' : view === 'change-email' ? '191px' : '525px', width: '100%', height: '562px', position: 'absolute', zIndex: 1 }}>
       <ReplacementNotebook src={images.PasswordPage} alt="Change password" />
       <BackToHome left="12px" top="11px" active={active} />
-      {active && <img
-            src={images.ConfirmButton}
-            style={{ width: '180px', height: '60px', position: 'absolute', left: '140px', top: '297px', maxWidth: 'none' }}
-            alt="Confirm"
-          />}
-      <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
-          <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '25px', width: '154px', height: '33px', position: 'absolute', left: '28px', top: '168px', whiteSpace: 'nowrap' }}>
-            New Password:
-          </p>
-          <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '25px', width: '239px', height: '33px', position: 'absolute', left: '28px', top: '227px', whiteSpace: 'nowrap' }}>
-            Confirm New Password:
-          </p>
-      </div>
-      {!active && (
-        <Link to="/profile/change-password" aria-label="Change password" style={{ position: 'absolute', inset: 0, display: 'block' }} />
-      )}
+      <form onSubmit={submit} className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
+        <ProfileInput label="New Password:" top="150px" type="password" autoComplete="new-password" minLength={1} value={password} onChange={(event) => setPassword(event.target.value)} disabled={saving} />
+        <ProfileInput label="Confirm New Password:" top="224px" type="password" autoComplete="new-password" minLength={1} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={saving} />
+        <ProfileConfirm top="305px" saving={saving} label="Confirm password change" />
+        <p role="status" style={{ position: 'absolute', left: '28px', top: '375px', width: '345px', fontSize: '16px' }}>{saving ? 'Saving?' : status || 'Use at least 1 character.'}</p>
+      </form>
+      {!active && <Link to="/profile/change-password" aria-label="Change password" style={{ position: 'absolute', inset: 0, display: 'block' }} />}
     </div>
   )
 }
 
 function ChangeEmailPanel({ view }) {
   const active = view === 'change-email'
-  const position = {
-    left: view === 'profile' ? '-4px' : '-5px',
-    top: active ? '361px' : view === 'change-password' ? '686px' : '690px',
+  const profile = useProfile()
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState('')
+  const [saving, setSaving] = useState(false)
+  const submit = async (event, field) => {
+    event.preventDefault()
+    if (saving) return
+    const value = (field === 'username' ? username : email).trim()
+    if (field === 'username' && !value) { setStatus('Enter a username.'); return }
+    setSaving(true)
+    try {
+      await saveProfile({ [field]: value })
+      if (field === 'username') setUsername('')
+      else setEmail('')
+      setStatus(field === 'username' ? 'Username changed.' : 'Email changed.')
+    } catch (error) { setStatus(error.message) }
+    finally { setSaving(false) }
   }
-
   return (
-    <div className="profile-panel" style={{ ...position, width: '413px', height: '573px', position: 'absolute', zIndex: 2 }}>
-      <ReplacementNotebook src={images.PersonalInfoPage} alt="Change email" />
+    <div className="profile-panel" style={{ left: view === 'profile' ? '-4px' : '-5px', top: active ? '361px' : view === 'change-password' ? '686px' : '690px', width: '413px', height: '573px', position: 'absolute', zIndex: 2 }}>
+      <ReplacementNotebook src={images.PersonalInfoPage} alt="Personal info" />
       <BackToHome left="15px" top="12px" active={active} />
-      {active && <img
-            src={images.ConfirmButton}
-            style={{ width: '180px', height: '60px', position: 'absolute', left: '145px', top: '262px', maxWidth: 'none' }}
-            alt="Confirm"
-          />}
       <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
-          <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '25px', width: '112px', height: '33px', position: 'absolute', left: '25px', top: '111px', whiteSpace: 'nowrap' }}>
-            New Email:
-          </p>
-          <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '25px', width: '187px', height: '33px', position: 'absolute', left: '25px', top: '171px', whiteSpace: 'nowrap' }}>
-            Confirmation Code:
-          </p>
+        <form onSubmit={(event) => submit(event, 'username')}>
+          <ProfileInput label="New Username:" top="100px" type="text" autoComplete="username" maxLength={30} placeholder={profile.username} value={username} onChange={(event) => setUsername(event.target.value)} disabled={saving} />
+          <ProfileConfirm top="173px" saving={saving} label="Confirm username change" />
+        </form>
+        <form onSubmit={(event) => submit(event, 'email')}>
+          <ProfileInput label="New Email:" top="251px" type="email" autoComplete="email" maxLength={254} pattern={'[^\\s@]+@[^\\s@]+\\.[^\\s@]+'} placeholder={profile.email} value={email} onChange={(event) => setEmail(event.target.value)} disabled={saving} />
+          <ProfileConfirm top="324px" saving={saving} label="Confirm email change" />
+        </form>
+        <p role="status" style={{ position: 'absolute', left: '28px', top: '396px', width: '345px', fontSize: '16px' }}>{saving ? 'Saving?' : status}</p>
       </div>
-      {!active && (
-        <Link to="/profile/change-email" aria-label="Change email" style={{ position: 'absolute', inset: 0, display: 'block' }} />
-      )}
+      {!active && <Link to="/profile/change-email" aria-label="Open personal info" style={{ position: 'absolute', inset: 0, display: 'block' }} />}
     </div>
   )
 }

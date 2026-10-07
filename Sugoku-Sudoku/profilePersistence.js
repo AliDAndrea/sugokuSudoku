@@ -22,6 +22,12 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
             chunks.push(chunk)
           }
           const updates = JSON.parse(Buffer.concat(chunks).toString())
+          if (!updates || typeof updates !== 'object' || Array.isArray(updates)) throw new Error('Invalid profile update.')
+          if ('email' in updates) {
+            if (typeof updates.email !== 'string' || updates.email.trim().length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email.trim())) throw new Error('Enter a valid email address.')
+            updates.email = updates.email.trim()
+          }
+          if ('password' in updates && (typeof updates.password !== 'string' || updates.password.length < 1 || !updates.password.trim())) throw new Error('Password must contain at least 1 character.')
           if ('username' in updates && (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 30)) {
             throw new Error('Username must contain 1–30 characters.')
           }
@@ -30,7 +36,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           }
           const write = writes.then(async () => {
             let source = await readFile(userFile, 'utf8')
-            for (const field of ['username', 'profileImage']) {
+            for (const field of ['username', 'profileImage', 'email', 'password']) {
               if (!(field in updates)) continue
               const pattern = new RegExp(`(\\b${field}:\\s*)(?:null|'(?:\\\\.|[^'\\\\])*'|"(?:\\\\.|[^"\\\\])*")`)
               if (!pattern.test(source)) throw new Error(`Cannot find ${field} in user.js.`)

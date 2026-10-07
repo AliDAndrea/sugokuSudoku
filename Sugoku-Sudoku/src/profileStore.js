@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import user from './user.js'
 
-let profile = { username: user.username, profileImage: user.profileImage }
+let profile = { username: user.username, profileImage: user.profileImage, email: user.email }
 const listeners = new Set()
 const subscribe = (listener) => {
   listeners.add(listener)
@@ -20,6 +20,8 @@ export async function saveProfile(updates) {
   })
   const result = await response.json().catch(() => ({ error: 'Start the app with npm run dev to save to user.js.' }))
   if (!response.ok || !result.ok) throw new Error(result.error || 'Could not save profile.')
-  profile = { ...profile, ...updates }
+  const { password: _password, ...publicUpdates } = updates
+  void _password
+  profile = { ...profile, ...publicUpdates }
   listeners.forEach((listener) => listener())
 }
