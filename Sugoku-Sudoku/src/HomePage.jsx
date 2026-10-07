@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import './App.css'
 import { mainPen } from './PenItem.jsx'
+import { useProfile } from './profileStore.js'
 
 // Import All Images
 import * as images from './figmages/index.js'
 
 export default function HomePage() {
+  const profile = useProfile()
   return (
     <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
       <img
@@ -31,7 +33,9 @@ export default function HomePage() {
         to="/profile"
         aria-label="Open profile"
         style={{ width: '50px', height: '50px', position: 'absolute', right: '8px', top: '8px', borderRadius: '50%', backgroundColor: '#F8F3F2', border: '2px solid #000', boxSizing: 'border-box', display: 'block', zIndex: 10 }}
-      />
+      >
+        {profile.profileImage && <img src={profile.profileImage} alt={`${profile.username}'s profile`} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }} />}
+      </Link>
       <Link
         to="/puzzle-reserve"
         aria-label="Open puzzle reserve"
