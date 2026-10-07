@@ -3,23 +3,23 @@ import * as images from './figmages/index.js'
 export const penItems = [
   {
     name: 'Multi Pen',
-    fontType: 'Piedra',
-    boldness: 'bold',
+    fontType: 'Victor Mono',
+    boldness: 'normal',
     image: images.MultiPen,
     price: 100,
     owned: false,
   },
   {
     name: 'Crayon Pen',
-    fontType: 'Piedra',
-    boldness: 'normal',
+    fontType: 'Chivo Mono',
+    boldness: 'black',
     image: images.CrayonPen,
     price: 50,
     owned: false,
   },
   {
     name: 'Brush Pen',
-    fontType: 'Piedra',
+    fontType: 'Xanh Mono',
     boldness: 'normal',
     image: images.BrushPen,
     price: 75,

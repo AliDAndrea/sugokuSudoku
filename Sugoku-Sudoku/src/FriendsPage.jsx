@@ -29,8 +29,8 @@ function RemoveFriendDialog({ friend, onCancel, onConfirm }) {
     <dialog ref={dialogRef} className="friends-confirm" aria-labelledby="remove-friend-description" onCancel={onCancel}>
       <p id="remove-friend-description">Remove <strong>{friend.name}</strong> from your friends?</p>
       <div className="friends-confirm-actions">
-        <button type="button" className="friends-confirm-button friends-confirm-cancel" aria-label="Cancel removal" title="Cancel" autoFocus onClick={onCancel} />
         <button type="button" className="friends-confirm-button friends-confirm-remove" aria-label={`Remove ${friend.name}`} title="Remove" onClick={onConfirm} />
+        <button type="button" className="friends-confirm-button friends-confirm-cancel" aria-label="Cancel removal" title="Cancel" autoFocus onClick={onCancel} />
       </div>
     </dialog>
   )
@@ -129,4 +129,3 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
     </div>
   )
 }
-

@@ -109,7 +109,7 @@ function PensContent({ ownedPens, onBuyPen }) {
       {ownedPens.has(selectedPen.name) ? (
         <img
           src={images.BoughtLabel}
-          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '677px', maxWidth: 'none', zIndex: 2 }}
+          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '690px', maxWidth: 'none', zIndex: 2 }}
           alt="Pen already bought"
         />
       ) : (
@@ -122,7 +122,7 @@ function PensContent({ ownedPens, onBuyPen }) {
           <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
         </button>
       )}
-      <div style={{ color: '#000', fontFamily: "'Intel One Mono', monospace", fontSize: '40px', lineHeight: 1, width: '155px', height: '182px', position: 'absolute', left: '70px', top: '691px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(3, 1fr)', placeItems: 'center' }}>
+      <div style={{ color: '#000', fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness, fontSize: '40px', lineHeight: 1, width: '155px', height: '182px', position: 'absolute', left: '70px', top: '691px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(3, 1fr)', placeItems: 'center' }}>
         {Array.from({ length: 9 }, (_, index) => (
           <span key={index}>{index + 1}</span>
         ))}
@@ -141,7 +141,7 @@ function PacksContent() {
       />
       <img
         src={images.BoughtLabel}
-        style={{ width: "360px", height: "180px", position: "absolute", left: "26px", top: "677px", maxWidth: "none" }}
+        style={{ width: "360px", height: "180px", position: "absolute", left: "26px", top: "690px", maxWidth: "none" }}
         alt="BoughtLabel"
       />
       <img
