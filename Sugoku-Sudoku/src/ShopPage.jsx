@@ -173,6 +173,26 @@ function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName })
 }
 
 function PacksContent() {
+  const packs = [
+    { id: 'pack-1', price: 100, difficulty: 'Easy', type: 'Classic', bought: true, left: 59, top: 172 },
+    { id: 'pack-2', price: 150, difficulty: 'Easy', type: 'Chaos', bought: false, left: 185, top: 172 },
+    { id: 'pack-5', price: 200, difficulty: 'Easy', type: 'Killer', bought: false, left: 311, top: 172 },
+    { id: 'pack-3', price: 150, difficulty: 'Hard', type: 'Chaos', bought: false, left: 185, top: 380 },
+    { id: 'pack-4', price: 200, difficulty: 'Hard', type: 'Classic', bought: false, left: 59, top: 380 },
+    { id: 'pack-6', price: 200, difficulty: 'Hard', type: 'Killer', bought: false, left: 311, top: 380 },
+    { id: 'pack-8', price: 0, difficulty: 'Normal', type: 'Classic', bought: false, left: 59, top: 276 },
+    { id: 'pack-7', price: 0, difficulty: 'Normal', type: 'Chaos', bought: false, left: 185, top: 276 },
+    { id: 'pack-13', price: 0, difficulty: 'Normal', type: 'Killer', bought: false, left: 311, top: 276 },
+    { id: 'pack-9', price: 0, difficulty: 'Expert', type: 'Chaos', bought: false, left: 185, top: 484 },
+    { id: 'pack-10', price: 0, difficulty: 'Expert', type: 'Classic', bought: false, left: 59, top: 484 },
+    { id: 'pack-11', price: 0, difficulty: 'Impossible', type: 'Chaos', bought: false, left: 185, top: 588 },
+    { id: 'pack-12', price: 0, difficulty: 'Impossible', type: 'Classic', bought: false, left: 59, top: 588 },
+    { id: 'pack-14', price: 0, difficulty: 'Expert', type: 'Killer', bought: false, left: 311, top: 484 },
+    { id: 'pack-15', price: 0, difficulty: 'Impossible', type: 'Killer', bought: false, left: 311, top: 588 },
+  ]
+  const [selectedPackId, setSelectedPackId] = useState(packs[0].id)
+  const selectedPack = packs.find((pack) => pack.id === selectedPackId)
+
   return (
     <>
       <img
@@ -180,86 +200,35 @@ function PacksContent() {
         style={{ width: "438px", height: "591px", position: "absolute", left: "-12px", top: "87px", maxWidth: "none" }}
         alt="PacksTabBackground"
       />
-      <img
-        src={images.BoughtLabel}
-        style={{ width: "360px", height: "180px", position: "absolute", left: "26px", top: "690px", maxWidth: "none" }}
-        alt="BoughtLabel"
-      />
-      <img
-        src={images.ChallangePackTemplate}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "59px", top: "172px", maxWidth: "none" }}
-        alt="UnlockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "185px", top: "172px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "185px", top: "380px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "59px", top: "380px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "311px", top: "172px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "311px", top: "380px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "185px", top: "276px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "59px", top: "276px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "185px", top: "484px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "59px", top: "484px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "185px", top: "588px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "59px", top: "588px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "311px", top: "276px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "311px", top: "484px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
-      <img
-        src={images.Lockedboard}
-        style={{ width: "75px", height: "75px", position: "absolute", left: "311px", top: "588px", maxWidth: "none" }}
-        alt="LockedBoard"
-      />
+      {packs.map((pack) => (
+        <button
+          key={pack.id}
+          type="button"
+          aria-label={`Select ${pack.difficulty} ${pack.type} pack, S ${pack.price}${pack.bought ? ', bought' : ''}`}
+          aria-pressed={selectedPackId === pack.id}
+          onClick={() => setSelectedPackId(pack.id)}
+          style={{ width: '75px', height: '75px', position: 'absolute', left: `${pack.left}px`, top: `${pack.top}px`, padding: 0, border: 0, background: 'transparent', cursor: 'pointer' }}
+        >
+          <img
+            src={pack.bought ? images.ChallangePackTemplate : images.Lockedboard}
+            style={{ width: '75px', height: '75px', maxWidth: 'none' }}
+            alt=""
+          />
+        </button>
+      ))}
+      {selectedPack.bought && (
+        <img
+          src={images.BoughtLabel}
+          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '690px', maxWidth: 'none' }}
+          alt="Pack already bought"
+        />
+      )}
+      <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '20px', lineHeight: '1.1', width: '205px', position: 'absolute', left: '35px', top: '704px' }}>
+        {selectedPack.difficulty} {selectedPack.type}
+      </p>
+      <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '48px', lineHeight: '1', width: '146px', height: '26px', position: 'absolute', left: '250px', top: '705px' }}>
+        S {selectedPack.price}
+      </p>
     </>
   )
 }
