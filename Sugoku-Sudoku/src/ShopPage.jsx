@@ -5,6 +5,8 @@ import { penItems } from './PenItem.jsx'
 import { isSupabaseEnabled, saveProfile, spendSudo, useProfile, waitForSudoBalance } from './profileStore.js'
 import { canPurchaseSudoInApp, getSudoStoreProducts, purchaseSudoProduct, sudoProducts } from './sudoPurchases.js'
 
+const SUDO_PURCHASES_ON_HOLD = true
+
 const tabs = [
   { id: 'pens', label: 'Pens', image: images.Penstab, left: 75 },
   { id: 'packs', label: 'Packs', image: images.Packstab, left: 184 },
@@ -347,7 +349,7 @@ function CurrencyContent({ profile, onBuyOffer }) {
 
   useEffect(() => {
     let active = true
-    if (!profile.authUserId || !canPurchaseSudoInApp()) return () => { active = false }
+    if (SUDO_PURCHASES_ON_HOLD || !profile.authUserId || !canPurchaseSudoInApp()) return () => { active = false }
     getSudoStoreProducts(profile.authUserId)
       .then((products) => {
         if (active) {
@@ -365,7 +367,7 @@ function CurrencyContent({ profile, onBuyOffer }) {
   const storePrices = storePriceState.userId === profile.authUserId ? storePriceState.prices : {}
   const isSignedOut = isSupabaseEnabled && !profile.authUserId
   const isSelectedSudoUnavailable = selectedOffer.kind === 'sudo'
-    && (!profile.authUserId || !canPurchaseSudoInApp() || !storePrices[selectedOffer.id])
+    && (SUDO_PURCHASES_ON_HOLD || !profile.authUserId || !canPurchaseSudoInApp() || !storePrices[selectedOffer.id])
 
   async function buySelectedOffer() {
     setIsPurchasing(true)
@@ -404,7 +406,7 @@ function CurrencyContent({ profile, onBuyOffer }) {
           <button
             key={offer.id}
             type="button"
-            aria-label={isHintOffer ? `${offer.amount} hints for S ${offer.price}` : `Buy S ${offer.amount} for ${storePrices[offer.id] ?? 'store price unavailable'}`}
+            aria-label={isHintOffer ? `${offer.amount} hints for S ${offer.price}` : `S ${offer.amount}, Coming soon`}
             aria-pressed={selectedOfferId === offer.id}
             onClick={() => setSelectedOfferId(offer.id)}
             style={{ width: `${width}px`, height: `${height}px`, position: 'absolute', left: `${offer.left}px`, top: `${offer.top}px`, padding: 0, border: 0, background: 'transparent', cursor: 'pointer', filter: selectedOfferId === offer.id ? 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7))' : 'none' }}
@@ -436,24 +438,15 @@ function CurrencyContent({ profile, onBuyOffer }) {
       <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: selectedOffer.kind === 'hints' ? '48px' : '26px', lineHeight: 1, width: '146px', height: '52px', position: 'absolute', left: '250px', top: '705px', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         {selectedOffer.kind === 'hints'
           ? `S ${selectedOffer.price}`
-          : storePrices[selectedOffer.id] ?? (isSignedOut ? 'Sign in' : canPurchaseSudoInApp() ? 'Store unavailable' : 'Mobile app only')}
+          : SUDO_PURCHASES_ON_HOLD
+            ? 'Coming soon'
+            : storePrices[selectedOffer.id] ?? (isSignedOut ? 'Sign in' : canPurchaseSudoInApp() ? 'Store unavailable' : 'Mobile app only')}
       </p>
-      {selectedOffer.kind === 'sudo' && isSelectedSudoUnavailable && (
-        <p role="status" style={{ color: '#333', fontSize: '13px', position: 'absolute', left: '14px', top: '800px', width: '210px', zIndex: 3 }}>
-          {!isSupabaseEnabled
-            ? 'Cloud account setup required.'
-            : isSignedOut
-              ? 'Sign in to buy Sudo.'
-              : !canPurchaseSudoInApp()
-                ? 'Sudo is available in the iOS or Android app.'
-                : 'This product is not available in the store.'}
-        </p>
-      )}
       <button
         type="button"
         aria-label={selectedOffer.kind === 'hints'
           ? `Buy ${selectedOffer.amount} hints for S ${selectedOffer.price}`
-          : `Buy S ${selectedOffer.amount} for ${storePrices[selectedOffer.id] ?? 'store price unavailable'}`}
+          : `S ${selectedOffer.amount}, Coming soon`}
         onClick={buySelectedOffer}
         disabled={isPurchasing
           || isSignedOut
