@@ -14,11 +14,24 @@ export default function ShopPage({ initialTab = 'pens' }) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const profile = useProfile()
   const ownedPens = new Set(profile.ownedPens || ['Pencil Pen'])
+  const ownedPacks = new Set(profile.ownedPacks || ['pack-E_1'])
 
   async function onBuyPen(pen) {
+    if (ownedPens.has(pen.name)) return
+    if (profile.sudo < pen.price) throw new Error()
     await saveProfile({
+      sudo: profile.sudo - pen.price,
       selectedPen: pen.name,
       ownedPens: [...new Set([...ownedPens, pen.name])],
+    })
+  }
+
+  async function onBuyPack(pack) {
+    if (ownedPacks.has(pack.id)) return
+    if (profile.sudo < pack.price) throw new Error()
+    await saveProfile({
+      sudo: profile.sudo - pack.price,
+      ownedPacks: [...new Set([...ownedPacks, pack.id])],
     })
   }
 
@@ -49,7 +62,7 @@ export default function ShopPage({ initialTab = 'pens' }) {
             onSelectOwnedPen={(pen) => saveProfile({ selectedPen: pen.name })}
           />
         )}
-        {activeTab === 'packs' && <PacksContent />}
+        {activeTab === 'packs' && <PacksContent ownedPacks={ownedPacks} onBuyPack={onBuyPack} level={profile.level} />}
         {activeTab === 'currency' && <CurrencyContent />}
       </div>
       {activeTab !== 'pens' && (
@@ -172,26 +185,45 @@ function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName })
   )
 }
 
-function PacksContent() {
+function PacksContent({ ownedPacks, onBuyPack, level }) {
   const packs = [
-    { id: 'pack-1', price: 100, difficulty: 'Easy', type: 'Classic', bought: true, left: 59, top: 172 },
-    { id: 'pack-2', price: 150, difficulty: 'Easy', type: 'Chaos', bought: false, left: 185, top: 172 },
-    { id: 'pack-5', price: 200, difficulty: 'Easy', type: 'Killer', bought: false, left: 311, top: 172 },
-    { id: 'pack-3', price: 150, difficulty: 'Hard', type: 'Chaos', bought: false, left: 185, top: 380 },
-    { id: 'pack-4', price: 200, difficulty: 'Hard', type: 'Classic', bought: false, left: 59, top: 380 },
-    { id: 'pack-6', price: 200, difficulty: 'Hard', type: 'Killer', bought: false, left: 311, top: 380 },
-    { id: 'pack-8', price: 0, difficulty: 'Normal', type: 'Classic', bought: false, left: 59, top: 276 },
-    { id: 'pack-7', price: 0, difficulty: 'Normal', type: 'Chaos', bought: false, left: 185, top: 276 },
-    { id: 'pack-13', price: 0, difficulty: 'Normal', type: 'Killer', bought: false, left: 311, top: 276 },
-    { id: 'pack-9', price: 0, difficulty: 'Expert', type: 'Chaos', bought: false, left: 185, top: 484 },
-    { id: 'pack-10', price: 0, difficulty: 'Expert', type: 'Classic', bought: false, left: 59, top: 484 },
-    { id: 'pack-11', price: 0, difficulty: 'Impossible', type: 'Chaos', bought: false, left: 185, top: 588 },
-    { id: 'pack-12', price: 0, difficulty: 'Impossible', type: 'Classic', bought: false, left: 59, top: 588 },
-    { id: 'pack-14', price: 0, difficulty: 'Expert', type: 'Killer', bought: false, left: 311, top: 484 },
-    { id: 'pack-15', price: 0, difficulty: 'Impossible', type: 'Killer', bought: false, left: 311, top: 588 },
+    { id: 'pack-E_1', price: 100, difficulty: 'Easy', requiredLevel: 0, type: 'Classic', bought: true, left: 59, top: 172 },
+    { id: 'pack-E_2', price: 110, difficulty: 'Easy', requiredLevel: 0, type: 'Chaos', bought: false, left: 185, top: 172 },
+    { id: 'pack-E_3', price: 120, difficulty: 'Easy', requiredLevel: 0, type: 'Killer', bought: false, left: 311, top: 172 },
+    { id: 'pack-H_1', price: 150, difficulty: 'Hard', requiredLevel: 10, type: 'Chaos', bought: false, left: 185, top: 380 },
+    { id: 'pack-H_2', price: 160, difficulty: 'Hard', requiredLevel: 10, type: 'Classic', bought: false, left: 59, top: 380 },
+    { id: 'pack-H_3', price: 180, difficulty: 'Hard', requiredLevel: 10, type: 'Killer', bought: false, left: 311, top: 380 },
+    { id: 'pack-N_1', price: 200, difficulty: 'Normal', requiredLevel: 5, type: 'Classic', bought: false, left: 59, top: 276 },
+    { id: 'pack-N_2', price: 220, difficulty: 'Normal', requiredLevel: 5, type: 'Chaos', bought: false, left: 185, top: 276 },
+    { id: 'pack-N_3', price: 240, difficulty: 'Normal', requiredLevel: 5, type: 'Killer', bought: false, left: 311, top: 276 },
+    { id: 'pack-EX_1', price: 300, difficulty: 'Expert', requiredLevel: 20, type: 'Classic', bought: false, left: 59, top: 484 },
+    { id: 'pack-EX_2', price: 320, difficulty: 'Expert', requiredLevel: 20, type: 'Chaos', bought: false, left: 185, top: 484 },
+    { id: 'pack-EX_3', price: 350, difficulty: 'Expert', requiredLevel: 20, type: 'Killer', bought: false, left: 311, top: 484 },
+    { id: 'pack-I_1', price: 500, difficulty: 'Impossible', requiredLevel: 40, type: 'Classic', bought: false, left: 59, top: 588 },
+    { id: 'pack-I_2', price: 525, difficulty: 'Impossible', requiredLevel: 40, type: 'Chaos', bought: false, left: 185, top: 588 },
+    { id: 'pack-I_3', price: 550, difficulty: 'Impossible', requiredLevel: 40, type: 'Killer', bought: false, left: 311, top: 588 },
   ]
+  const purchasedPacks = packs.map((pack) => ({ ...pack, bought: pack.bought || ownedPacks.has(pack.id) }))
+  const nextLockedTier = [...packs]
+    .sort((first, second) => first.requiredLevel - second.requiredLevel)
+    .find((pack) => pack.requiredLevel > level)
+  const firstLockedPack = nextLockedTier && packs.find((pack) => pack.requiredLevel === nextLockedTier.requiredLevel)
   const [selectedPackId, setSelectedPackId] = useState(packs[0].id)
-  const selectedPack = packs.find((pack) => pack.id === selectedPackId)
+  const selectedPack = purchasedPacks.find((pack) => pack.id === selectedPackId)
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [purchaseError, setPurchaseError] = useState('')
+
+  async function buySelectedPack() {
+    setIsPurchasing(true)
+    setPurchaseError('')
+    try {
+      await onBuyPack(selectedPack)
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : 'Could not buy this pack.')
+    } finally {
+      setIsPurchasing(false)
+    }
+  }
 
   return (
     <>
@@ -200,7 +232,7 @@ function PacksContent() {
         style={{ width: "438px", height: "591px", position: "absolute", left: "-12px", top: "87px", maxWidth: "none" }}
         alt="PacksTabBackground"
       />
-      {packs.map((pack) => (
+      {purchasedPacks.map((pack) => (
         <button
           key={pack.id}
           type="button"
@@ -216,16 +248,41 @@ function PacksContent() {
           />
         </button>
       ))}
+      {firstLockedPack && (
+        <div
+          aria-label={`Requires level ${firstLockedPack.requiredLevel}`}
+          style={{ position: 'absolute', left: 0, top: `${firstLockedPack.top}px`, width: '100%', height: `${663 - firstLockedPack.top}px`, backgroundColor: 'rgba(0, 0, 0, 0.28)', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--font-piedra)', fontSize: '28px', pointerEvents: 'none' }}
+        >
+          Level {firstLockedPack.requiredLevel} Required
+        </div>
+      )}
       {selectedPack.bought && (
         <img
           src={images.BoughtLabel}
-          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '690px', maxWidth: 'none' }}
+          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '690px', maxWidth: 'none', zIndex: 4 }}
           alt="Pack already bought"
         />
       )}
-      <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '20px', lineHeight: '1.1', width: '205px', position: 'absolute', left: '35px', top: '704px' }}>
-        {selectedPack.difficulty} {selectedPack.type}
-      </p>
+      {!selectedPack.bought && selectedPack.requiredLevel <= level && (
+        <button
+          type="button"
+          aria-label={`Buy ${selectedPack.difficulty} ${selectedPack.type} pack for S ${selectedPack.price}`}
+          onClick={buySelectedPack}
+          disabled={isPurchasing}
+          style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2 }}
+        >
+          <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
+        </button>
+      )}
+      {purchaseError && (
+        <p role="alert" style={{ color: '#a00000', fontSize: '14px', position: 'absolute', left: '20px', top: '830px', zIndex: 3 }}>
+          {purchaseError}
+        </p>
+      )}
+      <div style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '50px', lineHeight: '1', width: '205px', position: 'absolute', left: '20px', top: '710px' }}>
+        <p style={{ margin: 0 }}>{selectedPack.difficulty}</p>
+        <p style={{ margin: 20 }}>{selectedPack.type}</p>
+      </div>
       <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '48px', lineHeight: '1', width: '146px', height: '26px', position: 'absolute', left: '250px', top: '705px' }}>
         S {selectedPack.price}
       </p>
