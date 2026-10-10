@@ -92,3 +92,22 @@
 }
 
 .board-number:disabled, .board-note-toggle:disabled { cursor: default; }
+
+.board-color-control { position: absolute; left: 5px; top: 799px; z-index: 12; }
+.board-color-current, .board-color-option {
+  display: block; position: relative; padding: 0; border: 0;
+  background: transparent; cursor: pointer; width: 55px; height: 55px;
+}
+.board-color-control svg { display: block; width: 100%; height: 100%; }
+.board-color-control button:focus-visible { outline: 3px solid #000; outline-offset: 2px; border-radius: 50%; }
+.board-color-control button:disabled { cursor: default; }
+.board-color-picker {
+  position: absolute; bottom: 65px; left: 0; display: grid;
+  grid-template-columns: repeat(3, 44px); gap: 6px; padding: 10px;
+  background: #f9eae2; border: 3px solid #000; border-radius: 10px 14px 9px 12px;
+  box-shadow: 2px 3px 0 #000;
+}
+.board-color-option { width: 44px; height: 44px; }
+.board-color-option[aria-pressed='true'] { outline: 2px solid #000; outline-offset: 1px; border-radius: 50%; }
+.board-color-option:disabled svg { opacity: .45; }
+.board-color-lock { position: absolute; inset: 0; display: grid; place-items: center; font-size: 18px; }

@@ -66,8 +66,17 @@ export function isNumberComplete(board, number) {
 }
 
 export function boardReducer(state, action) {
-  if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['enter', 'erase', 'toggle-notes'].includes(action.type)) return state
+  if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['enter', 'erase', 'toggle-notes', 'change-color'].includes(action.type)) return state
   switch (action.type) {
+    case 'change-color': {
+      const username = action.user?.username
+      if (!userColors.includes(action.color) || !state.board.colors.some((entry) => entry.user.username === username)) return state
+      if (state.board.colors.some((entry) => entry.user.username !== username && entry.color === action.color)) return state
+      const recolor = (number) => !number.given && number.user?.username === username ? { ...number, color: action.color } : number
+      const colors = state.board.colors.map((entry) => entry.user.username === username ? { ...entry, color: action.color } : entry)
+      const cells = state.board.cells.map((cell) => cell?.kind === 'number' ? recolor(cell) : cell?.kind === 'note' ? { ...cell, numbers: cell.numbers.map(recolor) } : cell)
+      return { ...state, board: { ...state.board, colors, cells } }
+    }
     case 'select':
       return { ...state, selected: state.selected === action.index ? null : action.index }
     case 'deselect':

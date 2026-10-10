@@ -7,6 +7,36 @@ import { createSavedBoard, loadBoard, saveBoard, listBoards, openBoard, boardNam
 const user = { username: 'Guest' }
 const pen = { fontFamily: 'Libertinus Mono', fontWeight: 'normal' }
 
+test('changing board color recolors only the player entries, rejects taken colors, and persists', () => {
+  const other = { username: 'Other' }
+  const board = new Board({ type: 'chaos', user, usersInvited: [other] })
+  board.colors = [{ user, color: userColors[0] }, { user: other, color: userColors[1] }]
+  board.cells[0] = { kind: 'number', number: 1, user, color: userColors[0], pen }
+  board.cells[1] = { kind: 'number', number: 2, user: other, color: userColors[1], pen }
+  board.cells[2] = { kind: 'number', number: 3, given: true, color: '#171614' }
+  board.cells[3] = { kind: 'note', numbers: [{ number: 1, user, color: userColors[0], pen }, { number: 2, user: other, color: userColors[1], pen }] }
+  const initial = createBoardState(board)
+  assert.equal(boardReducer(initial, { type: 'change-color', user, color: userColors[1] }), initial)
+  assert.equal(boardReducer(initial, { type: 'change-color', user, color: 'invalid' }), initial)
+  const updated = boardReducer(initial, { type: 'change-color', user, color: userColors[2] })
+  assert.equal(updated.board.colors[0].color, userColors[2])
+  assert.equal(updated.board.cells[0].color, userColors[2])
+  assert.equal(updated.board.cells[0].pen, pen)
+  assert.equal(updated.board.cells[1], board.cells[1])
+  assert.equal(updated.board.cells[2], board.cells[2])
+  assert.equal(updated.board.cells[3].numbers[0].color, userColors[2])
+  assert.equal(updated.board.cells[3].numbers[1].color, userColors[1])
+  assert.equal(board.cells[0].color, userColors[0])
+  const values = new Map()
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }
+  saveBoard(updated.board, storage)
+  assert.equal(getBoard(board.id, user, storage).cells[0].color, userColors[2])
+  for (const terminal of [{ archived: true }, { completedAt: Date.now() }, { failedAt: Date.now() }]) {
+    const state = createBoardState({ ...board, ...terminal })
+    assert.equal(boardReducer(state, { type: 'change-color', user, color: userColors[2] }), state)
+  }
+})
+
 test('a new board has 81 empty cells and no selection or highlights', () => {
   const state = createBoardState(new Board({ type: 'chaos' }))
   assert.equal(state.board.cells.length, 81)

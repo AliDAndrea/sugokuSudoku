@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { mainPen, penItems } from './PenItem.jsx'
 import { useProfile } from './profileStore.js'
-import { boardReducer, createBoardState, isRelatedCell, isNumberComplete } from './boardState.js'
+import { boardReducer, createBoardState, isRelatedCell, isNumberComplete, userColors } from './boardState.js'
 import { loadBoard, saveBoard } from './boardStore.js'
 import './BoardPage.css'
 
@@ -19,6 +19,13 @@ const boardPenStyle = {
 function LifeHeart({ index, lost }) {
   const [lostOnLoad] = useState(lost)
   return <img src={images.LifeHeart} className="board-life" data-lost={lost} data-animate={lost && !lostOnLoad} aria-hidden={lost} alt={`Life ${index + 1}`} style={{ width: '38px', height: '35px', position: 'absolute', left: `${10 + index * 49}px`, top: '113px', maxWidth: 'none' }} />
+}
+
+function ColorCircle({ color }) {
+  return <svg viewBox="0 0 60 60" aria-hidden="true">
+    <path d="M30 4 C44 3 55 15 55 29 C57 44 44 56 30 55 C15 57 4 44 5 30 C3 16 15 3 30 4 Z" fill={color} stroke="#000" strokeWidth="4" strokeLinejoin="round" />
+    <path d="M29 5 C43 2 57 17 54 31 C56 45 42 57 28 54 C13 55 3 42 6 28 C4 14 17 3 29 5 Z" fill="none" stroke="#000" strokeWidth="1.4" />
+  </svg>
 }
 
 function BoardTimer({ createdAt, endedAt }) {
@@ -45,10 +52,25 @@ export default function BoardPage() {
   const navigate = useNavigate()
   const selectedPen = penItems.find((pen) => pen.name === profile.selectedPen) || mainPen
   const [board, dispatch] = useReducer(boardReducer, profile, (currentUser) => createBoardState(loadBoard(currentUser)))
+  const [colorPickerOpen, setColorPickerOpen] = useState(false)
   const highlightColor = board.board.colors.find(({ user }) => user.username === profile.username)?.color || '#174FC4'
   const selectedCell = board.selected === null ? null : board.board.cells[board.selected]
   const selectedNumber = selectedCell?.kind === 'number' ? selectedCell.number : null
   const pen = { fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness === 'black' ? 900 : selectedPen.boldness }
+
+  useEffect(() => {
+    if (!colorPickerOpen) return
+    const closeOutside = (event) => {
+      if (!event.target.closest?.('[data-board-colors]')) setColorPickerOpen(false)
+    }
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setColorPickerOpen(false) }
+    document.addEventListener('pointerdown', closeOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [colorPickerOpen])
 
   useEffect(() => { saveBoard(board.board) }, [board.board])
   useEffect(() => {
@@ -239,7 +261,20 @@ export default function BoardPage() {
           friendO_135x7
         </p>
       </div>
-      <div style={{ width: "55px", height: "55px", position: "absolute", left: "5px", top: "799px" }}></div>
+      <div className="board-color-control" data-board-colors>
+        <button type="button" className="board-color-current" aria-label="Change your board color" aria-expanded={colorPickerOpen} aria-controls="board-color-picker" disabled={Boolean(board.board.archived || board.board.completedAt || board.board.failedAt || board.board.livesUsed >= 5)} onClick={() => setColorPickerOpen((open) => !open)}>
+          <ColorCircle color={highlightColor} />
+        </button>
+        {colorPickerOpen && <div id="board-color-picker" className="board-color-picker" role="group" aria-label="Choose your board color">
+          {userColors.map((color) => {
+            const owner = board.board.colors.find((entry) => entry.color === color && entry.user.username !== profile.username)
+            return <button key={color} type="button" className="board-color-option" disabled={Boolean(owner)} aria-label={owner ? `${color}, taken by ${owner.user.username}` : `Use ${color}`} aria-pressed={color === highlightColor} title={owner ? `Taken by ${owner.user.username}` : color} onClick={() => { dispatch({ type: 'change-color', color, user: profile }); setColorPickerOpen(false) }}>
+              <ColorCircle color={color} />
+              {owner && <span className="board-color-lock" aria-hidden="true">🔒</span>}
+            </button>
+          })}
+        </div>}
+      </div>
       <p style={{ color: "#000", fontFamily: "'Piedra', serif", fontSize: "60px", lineHeight: "1", width: "42px", height: "44px", position: "absolute", left: "273px", top: "95px" }}>
         {board.board.hintsUsed}
       </p>
