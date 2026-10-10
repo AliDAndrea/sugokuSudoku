@@ -11,7 +11,7 @@ test('completion rewards persist once per board, including simultaneous retries'
   const directory = await mkdtemp(join(tmpdir(), 'sugoku-reward-'))
   try {
     const file = join(directory, 'user.js')
-    await writeFile(file, 'export default { username: "Player", totalXp: 12, level: 1, puzzlesCompleted: 3 }')
+    await writeFile(file, 'export default { username: "Player", totalXp: 12, level: 1, puzzlesCompleted: 3, dailyStreak: 4, fastestTime: 90 }')
     let middleware
     profilePersistence(file).configureServer({ middlewares: { use: (_, handler) => { middleware = handler } } })
     const request = async (updates) => {
@@ -28,6 +28,7 @@ test('completion rewards persist once per board, including simultaneous retries'
     const results = await Promise.all([request({ completedBoardId: 'board-one' }), request({ completedBoardId: 'board-one' })])
     assert.ok(results.every((profile) => profile.totalXp === 17))
     assert.ok(results.every((profile) => profile.puzzlesCompleted === 4))
+    assert.ok(results.every((profile) => profile.dailyStreak === 4 && profile.fastestTime === 90))
     assert.equal((await request({})).puzzlesCompleted, 4)
     assert.equal((await request({})).totalXp, 17)
     assert.equal((await request({ completedBoardId: 'board-two' })).totalXp, 22)

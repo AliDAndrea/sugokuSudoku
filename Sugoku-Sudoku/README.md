@@ -25,7 +25,7 @@ npm run cap:open:ios
 npm run cap:open:android
 ```
 
-Create a `.env` file from `.env.example` and configure a Supabase project. Apply the migration in `supabase/migrations` and deploy the `revenuecat-webhook` Edge Function. Configure email/password authentication in Supabase and set its allowed redirect URLs for the app. Supabase-backed accounts sign up with username, email, and password; accounts stored in the old local `src/user.js` file are not automatically migrated. Set the public RevenueCat SDK keys for each platform in the app environment before building.
+Create a `.env` file from `.env.example` and configure a Supabase project. Apply all migrations in `supabase/migrations` in filename order and deploy the `revenuecat-webhook` Edge Function. The puzzle completion rewards migration adds XP and awards 5 XP plus one completed puzzle per board, with duplicate claims ignored. Configure email/password authentication in Supabase and set its allowed redirect URLs for the app. Supabase-backed accounts sign up with username, email, and password; accounts stored in the old local `src/user.js` file are not automatically migrated. Set the public RevenueCat SDK keys for each platform in the app environment before building.
 
 Create consumable in-app products in App Store Connect and Google Play Console using these product identifiers:
 
