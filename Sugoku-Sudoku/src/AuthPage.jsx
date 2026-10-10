@@ -20,6 +20,14 @@ function AuthNotebook({ signup, active }) {
     event.preventDefault()
     if (saving) return
     const data = new FormData(event.currentTarget)
+    if (!data.get('username').trim()) {
+      setStatus('Enter a username.')
+      return
+    }
+    if (!data.get('password') || (signup && !data.get('confirmation'))) {
+      setStatus(signup ? 'Enter and confirm your password.' : 'Enter your password.')
+      return
+    }
     if (signup && data.get('password') !== data.get('confirmation')) {
       setStatus('Passwords must match.')
       return
@@ -36,12 +44,14 @@ function AuthNotebook({ signup, active }) {
     <div className="auth-paper"><img src={images.BlankPage} alt="" /></div>
     <h1 className="auth-title">{title}</h1>
     <div className="profile-panel-content auth-content" data-active={active} aria-hidden={!active} inert={!active}>
-      <form onSubmit={submit} className="auth-form">
+      <form noValidate onSubmit={submit} onChange={() => setStatus('')} className="auth-form">
         <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} disabled={saving}  />
-        <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={1} />
-        {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={1} />}
-        <button type="submit" className="auth-confirm" disabled={saving} aria-label={title}><img src={images.ConfirmButton} alt="Confirm" /></button>
-        <p role="status" className="auth-status">{saving ? 'Saving?' : status}</p>
+        <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={1} disabled={saving} />
+        {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={1} disabled={saving} />}
+        <div className="auth-actions">
+          <p role="alert" className="auth-status">{status}</p>
+          <button type="submit" className="auth-confirm" disabled={saving} aria-label={title}><img src={images.ConfirmButton} alt="Confirm" /></button>
+        </div>
       </form>
     </div>
     {!active && <Link className="auth-open" to={signup ? '/sign-up' : '/sign-in'} aria-label={`Open ${title.toLowerCase()}`} />}
