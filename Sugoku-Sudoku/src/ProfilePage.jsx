@@ -165,7 +165,7 @@ function ChangePasswordPanel({ view }) {
     finally { setSaving(false) }
   }
   return (
-    <div className="profile-panel" style={{ left: view === 'profile' ? '-4px' : '-5px', top: active ? '361px' : view === 'change-email' ? '686px' : '690px', width: '413px', height: '573px', position: 'absolute', zIndex: 2 }}>
+    <div className="profile-panel profile-password-panel" style={{ left: view === 'profile' ? '-4px' : '-5px', top: active ? '361px' : view === 'change-email' ? '686px' : '690px', width: '413px', height: '573px', position: 'absolute', zIndex: 2 }}>
       <ReplacementNotebook src={images.PasswordPage} alt="Change password" />
       <BackToHome left="12px" top="11px" active={active} />
       <form noValidate onSubmit={submit} className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
@@ -203,7 +203,7 @@ function ChangeEmailPanel({ view }) {
     finally { setSaving(false) }
   }
   return (
-    <div className="profile-panel" style={{ left: '-1px', top: active ? '188px' : view === 'change-password' ? '191px' : '525px', width: '100%', height: '562px', position: 'absolute', zIndex: 1 }}>
+    <div className="profile-panel profile-personal-info-panel" style={{ left: '-1px', top: active ? '188px' : view === 'change-password' ? '191px' : '525px', width: '100%', height: '562px', position: 'absolute', zIndex: 1 }}>
       <ReplacementNotebook src={images.PersonalInfoPage} alt="Personal info" />
       <BackToHome left="15px" top="12px" active={active} />
       <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
@@ -237,6 +237,8 @@ function BackToHome({ left, top, active }) {
   )
 }
 
+const profileViewOrder = { profile: 0, 'change-email': 1, 'change-password': 2 }
+
 export default function ProfilePage() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -245,13 +247,20 @@ export default function ProfilePage() {
     : pathname.endsWith('/change-email')
       ? 'change-email'
       : 'profile'
+  const [transition, setTransition] = useState({ view, direction: 'up' })
+  if (transition.view !== view) {
+    setTransition({
+      view,
+      direction: profileViewOrder[view] < profileViewOrder[transition.view] ? 'down' : 'up',
+    })
+  }
 
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [view])
 
   return (
-    <div className="profile-page-transition" style={pageStyle}>
+    <div className="profile-page-transition" data-view={view} data-direction={transition.direction} style={pageStyle}>
       <img src={images.BgSettings} style={backgroundStyle} alt="" />
       <button type="button" className="profile-logout" onClick={() => navigate('/sign-in', { replace: true })}>Logout</button>
 

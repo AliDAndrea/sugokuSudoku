@@ -235,6 +235,11 @@
   transition: left 400ms ease, top 400ms ease;
 }
 
+.profile-page-transition[data-direction='up'] .profile-password-panel,
+.profile-page-transition[data-direction='down'] .profile-personal-info-panel {
+  transition-delay: 100ms;
+}
+
 .profile-arrow {
   transition: opacity 400ms ease;
 }
