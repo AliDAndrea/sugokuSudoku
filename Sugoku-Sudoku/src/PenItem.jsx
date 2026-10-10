@@ -27,7 +27,7 @@ export const penItems = [
   },
   {
     name: 'Cheap Pen',
-    fontType: 'Piedra',
+    fontType: 'LXGW WenKai Mono TC',
     boldness: 'normal',
     image: images.CheapPen,
     price: 25,
@@ -35,7 +35,7 @@ export const penItems = [
   },
   {
     name: 'Ink Pen',
-    fontType: 'Piedra',
+    fontType: 'Oxygen Mono',
     boldness: 'normal',
     image: images.InkPen,
     price: 125,
@@ -43,15 +43,15 @@ export const penItems = [
   },
   {
     name: 'Marker Pen',
-    fontType: 'Piedra',
-    boldness: 'normal',
+    fontType: 'Space Mono',
+    boldness: 'bold',
     image: images.MarkerPen,
     price: 100,
     owned: false,
   },
   {
     name: 'Mechanical Pen',
-    fontType: 'Piedra',
+    fontType: 'Cutive Mono',
     boldness: 'normal',
     image: images.MechPen,
     price: 150,
@@ -59,7 +59,7 @@ export const penItems = [
   },
   {
     name: 'Pen Pen',
-    fontType: 'Piedra',
+    fontType: 'Red Hat Mono',
     boldness: 'normal',
     image: images.PenPen,
     price: 50,
@@ -67,7 +67,7 @@ export const penItems = [
   },
   {
     name: 'Pencil Pen',
-    fontType: 'Piedra',
+    fontType: 'Intel One Mono',
     boldness: 'normal',
     image: images.PencilPen,
     price: 75,
@@ -75,7 +75,7 @@ export const penItems = [
   },
   {
     name: 'Quill Pen',
-    fontType: 'Piedra',
+    fontType: 'Libertinus Mono',
     boldness: 'normal',
     image: images.QuillPen,
     price: 200,
@@ -83,7 +83,7 @@ export const penItems = [
   },
   {
     name: 'Stylus Pen',
-    fontType: 'Piedra',
+    fontType: 'Kode Mono',
     boldness: 'normal',
     image: images.StylusPen,
     price: 175,
@@ -91,7 +91,7 @@ export const penItems = [
   },
   {
     name: 'Yatate Pen',
-    fontType: 'Piedra',
+    fontType: 'Syne Mono',
     boldness: 'normal',
     image: images.YatatePen,
     price: 225,
