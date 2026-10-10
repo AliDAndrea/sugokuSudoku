@@ -14,9 +14,12 @@ const user = {
     "pack-E_1",
     "pack-E_3"
   ],
-  "selectedPen": "Ink Pen",
+  "selectedPen": "Multi Pen",
   "ownedPens": [
     "Pencil Pen",
+    "Pen Pen",
+    "Yatate Pen",
+    "Quill Pen",
     "Ink Pen",
     "Multi Pen"
   ],
@@ -37,9 +40,12 @@ const user = {
         "pack-E_1",
         "pack-E_3"
       ],
-      "selectedPen": "Ink Pen",
+      "selectedPen": "Multi Pen",
       "ownedPens": [
         "Pencil Pen",
+        "Pen Pen",
+        "Yatate Pen",
+        "Quill Pen",
         "Ink Pen",
         "Multi Pen"
       ]

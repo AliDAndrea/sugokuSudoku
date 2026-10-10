@@ -1,14 +1,32 @@
-﻿import { Link } from 'react-router-dom'
+﻿import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useProfile } from './profileStore.js'
+import { boardName, listBoards, openBoard } from './boardStore.js'
 import * as images from './figmages/index.js'
+import playTriangle from './figmages/PlayTriangle.svg'
 
 const MAX_BOARDS = 30
 const MAX_FRIEND_BOARDS = 10
-const defaultFriendBoards = Array.from({ length: MAX_FRIEND_BOARDS }, (_, index) => ({ id: index + 1 }))
-const defaultBoards = Array.from({ length: MAX_BOARDS }, (_, index) => ({ id: index + 1 }))
 
-export default function PuzzleReserve({ boards = defaultBoards, friendBoards = defaultFriendBoards }) {
-  const visibleBoards = boards.slice(0, MAX_BOARDS)
-  const visibleFriendBoards = friendBoards.slice(0, MAX_FRIEND_BOARDS)
+export default function PuzzleReserve() {
+  const profile = useProfile()
+  const navigate = useNavigate()
+  const [boards] = useState(() => listBoards(profile))
+  const [selectedId, setSelectedId] = useState(null)
+  const selected = boards.find((board) => board.id === selectedId)
+  const visibleBoards = boards.filter((board) => board.createdBy.username === profile.username).slice(0, MAX_BOARDS)
+  const visibleFriendBoards = boards.filter((board) => board.createdBy.username !== profile.username).slice(0, MAX_FRIEND_BOARDS)
+  const play = (board) => {
+    openBoard(board, profile)
+    navigate('/board')
+  }
+  useEffect(() => {
+    const deselect = (event) => {
+      if (!event.target.closest?.('[data-reserve-board]')) setSelectedId(null)
+    }
+    document.addEventListener('pointerdown', deselect)
+    return () => document.removeEventListener('pointerdown', deselect)
+  }, [])
   return (
     <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
       <img
@@ -104,6 +122,7 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
         style={{ width: '75px', height: '71px', position: 'absolute', left: '300px', top: '674px', maxWidth: 'none' }}
         alt="PuzzleArchiveTemplate"
       />
+      {selected && <p role="status" style={{ position: 'absolute', left: 0, top: '221px', width: '100%', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0, color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '30px', lineHeight: '36px', textAlign: 'center' }}>{boardName(selected)}</p>}
       <div
         className="saved-boards-scroll"
         role="region"
@@ -112,14 +131,13 @@ export default function PuzzleReserve({ boards = defaultBoards, friendBoards = d
         style={{ width: '283px', height: '353px', position: 'absolute', left: -5, top: '280px', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', boxSizing: 'border-box' }}
       >
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 74px)', columnGap: '20.5px', rowGap: '8px', padding: '10px 9px', width: 'fit-content' }}>
-          {visibleBoards.map((board, index) => (
-            <img
-              key={board.id ?? index}
-              src={images.Puzzleselecttemplate}
-              style={{ width: '74px', height: '71px', display: 'block', maxWidth: 'none' }}
-              alt={`Board ${index + 1}`}
-              draggable={false}
-            />
+          {visibleBoards.map((board) => (
+            <div key={board.id} data-reserve-board={board.id} style={{ position: 'relative', width: '74px', height: '71px' }}>
+              <button type="button" aria-label={boardName(board)} aria-pressed={selectedId === board.id} onClick={() => selectedId === board.id ? play(board) : setSelectedId(board.id)} style={{ width: '100%', height: '100%', padding: 0, border: 0, background: 'transparent', cursor: 'pointer' }}>
+                <img src={images.Puzzleselecttemplate} alt="" draggable={false} style={{ width: '100%', height: '100%', display: 'block' }} />
+              </button>
+              {selectedId === board.id && <button type="button" aria-label={`Play ${boardName(board)}`} onClick={() => play(board)} style={{ position: 'absolute', left: '15px', top: '13px', width: '44px', height: '44px', border: 0, background: 'transparent', cursor: 'pointer', padding: 0 }}><img src={playTriangle} alt="" style={{ width: '100%', height: '100%', display: 'block' }} /></button>}
+            </div>
           ))}
         </div>
       </div>
