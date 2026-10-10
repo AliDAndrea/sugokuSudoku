@@ -1,8 +1,7 @@
-﻿import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
-import user from './user.js'
-import { saveProfile, useProfile } from './profileStore.js'
+import { isSupabaseEnabled, saveProfile, useProfile } from './profileStore.js'
 
 const pageStyle = {
   backgroundColor: '#fff',
@@ -76,12 +75,12 @@ function ProfileDetails({ view }) {
       <BackToHome left="9px" top="10px" active={active} />
       <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
           <ProfileField label="Username:" value={profile.username} top="88px" />
-          <ProfileField label="Level: " value={user.level} top="146px" />
-          <ProfileField label="Daily Streak: " value={user.dailyStreak} top="204px" />
+          <ProfileField label="Level: " value={profile.level} top="146px" />
+          <ProfileField label="Daily Streak: " value={profile.dailyStreak} top="204px" />
           <ProfileField label="Puzzles Complete: " value={profile.puzzlesCompleted} top="262px" />
           <ProfileField
             label="Fastest Time:" 
-            value={user.fastestTime}
+            value={profile.fastestTime}
             top="320px"
           />
           <div style={{ position: 'absolute', left: '31px', top: '375px', width: '334px', height: '80px', display: 'flex', alignItems: 'center' }}>
@@ -198,7 +197,9 @@ function ChangeEmailPanel({ view }) {
       await saveProfile({ [field]: value })
       if (field === 'username') setUsername('')
       else setEmail('')
-      setStatus(field === 'username' ? 'Username changed.' : 'Email changed.')
+      setStatus(field === 'username'
+        ? 'Username changed.'
+        : isSupabaseEnabled ? 'Check your new email to confirm the change.' : 'Email changed.')
     } catch (error) { setStatus(error.message) }
     finally { setSaving(false) }
   }
@@ -271,4 +272,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-

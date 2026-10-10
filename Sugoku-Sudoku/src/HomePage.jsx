@@ -81,16 +81,14 @@ export default function HomePage() {
           alt="Friends"
         />
       </Link>
-      {/*hint*/}
-      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '358px', top: '723px', letterSpacing: '0.07em' }}>
-        ##
+      <p aria-label={`Hints: ${profile.hints}`} style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '52px', height: '29px', position: 'absolute', right: '8px', top: '723px', textAlign: 'right', letterSpacing: '0.07em' }}>
+        {profile.hints}
       </p>
-      {/* lvl */}
-      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '52px', top: '655px', letterSpacing: '0.07em' }}>
-        ##
+      <p aria-label={`Level: ${profile.level}`} style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '52px', height: '29px', position: 'absolute', left: '52px', top: '655px', letterSpacing: '0.07em' }}>
+        {profile.level}
       </p>
-      <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '31px', height: '29px', position: 'absolute', left: '328px', top: '672px', letterSpacing: '0.07em' }}>
-        ##
+      <p aria-label={`Sudo: ${profile.sudo}`} style={{ color: '#000', fontFamily: 'Piedra', fontSize: '22px', width: '70px', height: '29px', position: 'absolute', right: '12px', top: '672px', textAlign: 'right', letterSpacing: '0.07em' }}>
+        {profile.sudo}
       </p>
     </div>
   );
