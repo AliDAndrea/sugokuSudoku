@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { penItems } from './PenItem.jsx'
+import { saveProfile, useProfile } from './profileStore.js'
 
 const tabs = [
   { id: 'pens', label: 'Pens', image: images.Penstab, left: 75 },
@@ -11,7 +12,15 @@ const tabs = [
 
 export default function ShopPage({ initialTab = 'pens' }) {
   const [activeTab, setActiveTab] = useState(initialTab)
-  const [ownedPens, setOwnedPens] = useState(() => new Set(penItems.filter((pen) => pen.owned).map((pen) => pen.name)))
+  const profile = useProfile()
+  const ownedPens = new Set(profile.ownedPens || ['Pencil Pen'])
+
+  async function onBuyPen(pen) {
+    await saveProfile({
+      selectedPen: pen.name,
+      ownedPens: [...new Set([...ownedPens, pen.name])],
+    })
+  }
 
   return (
     <div style={{ backgroundColor: '#FFF', width: '100%', minHeight: '882px', maxWidth: '404px', position: 'relative', margin: '0 auto', flexShrink: 0, textAlign: 'left', overflow: 'hidden' }}>
@@ -35,7 +44,9 @@ export default function ShopPage({ initialTab = 'pens' }) {
         {activeTab === 'pens' && (
           <PensContent
             ownedPens={ownedPens}
-            onBuyPen={(pen) => setOwnedPens((current) => new Set(current).add(pen.name))}
+            selectedPenName={profile.selectedPen}
+            onBuyPen={onBuyPen}
+            onSelectOwnedPen={(pen) => saveProfile({ selectedPen: pen.name })}
           />
         )}
         {activeTab === 'packs' && <PacksContent />}
@@ -51,7 +62,7 @@ export default function ShopPage({ initialTab = 'pens' }) {
   )
 }
 
-function PensContent({ ownedPens, onBuyPen }) {
+function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName }) {
   const penCards = [
     { item: penItems.find((pen) => pen.name === 'Pencil Pen'), left: '23px', top: '120px' },
     { item: penItems.find((pen) => pen.name === 'Ink Pen'), left: '148px', top: '534px' },
@@ -66,7 +77,31 @@ function PensContent({ ownedPens, onBuyPen }) {
     { item: penItems.find((pen) => pen.name === 'Cheap Pen'), left: '273px', top: '120px' },
     { item: penItems.find((pen) => pen.name === 'Multi Pen'), left: '273px', top: '534px' },
   ]
-  const [selectedPen, setSelectedPen] = useState(penCards[0].item)
+  const [selectedPen, setSelectedPen] = useState(() => penCards.find(({ item }) => item.name === selectedPenName)?.item ?? penCards[0].item)
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [purchaseError, setPurchaseError] = useState('')
+
+  async function buySelectedPen() {
+    setIsPurchasing(true)
+    setPurchaseError('')
+    try {
+      await onBuyPen(selectedPen)
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : 'Could not save the selected pen.')
+    } finally {
+      setIsPurchasing(false)
+    }
+  }
+
+  async function selectPen(pen) {
+    setPurchaseError('')
+    try {
+      if (ownedPens.has(pen.name)) await onSelectOwnedPen(pen)
+      setSelectedPen(pen)
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : 'Could not save the selected pen.')
+    }
+  }
 
   return (
     <>
@@ -83,7 +118,7 @@ function PensContent({ ownedPens, onBuyPen }) {
           type="button"
           aria-label={`Select ${item.name}, S ${item.price}`}
           aria-pressed={selectedPen.name === item.name}
-          onClick={() => setSelectedPen(item)}
+          onClick={() => selectPen(item)}
           style={{ width: '106px', height: '122px', position: 'absolute', left, top, padding: 0, border: 0, background: 'transparent', textAlign: 'left', cursor: 'pointer' }}
         >
           <img
@@ -116,11 +151,17 @@ function PensContent({ ownedPens, onBuyPen }) {
         <button
           type="button"
           aria-label={`Buy ${selectedPen.name} for S ${selectedPen.price}`}
-          onClick={() => onBuyPen(selectedPen)}
-          style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: 'pointer', zIndex: 2 }}
+          onClick={buySelectedPen}
+          disabled={isPurchasing}
+          style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2 }}
         >
           <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
         </button>
+      )}
+      {purchaseError && (
+        <p role="alert" style={{ color: '#a00000', fontSize: '14px', position: 'absolute', left: '20px', top: '830px', zIndex: 3 }}>
+          {purchaseError}
+        </p>
       )}
       <div style={{ color: '#000', fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness, fontSize: '40px', lineHeight: 1, width: '155px', height: '182px', position: 'absolute', left: '70px', top: '691px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(3, 1fr)', placeItems: 'center' }}>
         {Array.from({ length: 9 }, (_, index) => (

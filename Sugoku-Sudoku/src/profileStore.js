@@ -1,7 +1,13 @@
 import { useSyncExternalStore } from 'react'
 import user from './user.js'
 
-let profile = { username: user.username, profileImage: user.profileImage, email: user.email }
+let profile = {
+  username: user.username,
+  profileImage: user.profileImage,
+  email: user.email,
+  selectedPen: user.selectedPen || 'Pencil Pen',
+  ownedPens: user.ownedPens || [...new Set(['Pencil Pen', user.selectedPen || 'Pencil Pen'])],
+}
 const listeners = new Set()
 const subscribe = (listener) => {
   listeners.add(listener)
