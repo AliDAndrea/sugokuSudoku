@@ -78,7 +78,7 @@ function ProfileDetails({ view }) {
           <ProfileField label="Username:" value={profile.username} top="88px" />
           <ProfileField label="Level: " value={user.level} top="146px" />
           <ProfileField label="Daily Streak: " value={user.dailyStreak} top="204px" />
-          <ProfileField label="Puzzles Complete: " value={user.puzzlesCompleted} top="262px" />
+          <ProfileField label="Puzzles Complete: " value={profile.puzzlesCompleted} top="262px" />
           <ProfileField
             label="Fastest Time:" 
             value={user.fastestTime}

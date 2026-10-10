@@ -7,6 +7,7 @@ import BoardPage from './BoardPage.jsx'
 import ShopPage from './ShopPage.jsx'
 import ProfilePage from './ProfilePage.jsx'
 import AuthPage from './AuthPage.jsx'
+import ResultsPage from './ResultsPage.jsx'
 
 export default function App() {
 	return (
@@ -16,6 +17,7 @@ export default function App() {
 			<Route path="/puzzle-reserve" element={<PuzzleReserve />} />
 			<Route path="/board-creator" element={<BoardCreatorPage />} />
 			<Route path="/board" element={<BoardPage />} />
+			<Route path="/results/:boardId" element={<ResultsPage />} />
 			<Route path="/shop" element={<ShopPage />} />
 			<Route path="/shop/pens" element={<ShopPage key="pens" initialTab="pens" />} />
 			<Route path="/shop/packs" element={<ShopPage key="packs" initialTab="packs" />} />

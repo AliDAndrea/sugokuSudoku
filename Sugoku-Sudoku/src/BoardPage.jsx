@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useReducer } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { mainPen, penItems } from './PenItem.jsx'
 import { useProfile } from './profileStore.js'
-import { boardReducer, createBoardState, isRelatedCell } from './boardState.js'
+import { boardReducer, createBoardState, isRelatedCell, isNumberComplete } from './boardState.js'
 import { loadBoard, saveBoard } from './boardStore.js'
 import './BoardPage.css'
 
@@ -16,13 +16,47 @@ const boardPenStyle = {
   maxWidth: 'none',
   transform: 'translate(-50%, -50%) rotate(270deg)',
 }
+function LifeHeart({ index, lost }) {
+  const [lostOnLoad] = useState(lost)
+  return <img src={images.LifeHeart} className="board-life" data-lost={lost} data-animate={lost && !lostOnLoad} aria-hidden={lost} alt={`Life ${index + 1}`} style={{ width: '38px', height: '35px', position: 'absolute', left: `${10 + index * 49}px`, top: '113px', maxWidth: 'none' }} />
+}
+
+function BoardTimer({ createdAt, endedAt }) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (endedAt) return
+    const update = () => setNow(Date.now())
+    const interval = window.setInterval(update, 1000)
+    document.addEventListener('visibilitychange', update)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', update)
+    }
+  }, [endedAt])
+  const seconds = Math.max(0, Math.floor(((endedAt || now) - createdAt) / 1000))
+  const pad = (value) => String(value).padStart(2, '0')
+  const hours = Math.floor(seconds / 3600)
+  const elapsed = `${hours > 0 ? `${pad(hours)}:` : ''}${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`
+  return <span className="board-timer" role="timer" aria-label="Time since board creation">{elapsed}</span>
+}
+
 export default function BoardPage() {
   const profile = useProfile()
+  const navigate = useNavigate()
   const selectedPen = penItems.find((pen) => pen.name === profile.selectedPen) || mainPen
   const [board, dispatch] = useReducer(boardReducer, profile, (currentUser) => createBoardState(loadBoard(currentUser)))
+  const highlightColor = board.board.colors.find(({ user }) => user.username === profile.username)?.color || '#174FC4'
+  const selectedCell = board.selected === null ? null : board.board.cells[board.selected]
+  const selectedNumber = selectedCell?.kind === 'number' ? selectedCell.number : null
   const pen = { fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness === 'black' ? 900 : selectedPen.boldness }
 
   useEffect(() => { saveBoard(board.board) }, [board.board])
+  useEffect(() => {
+    if (board.board.archived) return
+    if (!board.board.completedAt && !board.board.failedAt && board.board.livesUsed < 5) return
+    const timeout = window.setTimeout(() => navigate(`/results/${board.board.id}`, { replace: true }), board.board.completedAt ? 0 : 450)
+    return () => window.clearTimeout(timeout)
+  }, [board.board.archived, board.board.id, board.board.completedAt, board.board.failedAt, board.board.livesUsed, navigate])
 
   useEffect(() => {
     const deselectOutside = (event) => {
@@ -31,7 +65,9 @@ export default function BoardPage() {
       }
     }
     const enterNumber = (event) => {
+      if (board.board.archived) return
       if (event.ctrlKey || event.metaKey || event.altKey || event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return
+      if (['Backspace', 'Delete'].includes(event.key) && board.selected !== null) { event.preventDefault(); dispatch({ type: 'erase' }) }
       if (event.key === 'Escape') dispatch({ type: 'deselect' })
       if (/^[1-9]$/.test(event.key) && board.selected !== null) {
         event.preventDefault()
@@ -44,14 +80,14 @@ export default function BoardPage() {
       document.removeEventListener('pointerdown', deselectOutside)
       document.removeEventListener('keydown', enterNumber)
     }
-  }, [board.selected, selectedPen.fontType, selectedPen.boldness, profile])
+  }, [board.board.archived, board.selected, selectedPen.fontType, selectedPen.boldness, profile])
 
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [])
 
   return (
-    <div style={{ backgroundColor: "#757575", width: "100%", minHeight: "883px", maxWidth: "404px", position: "relative", margin: "0 auto", flexShrink: 0, textAlign: "left", overflow: "hidden" }}>
+    <div style={{ '--board-highlight': highlightColor, backgroundColor: "#757575", width: "100%", minHeight: "883px", maxWidth: "404px", position: "relative", margin: "0 auto", flexShrink: 0, textAlign: "left", overflow: "hidden" }}>
       <img
         src={images.BgDesk}
         style={{ width: "1268px", height: "881px", position: "absolute", left: "-554px", top: "3px", maxWidth: "none" }}
@@ -62,6 +98,7 @@ export default function BoardPage() {
         style={{ width: "143px", height: "169px", position: "absolute", left: "254px", top: "5px", maxWidth: "none" }}
         alt="HintDisplay"
       />
+      <BoardTimer createdAt={board.board.createdAt} endedAt={board.board.completedAt || board.board.failedAt} />
       <Link to="/" aria-label="Return to home page" style={{ width: "67px", height: "69px", position: "absolute", left: "9px", top: "9px", maxWidth: "none" , display: 'block', zIndex: 10 }}>
         <img src={images.Mainmenubutton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="MainMenuButton" />
       </Link>
@@ -72,12 +109,14 @@ export default function BoardPage() {
       />
       {Array.from({ length: board.board.size }, (_, index) => {
         const number = index + 1
+        if (isNumberComplete(board.board, number)) return null
         return (
           <button
             key={number}
             type="button"
             data-board-number={number}
             className="board-number"
+            disabled={Boolean(board.board.archived)}
             aria-label={`Enter ${number}`}
             onClick={() => dispatch({ type: 'enter', number, pen, user: profile })}
             style={{ left: `${[178, 242, 305][index % 3]}px`, top: `${(board.board.size === 6 ? [568, 633] : [536, 600, 665])[Math.floor(index / 3)]}px` }}
@@ -91,32 +130,8 @@ export default function BoardPage() {
         style={{ width: "131px", height: "76px", position: "absolute", left: "14px", top: "704px", maxWidth: "none" }}
         alt="InviteButton"
       />
-      <img
-        src={images.LifeHeart}
-        style={{ width: "38px", height: "35px", position: "absolute", left: "10px", top: "113px", maxWidth: "none" }}
-        alt="Life1"
-      />
-      <img
-        src={images.LifeHeart}
-        style={{ width: "38px", height: "35px", position: "absolute", left: "59px", top: "113px", maxWidth: "none" }}
-        alt="Life2"
-      />
-      <img
-        src={images.LifeHeart}
-        style={{ width: "38px", height: "35px", position: "absolute", left: "108px", top: "113px", maxWidth: "none" }}
-        alt="Life3"
-      />
-      <img
-        src={images.LifeHeart}
-        style={{ width: "38px", height: "35px", position: "absolute", left: "157px", top: "113px", maxWidth: "none" }}
-        alt="Life4"
-      />
-      <img
-        src={images.LifeHeart}
-        style={{ width: "38px", height: "35px", position: "absolute", left: "206px", top: "113px", maxWidth: "none" }}
-        alt="Life5"
-      />
-      <button type="button" data-board-notes className="board-note-toggle" aria-label="Note mode" aria-pressed={board.noteMode} onClick={() => dispatch({ type: 'toggle-notes' })}>
+      {Array.from({ length: 5 }, (_, index) => <LifeHeart key={index} index={index} lost={board.board.livesUsed >= 5 - index} />)}
+      <button type="button" data-board-notes disabled={Boolean(board.board.archived)} className="board-note-toggle" aria-label="Note mode" aria-pressed={board.noteMode} onClick={() => dispatch({ type: 'toggle-notes' })}>
         <img src={images.Takenote} alt="" />
       </button>
       <div style={{ width: '43px', height: '162px', position: 'absolute', left: '30px', top: '539px' }}>
@@ -142,10 +157,13 @@ export default function BoardPage() {
                 data-board-cell={index}
                 className="board-cell"
                 data-selected={selected}
+                data-given={Boolean(cell?.given)}
                 data-related={isRelatedCell(index, board.selected, board.board.size)}
+                data-matching={selectedNumber !== null && cell?.kind === 'number' && cell.number === selectedNumber}
                 aria-label={`Row ${row + 1}, column ${column + 1}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
                 aria-pressed={selected}
-                onClick={() => dispatch({ type: 'select', index })}
+                onPointerDown={(event) => { if (event.button === 0) dispatch({ type: 'select', index }) }}
+                onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
                 style={{
                   left: `${board.board.size === 6 ? sixColumn[0] / 366 * 100 : [33, 71, 109, 150, 188, 226, 265, 303, 341][column] / 404 * 100}%`,
                   width: board.board.size === 6 ? `${sixColumn[1] / 366 * 100}%` : undefined,
@@ -223,8 +241,9 @@ export default function BoardPage() {
       </div>
       <div style={{ width: "55px", height: "55px", position: "absolute", left: "5px", top: "799px" }}></div>
       <p style={{ color: "#000", fontFamily: "'Piedra', serif", fontSize: "60px", lineHeight: "1", width: "42px", height: "44px", position: "absolute", left: "273px", top: "95px" }}>
-        #
+        {board.board.hintsUsed}
       </p>
+      <p role="status" style={{ position: 'absolute', left: '20px', top: '510px', width: '365px', color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '16px', textAlign: 'center', pointerEvents: 'none' }}>{board.board.completedAt ? 'SOLVED' : ''}</p>
     </div>
   );
 }

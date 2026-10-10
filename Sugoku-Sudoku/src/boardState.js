@@ -1,3 +1,5 @@
+import { generateClassic } from './classicSudoku.js'
+
 export const userColors = [
   '#FF294D', '#FFB84C', '#E7FF34', '#0A6D32', '#00FFB2',
   '#00B8E6', '#174FC4', '#9234FF', '#FF70C4',
@@ -21,14 +23,22 @@ export function pickUserColor(assignments, chooseIndex = randomIndex) {
 
 
 export class Board {
-  constructor({ size = 9, difficulty = 'easy', type = 'classic', user = { username: 'Guest' }, usersInvited = [] } = {}) {
+  constructor({ size = 9, difficulty = 'easy', type = 'classic', user = { username: 'Guest' }, usersInvited = [], generatedPuzzle = null } = {}) {
     this.id = globalThis.crypto.randomUUID()
     this.createdAt = Date.now()
     this.lastOpenedAt = null
     this.size = size === 6 || size === '6x6' ? 6 : 9
     this.difficulty = difficulty
     this.type = type
-    this.cells = Array(this.size * this.size).fill(null)
+    const generated = type === 'classic' ? generatedPuzzle || generateClassic(this.size, difficulty) : null
+    this.solution = generated?.solution || null
+    this.rating = generated?.rating || null
+    this.boxRows = this.size === 6 ? 2 : 3
+    this.boxColumns = 3
+    this.completedAt = null
+    this.failedAt = null
+    this.xpEarned = 0
+    this.cells = generated ? generated.puzzle.map((number) => number ? { kind: 'number', number, given: true, user: null, color: '#171614', pen: { fontFamily: 'Intel One Mono', fontWeight: 'bold' } } : null) : Array(this.size * this.size).fill(null)
     this.hintsUsed = 0
     this.livesUsed = 0
     this.createdBy = { ...user }
@@ -42,7 +52,7 @@ export class Board {
 }
 
 export function createBoardState(board = new Board()) {
-  return { board, selected: null, noteMode: false }
+  return { board, selected: null, noteMode: false, message: '' }
 }
 
 export function isRelatedCell(index, selected, size = 9) {
@@ -51,18 +61,34 @@ export function isRelatedCell(index, selected, size = 9) {
   )
 }
 
+export function isNumberComplete(board, number) {
+  return board.cells.filter((cell) => cell?.kind === 'number' && cell.number === number).length >= board.size
+}
+
 export function boardReducer(state, action) {
+  if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['enter', 'erase', 'toggle-notes'].includes(action.type)) return state
   switch (action.type) {
     case 'select':
       return { ...state, selected: state.selected === action.index ? null : action.index }
     case 'deselect':
       return state.selected === null ? state : { ...state, selected: null }
+    case 'erase': {
+      if (state.selected === null || state.board.cells[state.selected]?.given) return state
+      const cells = [...state.board.cells]
+      cells[state.selected] = null
+      return { ...state, message: '', board: { ...state.board, cells, completedAt: null } }
+    }
     case 'toggle-notes':
       return { ...state, noteMode: !state.noteMode }
     case 'enter': {
       if (state.selected === null || !Number.isInteger(action.number) || action.number < 1 || action.number > state.board.size) return state
+      if (isNumberComplete(state.board, action.number)) return state
       const cell = state.board.cells[state.selected]
       if (cell?.kind === 'number') return state
+      if (!state.noteMode && state.board.solution && state.board.solution[state.selected] !== action.number) {
+        const livesUsed = state.board.livesUsed + 1
+        return { ...state, message: '', board: { ...state.board, livesUsed, failedAt: livesUsed >= 5 ? Date.now() : null } }
+      }
       const colors = [...state.board.colors]
       let assignment = colors.find((entry) => entry.user.username === action.user.username)
       if (!assignment) {
@@ -77,7 +103,8 @@ export function boardReducer(state, action) {
         const numbers = existing ? notes.filter((note) => note.number !== action.number) : [...notes, number].sort((a, b) => a.number - b.number)
         cells[state.selected] = numbers.length ? { kind: 'note', numbers } : null
       } else cells[state.selected] = number
-      return { ...state, board: { ...state.board, cells, colors } }
+      const completed = state.board.solution && cells.every((entry, index) => entry?.kind === 'number' && entry.number === state.board.solution[index])
+      return { ...state, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
     }
     default:
       return state

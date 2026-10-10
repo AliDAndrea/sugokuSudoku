@@ -6,6 +6,8 @@ let profile = {
   profileImage: user.profileImage,
   email: user.email,
   level: Number.isFinite(user.level) ? user.level : 1,
+  totalXp: Number.isFinite(user.totalXp) ? user.totalXp : 0,
+  puzzlesCompleted: Number.isFinite(user.puzzlesCompleted) ? user.puzzlesCompleted : 0,
   sudo: Number.isFinite(user.sudo) ? user.sudo : 0,
   hints: Number.isFinite(user.hints) ? user.hints : 0,
   selectedPen: user.selectedPen || 'Pencil Pen',
@@ -32,7 +34,7 @@ export async function saveProfile(updates) {
   if (!response.ok || !result.ok) throw new Error(result.error || 'Could not save profile.')
   const { password: _password, ...publicUpdates } = updates
   void _password
-  profile = { ...profile, ...publicUpdates }
+  profile = { ...profile, ...publicUpdates, ...result.profile }
   listeners.forEach((listener) => listener())
 }
 

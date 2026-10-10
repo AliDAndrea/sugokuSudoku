@@ -1,0 +1,27 @@
+.results-page { background: #fff; color: #000; font-family: var(--font-piedra); width: 100%; max-width: 404px; min-height: 883px; position: relative; isolation: isolate; overflow: hidden; margin: 0 auto; text-align: left; }
+.results-page p { margin: 0; }
+.results-background { width: 1452px; height: 1009px; position: absolute; left: -525px; top: -105px; max-width: none; z-index: -1; }
+.results-archive-background { width: 372px; height: 227px; position: absolute; left: 14px; top: 641px; max-width: none; }
+.results-archived-count { position: absolute; left: 0; top: 727px; width: 100%; font-size: 35px; line-height: 46px; text-align: center; }
+.results-notebook { container-type: inline-size; width: 100%; height: 558px; position: absolute; left: -1px; top: 99px; }
+.results-paper { width: 100%; height: 558px; position: absolute; inset: 0; max-width: none; }
+.results-outcome { position: absolute; left: 0; top: 98px; width: 100%; text-align: center; font-size: 22px; line-height: 22px; }
+.results-time, .results-squares, .results-xp { position: absolute; left: 36px; width: calc(80% - 48px); font-size: 32px; line-height: 32px; white-space: nowrap; }
+.results-time { top: 146px; }
+.results-squares { top: 231px; font-size: clamp(18px, 6.5cqi, 26px); line-height: 26px; }
+.results-squares span { display: inline; font-size: inherit; line-height: inherit; }
+.results-xp { top: 301px; }
+.results-level { position: absolute; left: 30px; top: 371px; width: calc(80% - 42px); font-size: 40px; line-height: 40px; text-align: center; }
+.results-progress { position: absolute; left: 30px; top: 415px; width: 289px; height: 61px; padding: 5px 6px; box-sizing: border-box; }
+.results-progress > div { height: 50px; border-radius: 8px; background: #45ffa8; }
+.results-progress > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.results-progress-count { position: absolute; left: 30px; top: 491px; width: 289px; font-size: 35px; line-height: 35px; text-align: center; }
+.results-archive-button { position: absolute; left: 136px; top: 657px; width: 131px; height: 67px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.results-archive-button:disabled { opacity: .5; cursor: default; }
+.results-archive-button img, .results-home img { width: 100%; height: 100%; display: block; }
+.results-home { position: absolute; left: 8px; top: 6px; width: 67px; height: 69px; }
+.results-status { position: absolute; left: 20px; top: 793px; width: 364px; text-align: center; font-size: 18px; }
+.results-unavailable { padding: 40px 20px; }
+.results-archive-button:focus-visible, .results-home:focus-visible { outline: 2px solid #171614; outline-offset: 3px; }
+
+.results-outcome { left: -8px; top: 92px; font-size: 38px; line-height: 38px; }

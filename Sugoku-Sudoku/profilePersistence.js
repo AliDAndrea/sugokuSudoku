@@ -4,11 +4,13 @@ import { Buffer } from 'node:buffer'
 const usernameKey = (username) => username.trim().toLowerCase()
 const penNames = new Set(['Multi Pen', 'Crayon Pen', 'Brush Pen', 'Cheap Pen', 'Ink Pen', 'Marker Pen', 'Mechanical Pen', 'Pen Pen', 'Pencil Pen', 'Quill Pen', 'Stylus Pen', 'Yatate Pen'])
 const packIds = new Set(['pack-E_1', 'pack-E_2', 'pack-E_3', 'pack-H_1', 'pack-H_2', 'pack-H_3', 'pack-N_1', 'pack-N_2', 'pack-N_3', 'pack-EX_1', 'pack-EX_2', 'pack-EX_3', 'pack-I_1', 'pack-I_2', 'pack-I_3'])
-const publicProfile = ({ username, email, profileImage, selectedPen, ownedPens, ownedPacks, sudo, hints, level }) => ({
+const publicProfile = ({ username, email, profileImage, selectedPen, ownedPens, ownedPacks, sudo, hints, level, totalXp, puzzlesCompleted }) => ({
   username,
   email,
   profileImage,
   level: Number.isFinite(level) ? level : 1,
+  totalXp: Number.isFinite(totalXp) ? totalXp : 0,
+  puzzlesCompleted: Number.isFinite(puzzlesCompleted) ? puzzlesCompleted : 0,
   selectedPen: selectedPen || 'Pencil Pen',
   ownedPens: ownedPens || [...new Set(['Pencil Pen', selectedPen || 'Pencil Pen'])],
   ownedPacks: ownedPacks || ['pack-E_1'],
@@ -54,6 +56,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           if ('ownedPens' in updates && (!Array.isArray(updates.ownedPens) || updates.ownedPens.some((pen) => typeof pen !== 'string' || !penNames.has(pen)))) throw new Error('Choose valid owned pens.')
           if ('ownedPacks' in updates && (!Array.isArray(updates.ownedPacks) || updates.ownedPacks.some((pack) => typeof pack !== 'string' || !packIds.has(pack)))) throw new Error('Choose valid owned packs.')
           if ('sudo' in updates && (!Number.isSafeInteger(updates.sudo) || updates.sudo < 0)) throw new Error('Sudo must be a non-negative whole number.')
+          if ('completedBoardId' in updates && (typeof updates.completedBoardId !== 'string' || !updates.completedBoardId || updates.completedBoardId.length > 100)) throw new Error('Invalid board reward.')
           if ('hints' in updates && (!Number.isSafeInteger(updates.hints) || updates.hints < 0)) throw new Error('Hints must be a non-negative whole number.')
           if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || !updates.password)) throw new Error('Enter your username and password.')
           let result
@@ -81,6 +84,14 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
               selected = { ...current }
               for (const field of ['username', 'email', 'password', 'profileImage', 'selectedPen', 'ownedPens', 'ownedPacks', 'sudo', 'hints']) {
                 if (field in updates) selected[field] = updates[field]
+              }
+              if (updates.completedBoardId) {
+                const rewardedBoards = selected.rewardedBoards || []
+                if (!rewardedBoards.includes(updates.completedBoardId)) {
+                  selected.totalXp = (Number.isFinite(selected.totalXp) ? selected.totalXp : 0) + 5
+                  selected.puzzlesCompleted = (Number.isFinite(selected.puzzlesCompleted) ? selected.puzzlesCompleted : 0) + 1
+                  selected.rewardedBoards = [...rewardedBoards, updates.completedBoardId]
+                }
               }
               accounts[currentIndex] = selected
             }

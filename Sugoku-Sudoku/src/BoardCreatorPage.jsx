@@ -36,12 +36,27 @@ const selectorGroups = [
 ]
 
 export default function BoardCreatorPage() {
-  const [selections, setSelections] = useState({})
+  const [selections, setSelections] = useState({ size: '9x9', difficulty: 'easy', type: 'classic' })
   const profile = useProfile()
   const navigate = useNavigate()
-  const create = () => {
-    createSavedBoard({ user: profile, size: selections.size, difficulty: selections.difficulty, type: selections.type })
-    navigate('/board')
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState('')
+  const create = async () => {
+    if (generating) return
+    if (selections.type !== 'classic') { setError('Only Classic puzzles are available right now.'); return }
+    setGenerating(true)
+    setError('')
+    const worker = new Worker(new URL('./classicSudoku.worker.js', import.meta.url), { type: 'module' })
+    try {
+      const generatedPuzzle = await new Promise((resolve, reject) => {
+        worker.onmessage = ({ data }) => data.error ? reject(new Error(data.error)) : resolve(data.puzzle)
+        worker.onerror = () => reject(new Error('Puzzle generation failed. Please try again.'))
+        worker.postMessage({ size: selections.size === '6x6' ? 6 : 9, difficulty: selections.difficulty })
+      })
+      createSavedBoard({ user: profile, size: selections.size, difficulty: selections.difficulty, type: 'classic', generatedPuzzle })
+      navigate('/board')
+    } catch (failure) { setError(failure.message) }
+    finally { worker.terminate(); setGenerating(false) }
   }
 
   return (
@@ -113,8 +128,9 @@ export default function BoardCreatorPage() {
           </div>
         ))}
       
-        <button type="button" onClick={create} aria-label="Create board" style={{ width:'167px', height:'44px', position:'absolute', left:'216px', top:'367px', display: 'block', border: 0, padding: 0, background: 'transparent', cursor: 'pointer' }} />
+        <button type="button" onClick={create} disabled={generating} aria-label="Create board" style={{ width:'167px', height:'44px', position:'absolute', left:'216px', top:'367px', display: 'block', border: 0, padding: 0, background: 'transparent', cursor: 'pointer' }} />
 
+        <p role="status" style={{ position: 'absolute', left: '28px', top: '460px', width: '330px', color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '16px' }}>{generating ? 'Creating your puzzle...' : error}</p>
       </div>
     </div>
   );
