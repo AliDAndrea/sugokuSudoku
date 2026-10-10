@@ -148,7 +148,7 @@ function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName, s
           aria-label={`Select ${item.name}, S ${item.price}`}
           aria-pressed={selectedPen.name === item.name}
           onClick={() => selectPen(item)}
-          style={{ width: '106px', height: '122px', position: 'absolute', left, top, padding: 0, border: 0, background: 'transparent', textAlign: 'left', cursor: 'pointer' }}
+          style={{ width: '106px', height: '122px', position: 'absolute', left, top, padding: 0, border: 0, background: 'transparent', textAlign: 'left', cursor: 'pointer', filter: selectedPenName === item.name ? 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.55))' : 'none' }}
         >
           <img
             src={images.PenPurchaseFrame}
@@ -161,7 +161,7 @@ function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName, s
           <span style={{ opacity: ownedPens.has(item.name) ? 1 : 0.5, width: '106px', height: '90px', position: 'absolute', left: 0, top: 0, display: 'block' }}>
             <img
               src={item.image}
-              style={{ width: '102px', height: '26px', position: 'absolute', left: '50%', top: '50%', maxWidth: 'none', transform: 'translate(-50%, -50%) rotate(-45deg)', transformOrigin: 'center', filter: selectedPen.name === item.name ? 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7))' : 'none' }}
+              style={{ width: '102px', height: '26px', position: 'absolute', left: '50%', top: '50%', maxWidth: 'none', transform: 'translate(-50%, -50%) rotate(-45deg)', transformOrigin: 'center' }}
               alt={item.name}
             />
           </span>
@@ -255,7 +255,7 @@ function PacksContent({ ownedPacks, onBuyPack, level, sudo }) {
           aria-label={`Select ${pack.difficulty} ${pack.type} pack, S ${pack.price}${pack.bought ? ', bought' : ''}`}
           aria-pressed={selectedPackId === pack.id}
           onClick={() => setSelectedPackId(pack.id)}
-          style={{ width: '75px', height: '75px', position: 'absolute', left: `${pack.left}px`, top: `${pack.top}px`, padding: 0, border: 0, background: 'transparent', cursor: 'pointer' }}
+          style={{ width: '75px', height: '75px', position: 'absolute', left: `${pack.left}px`, top: `${pack.top}px`, padding: 0, border: 0, background: 'transparent', cursor: 'pointer', filter: selectedPackId === pack.id ? 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.55))' : 'none' }}
         >
           <img
             src={pack.bought ? images.ChallangePackTemplate : images.Lockedboard}
@@ -376,10 +376,15 @@ function CurrencyContent({ profile, onBuyOffer }) {
           </button>
         )
       })}
-      <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '24px', lineHeight: '1.1', width: '205px', position: 'absolute', left: '30px', top: '700px' }}>
-        {selectedOffer.kind === 'hints' ? `${selectedOffer.amount} Hints` : `S ${selectedOffer.amount}`}
+      <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '80px', lineHeight: 1, width: '205px', height: '180px', position: 'absolute', left: '18px', top: '690px', margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        {selectedOffer.kind === 'hints' ? (
+          <>
+            <span>{selectedOffer.amount}</span>
+            <span>Hints</span>
+          </>
+        ) : `S ${selectedOffer.amount}`}
       </p>
-      <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '48px', lineHeight: 1, width: '146px', height: '52px', position: 'absolute', left: '250px', top: '697px' }}>
+      <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '48px', lineHeight: 1, width: '146px', height: '52px', position: 'absolute', left: '250px', top: '705px' }}>
         {selectedOffer.kind === 'hints' ? `S ${selectedOffer.price}` : `+S ${selectedOffer.amount}`}
       </p>
       <button
