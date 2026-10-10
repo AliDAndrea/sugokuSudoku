@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import './App.css'
-import { mainPen } from './PenItem.jsx'
+import { mainPen, penItems } from './PenItem.jsx'
 import { useProfile } from './profileStore.js'
 
 // Import All Images
@@ -8,6 +8,8 @@ import * as images from './figmages/index.js'
 
 export default function HomePage() {
   const profile = useProfile()
+  const selectedPen = penItems.find((pen) => pen.name === profile.selectedPen) || mainPen
+
   return (
     <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
       <img
@@ -21,9 +23,9 @@ export default function HomePage() {
         aria-label="Open board creator"
         style={{width: '400px',height: '100px',position: 'absolute',left: '50%',top: '475px',transform: 'translateX(-50%)',}}>
         <img
-          src={mainPen.image}
+          src={selectedPen.image}
           style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: '5px', maxWidth: 'none' }}
-          alt={mainPen.name}
+          alt={selectedPen.name}
         />
         <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '44px', letterSpacing: '0.07em', zIndex: 1 }}>
           Create
