@@ -35,10 +35,9 @@ function AuthNotebook({ signup, active }) {
   return <section className={`auth-notebook profile-panel ${signup ? 'auth-signup' : 'auth-signin'}`} data-active={active} aria-label={title}>
     <div className="auth-paper"><img src={images.BlankPage} alt="" /></div>
     <h1 className="auth-title">{title}</h1>
-    {active && <Link to="/" className="auth-home" aria-label="Return to home page"><img src={images.Arrowleft} alt="" /></Link>}
     <div className="profile-panel-content auth-content" data-active={active} aria-hidden={!active} inert={!active}>
       <form onSubmit={submit} className="auth-form">
-        <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} disabled={saving} />
+        <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} disabled={saving}  />
         <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={1} />
         {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={1} />}
         <button type="submit" className="auth-confirm" disabled={saving} aria-label={title}><img src={images.ConfirmButton} alt="Confirm" /></button>

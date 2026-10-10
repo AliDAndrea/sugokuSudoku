@@ -72,7 +72,7 @@ function PensContent({ ownedPens, onBuyPen }) {
     <>
       <div style={{ width: '50px', height: '207px', position: 'absolute', left: '10px', top: '675px' }}>
         <img
-          src={images.PencilPen}
+          src={selectedPen.image}
           style={{ width: '198px', height: '50px', position: 'absolute', left: '50%', top: '50%', maxWidth: 'none', transform: 'translate(-50%, -50%) rotate(-90deg)' }}
           alt="pencil_pen"
         />
