@@ -69,6 +69,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           if ('selectedPen' in updates && (typeof updates.selectedPen !== 'string' || !updates.selectedPen.trim() || updates.selectedPen.trim().length > 50)) throw new Error('Choose a valid pen.')
           if ('ownedPens' in updates && (!Array.isArray(updates.ownedPens) || updates.ownedPens.some((pen) => typeof pen !== 'string' || !penNames.has(pen)))) throw new Error('Choose valid owned pens.')
           if ('ownedPacks' in updates && (!Array.isArray(updates.ownedPacks) || updates.ownedPacks.some((pack) => typeof pack !== 'string' || !packIds.has(pack)))) throw new Error('Choose valid owned packs.')
+          if ('level' in updates && (!Number.isSafeInteger(updates.level) || updates.level < 1)) throw new Error('Level must be a positive whole number.')
           if ('sudo' in updates && (!Number.isSafeInteger(updates.sudo) || updates.sudo < 0)) throw new Error('Sudo must be a non-negative whole number.')
           if ('hints' in updates && (!Number.isSafeInteger(updates.hints) || updates.hints < 0)) throw new Error('Hints must be a non-negative whole number.')
           if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || !updates.password)) throw new Error('Enter your username and password.')
@@ -95,7 +96,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
             } else {
               if ('username' in updates && accounts.some((account, index) => index !== currentIndex && usernameKey(account.username) === usernameKey(updates.username))) throw new Error('That username is already taken. Choose another username.')
               selected = { ...current }
-              for (const field of ['username', 'email', 'password', 'profileImage', 'selectedPen', 'ownedPens', 'ownedPacks', 'sudo', 'hints']) {
+              for (const field of ['username', 'email', 'password', 'profileImage', 'selectedPen', 'ownedPens', 'ownedPacks', 'level', 'sudo', 'hints']) {
                 if (field in updates) selected[field] = updates[field]
               }
               accounts[currentIndex] = selected

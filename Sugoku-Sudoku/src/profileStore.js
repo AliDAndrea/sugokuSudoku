@@ -185,15 +185,13 @@ export async function spendSudo(kind, itemId) {
   return data
 }
 
-export async function waitForSudoBalance(targetBalance, timeoutMs = 15000) {
-  const deadline = Date.now() + timeoutMs
-  do {
+export async function waitForSudoBalance(targetBalance) {
+  while (profile.sudo < targetBalance) {
     await refreshProfile()
     if (profile.sudo >= targetBalance) return true
     await new Promise((resolve) => setTimeout(resolve, 1500))
-  } while (Date.now() < deadline)
-  await refreshProfile()
-  return profile.sudo >= targetBalance
+  }
+  return true
 }
 
 export async function accessAccount(credentials) {
@@ -208,7 +206,7 @@ export async function accessAccount(credentials) {
       : await supabase.auth.signInWithPassword({ email, password })
     if (result.error) throw result.error
     if (!result.data.session) {
-      throw new Error('Check your email to confirm your account, then sign in.')
+      throw new Error('Check your email to finish signing up, then sign in.')
     }
     await loadCloudProfile(result.data.user.id)
     return
