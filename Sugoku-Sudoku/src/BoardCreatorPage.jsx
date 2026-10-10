@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useProfile } from './profileStore.js'
+import { createSavedBoard } from './boardStore.js'
 import * as images from './figmages/index.js'
 
 const selectorGroups = [
@@ -35,6 +37,12 @@ const selectorGroups = [
 
 export default function BoardCreatorPage() {
   const [selections, setSelections] = useState({})
+  const profile = useProfile()
+  const navigate = useNavigate()
+  const create = () => {
+    createSavedBoard({ user: profile, size: selections.size, difficulty: selections.difficulty, type: selections.type })
+    navigate('/board')
+  }
 
   return (
     <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
@@ -105,7 +113,7 @@ export default function BoardCreatorPage() {
           </div>
         ))}
       
-        <Link to="/board" aria-label="Create board" style={{ width:'167px', height:'44px', position:'absolute', left:'216px', top:'367px', display: 'block' }} />
+        <button type="button" onClick={create} aria-label="Create board" style={{ width:'167px', height:'44px', position:'absolute', left:'216px', top:'367px', display: 'block', border: 0, padding: 0, background: 'transparent', cursor: 'pointer' }} />
 
       </div>
     </div>

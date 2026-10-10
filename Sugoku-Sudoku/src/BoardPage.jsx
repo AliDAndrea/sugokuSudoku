@@ -1,6 +1,11 @@
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect, useReducer } from 'react'
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
+import { mainPen, penItems } from './PenItem.jsx'
+import { useProfile } from './profileStore.js'
+import { boardReducer, createBoardState, isRelatedCell } from './boardState.js'
+import { loadBoard, saveBoard } from './boardStore.js'
+import './BoardPage.css'
 
 const boardPenStyle = {
   width: '158px',
@@ -12,6 +17,35 @@ const boardPenStyle = {
   transform: 'translate(-50%, -50%) rotate(270deg)',
 }
 export default function BoardPage() {
+  const profile = useProfile()
+  const selectedPen = penItems.find((pen) => pen.name === profile.selectedPen) || mainPen
+  const [board, dispatch] = useReducer(boardReducer, profile, (currentUser) => createBoardState(loadBoard(currentUser)))
+  const pen = { fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness === 'black' ? 900 : selectedPen.boldness }
+
+  useEffect(() => { saveBoard(board.board) }, [board.board])
+
+  useEffect(() => {
+    const deselectOutside = (event) => {
+      if (!event.target.closest?.('[data-board-cell], [data-board-number], [data-board-notes]')) {
+        dispatch({ type: 'deselect' })
+      }
+    }
+    const enterNumber = (event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return
+      if (event.key === 'Escape') dispatch({ type: 'deselect' })
+      if (/^[1-9]$/.test(event.key) && board.selected !== null) {
+        event.preventDefault()
+        dispatch({ type: 'enter', number: Number(event.key), user: profile, pen: { fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness === 'black' ? 900 : selectedPen.boldness } })
+      }
+    }
+    document.addEventListener('pointerdown', deselectOutside)
+    document.addEventListener('keydown', enterNumber)
+    return () => {
+      document.removeEventListener('pointerdown', deselectOutside)
+      document.removeEventListener('keydown', enterNumber)
+    }
+  }, [board.selected, selectedPen.fontType, selectedPen.boldness, profile])
+
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [])
@@ -36,51 +70,22 @@ export default function BoardPage() {
         style={{ width: "340px", height: "160px", position: "absolute", left: "64px", top: "723px", maxWidth: "none" }}
         alt="inviteBGpage"
       />
-      <img
-        src={images.Select7}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "178px", top: "665px", maxWidth: "none" }}
-        alt="Select7"
-      />
-      <img
-        src={images.Select4}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "178px", top: "600px", maxWidth: "none" }}
-        alt="Select4"
-      />
-      <img
-        src={images.Select6}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "305px", top: "600px", maxWidth: "none" }}
-        alt="Select6"
-      />
-      <img
-        src={images.Select3}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "305px", top: "536px", maxWidth: "none" }}
-        alt="Select3"
-      />
-      <img
-        src={images.Select9}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "305px", top: "665px", maxWidth: "none" }}
-        alt="Select9"
-      />
-      <img
-        src={images.Select1}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "178px", top: "536px", maxWidth: "none" }}
-        alt="Select1"
-      />
-      <img
-        src={images.Select5}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "242px", top: "600px", maxWidth: "none" }}
-        alt="Select5"
-      />
-      <img
-        src={images.Select8}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "242px", top: "665px", maxWidth: "none" }}
-        alt="Select8"
-      />
-      <img
-        src={images.Select2}
-        style={{ width: "45px", height: "45px", position: "absolute", left: "242px", top: "536px", maxWidth: "none" }}
-        alt="Select2"
-      />
+      {Array.from({ length: board.board.size }, (_, index) => {
+        const number = index + 1
+        return (
+          <button
+            key={number}
+            type="button"
+            data-board-number={number}
+            className="board-number"
+            aria-label={`Enter ${number}`}
+            onClick={() => dispatch({ type: 'enter', number, pen, user: profile })}
+            style={{ left: `${[178, 242, 305][index % 3]}px`, top: `${(board.board.size === 6 ? [568, 633] : [536, 600, 665])[Math.floor(index / 3)]}px` }}
+          >
+            <img src={images[`Select${number}`]} alt="" />
+          </button>
+        )
+      })}
       <img
         src={images.InviteButton}
         style={{ width: "131px", height: "76px", position: "absolute", left: "14px", top: "704px", maxWidth: "none" }}
@@ -111,604 +116,53 @@ export default function BoardPage() {
         style={{ width: "38px", height: "35px", position: "absolute", left: "206px", top: "113px", maxWidth: "none" }}
         alt="Life5"
       />
-      <img
-        src={images.Takenote}
-        style={{ width: "68px", height: "68px", position: "absolute", left: "90px", top: "587px", maxWidth: "none" }}
-        alt="TakeNote"
-      />
-      <div style={{ width: "43px", height: "162px", position: "absolute", left: "30px", top: "539px" }}>
-        <img
-          src={images.MultiPen}
-          style={boardPenStyle}
-          alt="multi_pen"
-        />
-        <img
-          src={images.CrayonPen}
-          style={boardPenStyle}
-          alt="crayon_pen"
-        />
-        <img
-          src={images.BrushPen}
-          style={boardPenStyle}
-          alt="brush_pen"
-        />
-        <img
-          src={images.MarkerPen}
-          style={boardPenStyle}
-          alt="marker_pen"
-        />
-        <img
-          src={images.PenPen}
-          style={boardPenStyle}
-          alt="pen_pen"
-        />
-        <img
-          src={images.InkPen}
-          style={boardPenStyle}
-          alt="ink_pen"
-        />
-        <img
-          src={images.CheapPen}
-          style={boardPenStyle}
-          alt="cheap_pen"
-        />
-        <img
-          src={images.QuillPen}
-          style={boardPenStyle}
-          alt="quill_pen"
-        />
-        <img
-          src={images.MechPen}
-          style={boardPenStyle}
-          alt="mech_pen"
-        />
-        <img
-          src={images.YatatePen}
-          style={boardPenStyle}
-          alt="yatate_pen"
-        />
-        <img
-          src={images.StylusPen}
-          style={boardPenStyle}
-          alt="stylus_pen"
-        />
-        <img
-          src={images.PencilPen}
-          style={boardPenStyle}
-          alt="pencil_pen"
-        />
+      <button type="button" data-board-notes className="board-note-toggle" aria-label="Note mode" aria-pressed={board.noteMode} onClick={() => dispatch({ type: 'toggle-notes' })}>
+        <img src={images.Takenote} alt="" />
+      </button>
+      <div style={{ width: '43px', height: '162px', position: 'absolute', left: '30px', top: '539px' }}>
+        <img src={selectedPen.image} style={boardPenStyle} alt={selectedPen.name} />
       </div>
-      <div style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "143px" }}>
+      <div style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "143px", pointerEvents: "none" }}>
         <img
-          src={images.Board9x9}
+          src={board.board.size === 6 ? images.Board6x6 : images.Board9x9}
           style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Board9x9"
+          alt={`${board.board.size} by ${board.board.size} board`}
         />
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "265px", top: "260px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Victor Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 600, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "150px", top: "260px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}
-          >
-            <rect
-              width="32"
-              height="32"
-              fill="url(#paint0_radial_1_268)"
-              fillOpacity="0.65"
-            />
-            <defs>
-              <radialGradient
-                id="paint0_radial_1_268"
-                cx="0"
-                cy="0"
-                r="1"
-                gradientUnits="userSpaceOnUse"
-                gradientTransform="translate(16 16) rotate(90) scale(16)"
+        <div role="group" aria-label="Sudoku board">
+          {board.board.cells.map((cell, index) => {
+            const row = Math.floor(index / board.board.size)
+            const column = index % board.board.size
+            const selected = board.selected === index
+            const sixColumn = [[38, 43], [88, 40], [134, 42], [189, 42], [237, 40], [284, 43]][column]
+            const sixRow = [[43, 40], [89, 38], [139, 40], [185, 38], [236, 38], [280, 40]][row]
+            return (
+              <button
+                key={index}
+                type="button"
+                data-board-cell={index}
+                className="board-cell"
+                data-selected={selected}
+                data-related={isRelatedCell(index, board.selected, board.board.size)}
+                aria-label={`Row ${row + 1}, column ${column + 1}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
+                aria-pressed={selected}
+                onClick={() => dispatch({ type: 'select', index })}
+                style={{
+                  left: `${board.board.size === 6 ? sixColumn[0] / 366 * 100 : [33, 71, 109, 150, 188, 226, 265, 303, 341][column] / 404 * 100}%`,
+                  width: board.board.size === 6 ? `${sixColumn[1] / 366 * 100}%` : undefined,
+                  height: board.board.size === 6 ? `${sixRow[1] / 362 * 400}px` : undefined,
+                  top: `${board.board.size === 6 ? sixRow[0] / 362 * 400 : [35, 71, 107, 147, 183, 219, 260, 296, 332][row]}px`,
+                  ...(cell?.pen || pen),
+                  color: cell?.color,
+                }}
               >
-                <stop offset="0.346154" stopColor="#9234FF" />
-                <stop offset="1" stopColor="#9234FF" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-          </svg>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "33px", top: "260px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Oxygen Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Oxygen Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Libertinus Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Oxygen Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Oxygen Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Libertinus Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Libertinus Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Libertinus Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Libertinus Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "265px", top: "147px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Kode Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Kode Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Kode Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Kode Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Kode Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Kode Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Red Hat Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Red Hat Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Red Hat Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "150px", top: "147px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Red Hat Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Red Hat Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Red Hat Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Space Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 700, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Space Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 700, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Space Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 700, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Space Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 700, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Space Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 700, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Space Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 700, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "33px", top: "147px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Syne Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Syne Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Syne Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Syne Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Syne Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Syne Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Xanh Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Xanh Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Xanh Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "33px", top: "35px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Cutive Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Cutive Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Cutive Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Intel One Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "150px", top: "35px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'LXGW WenKai Mono TC', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'LXGW WenKai Mono TC', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'LXGW WenKai Mono TC', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'LXGW WenKai Mono TC', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'LXGW WenKai Mono TC', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'LXGW WenKai Mono TC', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Cutive Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Cutive Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Cutive Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
-        </div>
-        <div style={{ width: "108px", height: "104px", position: "absolute", left: "265px", top: "35px" }}>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(226,28,97,0.65) 34.62%,rgba(226,28,97,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E21C61", fontFamily: "'Xanh Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              9
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(12,173,71,0.65) 34.62%,rgba(43,209,62,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#0CAD47", fontFamily: "'Xanh Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              8
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "72px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(0,255,178,0.65) 34.62%,rgba(69,255,168,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#00FFB2", fontFamily: "'Xanh Mono', monospace", fontSize: "30px", lineHeight: "36px", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              7
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,184,76,0.65) 34.62%,rgba(255,184,76,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FFB84C", fontFamily: "'Chivo Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 900, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              6
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(146,52,255,0.65) 34.62%,rgba(146,52,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#9234FF", fontFamily: "'Chivo Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 900, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              5
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "36px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(76,124,255,0.65) 34.62%,rgba(76,124,255,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#4C7CFF", fontFamily: "'Chivo Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 900, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              4
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "76px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(128,252,103,0.65) 34.62%,rgba(126,244,86,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#80FC67", fontFamily: "'Chivo Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 900, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              3
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "38px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(231,255,52,0.65) 34.62%,rgba(204,255,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#E7FF34", fontFamily: "'Chivo Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 900, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              2
-            </p>
-          </div>
-          <div style={{ width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}>
-            <div style={{ backgroundImage: "radial-gradient(50% 50% at 50% 50%,rgba(255,41,77,0.65) 34.62%,rgba(255,0,0,0.00) 100%)", width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px" }}></div>
-            <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#FF294D", fontFamily: "'Chivo Mono', monospace", fontSize: "30px", lineHeight: "36px", fontWeight: 900, width: "32px", height: "32px", position: "absolute", left: "0px", top: "0px", textAlign: "center" }}>
-              1
-            </p>
-          </div>
+                {cell?.kind === 'number' ? cell.number : cell?.kind === 'note' ? (
+                  <span className="board-notes">
+                    {cell.numbers.map((note) => <span key={note.number} style={{ gridColumn: (note.number - 1) % 3 + 1, gridRow: Math.floor((note.number - 1) / 3) + 1, color: note.color, ...note.pen }}>{note.number}</span>)}
+                  </span>
+                ) : null}
+              </button>
+            )
+          })}
         </div>
       </div>
       <div style={{ width: "90px", height: "25px", position: "absolute", left: "90px", top: "794px" }}>
