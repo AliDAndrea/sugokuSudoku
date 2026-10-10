@@ -75,23 +75,28 @@ function ProfileDetails({ view }) {
       <img src={images.Profile} style={{ width: '396px', height: '549px', position: 'absolute', left: 0, top: 0, maxWidth: 'none' }} alt="Profile" />
       <BackToHome left="9px" top="10px" active={active} />
       <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
-          <ProfileField label="Username:" value={profile.username} top="108px" />
-          <ProfileField label="Level: " value={user.level} top="167px" labelWidth="74px" />
-          <ProfileField label="Daily Streak: " value={user.dailyStreak} top="224px" labelWidth="162px" />
-          <ProfileField label="Puzzles Complete: " value={user.puzzlesCompleted} top="282px" labelWidth="227px" />
+          <ProfileField label="Username:" value={profile.username} top="88px" />
+          <ProfileField label="Level: " value={user.level} top="146px" />
+          <ProfileField label="Daily Streak: " value={user.dailyStreak} top="204px" />
+          <ProfileField label="Puzzles Complete: " value={user.puzzlesCompleted} top="262px" />
           <ProfileField
             label="Fastest Time:" 
             value={user.fastestTime}
-            top="339px"
-            labelWidth="166px"
+            top="320px"
           />
-          <p role="status" style={{ position: 'absolute', left: '125px', top: '417px', width: '235px', fontSize: '12px', lineHeight: 1.2 }}>{status}</p>
+          <div style={{ position: 'absolute', left: '31px', top: '375px', width: '334px', height: '80px', display: 'flex', alignItems: 'center' }}>
+            <p id="profile-picture-label" style={{ flexShrink: 0, fontSize: '28px', lineHeight: '28px', whiteSpace: 'pre', transform: 'translateY(-10px)' }}>Profile Picture:   </p>
+            {active && (
+              <button type="button" aria-labelledby="profile-picture-label" title="Choose profile picture" disabled={saving} onClick={() => imageInput.current.click()} style={{ flexShrink: 0, transform: 'translateY(-10px)', width: '80px', height: '80px', padding: 0, border: '1px solid #171614', borderRadius: '50%', background: '#d9dddd', overflow: 'hidden', cursor: 'pointer' }}>
+                {profile.profileImage && <img src={profile.profileImage} alt="Your profile" style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />}
+              </button>
+            )}
+          </div>
+          <p role="status" style={{ position: 'absolute', left: '31px', top: '461px', width: '280px', fontSize: '12px', lineHeight: '19.3px', overflowWrap: 'anywhere' }}>{status}</p>
       </div>
       {active && <>
           <input ref={imageInput} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={chooseImage} hidden />
-          <button type="button" aria-label="Choose profile picture" title="Choose profile picture" disabled={saving} onClick={() => imageInput.current.click()} style={{ position: 'absolute', left: '31px', top: '391px', width: '80px', height: '80px', padding: 0, border: '1px solid #171614', borderRadius: '50%', background: '#d9dddd', overflow: 'hidden', cursor: 'pointer' }}>
-            {profile.profileImage && <img src={profile.profileImage} alt="Your profile" style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />}
-          </button>
+
       </>}
       {!active && (
         <Link to="/profile" aria-label="Open profile" style={{ position: 'absolute', inset: 0, display: 'block' }} />
@@ -102,9 +107,9 @@ function ProfileDetails({ view }) {
 
 function ProfileField({ label, value, top, valueFontSize = '22px' }) {
   return (
-    <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '28px', lineHeight: '42px', width: '334px', height: '42px', position: 'absolute', left: '31px', top, display: 'flex', alignItems: 'baseline', gap: '12px', whiteSpace: 'nowrap' }}>
-      <span>{label.trim()}</span>
-      <span style={{ fontSize: valueFontSize }}>{value}</span>
+    <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '28px', lineHeight: '28px', width: '334px', height: '42px', position: 'absolute', left: '31px', top, display: 'flex', alignItems: 'baseline', justifyContent: 'flex-start', paddingTop: '14px', boxSizing: 'border-box', gap: '12px' }}>
+      <span style={{ flexShrink: 0 }}>{label.trim()}</span>
+      <span style={{ fontSize: valueFontSize, minWidth: 0, overflowWrap: 'anywhere' }}>{value}</span>
     </p>
   )
 }
@@ -123,7 +128,7 @@ function ReplacementNotebook({ src, alt }) {
 
 function ProfileInput({ label, top, ...props }) {
   return (
-    <label style={{ position: 'absolute', left: '28px', top, width: '280px', fontSize: '22px' }}>
+    <label style={{ position: 'absolute', left: '28px', top: `calc(${top} + 4px)`, width: '280px', fontSize: '22px', lineHeight: '22px' }}>
       {label}
       <span className="profile-input-frame">
         <input {...props} required className="profile-input" />
@@ -132,8 +137,8 @@ function ProfileInput({ label, top, ...props }) {
   )
 }
 
-function ProfileConfirm({ top, saving, label = 'Confirm' }) {
-  return <button type="submit" disabled={saving} aria-label={label} style={{ position: 'absolute', left: '140px', top, width: '180px', height: '60px', padding: 0, border: 0, background: 'transparent', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
+function ProfileConfirm({ top, saving, label = 'Confirm', position = 'absolute', left = '140px' }) {
+  return <button type="submit" disabled={saving} aria-label={label} style={{ position, left, top, width: '180px', height: '60px', padding: 0, border: 0, background: 'transparent', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
     <img src={images.ConfirmButton} alt={label} style={{ width: '100%', height: '100%' }} />
   </button>
 }
@@ -142,30 +147,34 @@ function ChangePasswordPanel({ view }) {
   const active = view === 'change-password'
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
-  const [status, setStatus] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const submit = async (event) => {
     event.preventDefault()
     if (saving) return
-    if (password !== confirmation) { setStatus('Passwords must match.'); return }
+    if (!password || !confirmation) { setErrorMessage('Enter and confirm your new password.'); return }
+    if (password !== confirmation) { setErrorMessage('Passwords must match.'); return }
+    setErrorMessage('')
     setSaving(true)
     try {
       await saveProfile({ password })
       setPassword('')
       setConfirmation('')
-      setStatus('Password changed.')
-    } catch (error) { setStatus(error.message) }
+      setErrorMessage('')
+    } catch (error) { setErrorMessage(error.message) }
     finally { setSaving(false) }
   }
   return (
-    <div className="profile-panel" style={{ left: '-2px', top: active ? '188px' : view === 'change-email' ? '191px' : '525px', width: '100%', height: '562px', position: 'absolute', zIndex: 1 }}>
+    <div className="profile-panel profile-password-panel" style={{ left: view === 'profile' ? '-4px' : '-5px', top: active ? '361px' : view === 'change-email' ? '686px' : '690px', width: '413px', height: '573px', position: 'absolute', zIndex: 2 }}>
       <ReplacementNotebook src={images.PasswordPage} alt="Change password" />
       <BackToHome left="12px" top="11px" active={active} />
-      <form onSubmit={submit} className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
-        <ProfileInput label="New Password:" top="150px" type="password" autoComplete="new-password" minLength={1} value={password} onChange={(event) => setPassword(event.target.value)} disabled={saving} />
-        <ProfileInput label="Confirm New Password:" top="224px" type="password" autoComplete="new-password" minLength={1} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={saving} />
-        <ProfileConfirm top="305px" saving={saving} label="Confirm password change" />
-        <p role="status" style={{ position: 'absolute', left: '28px', top: '375px', width: '345px', fontSize: '16px' }}>{saving ? 'Saving?' : status || 'Use at least 1 character.'}</p>
+      <form noValidate onSubmit={submit} className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
+        <ProfileInput label="New Password:" top="131px" type="password" autoComplete="new-password" minLength={1} value={password} onChange={(event) => { setPassword(event.target.value); setErrorMessage('') }} disabled={saving} />
+        <ProfileInput label="Confirm New Password:" top="209px" type="password" autoComplete="new-password" minLength={1} value={confirmation} onChange={(event) => { setConfirmation(event.target.value); setErrorMessage('') }} disabled={saving} />
+        <div style={{ position: 'absolute', left: '28px', top: '271px', width: '292px', display: 'flex', flexDirection: 'column', gap: '22px', paddingTop: '22px' }}>
+          <p role="alert" style={{ minHeight: '19.5px', width: '280px', fontSize: '16px', lineHeight: '19.5px', overflowWrap: 'anywhere' }}>{errorMessage}</p>
+          <ProfileConfirm top="-10px" left="112px" position="relative" saving={saving} label="Confirm password change" />
+        </div>
       </form>
       {!active && <Link to="/profile/change-password" aria-label="Change password" style={{ position: 'absolute', inset: 0, display: 'block' }} />}
     </div>
@@ -194,19 +203,19 @@ function ChangeEmailPanel({ view }) {
     finally { setSaving(false) }
   }
   return (
-    <div className="profile-panel" style={{ left: view === 'profile' ? '-4px' : '-5px', top: active ? '361px' : view === 'change-password' ? '686px' : '690px', width: '413px', height: '573px', position: 'absolute', zIndex: 2 }}>
+    <div className="profile-panel profile-personal-info-panel" style={{ left: '-1px', top: active ? '188px' : view === 'change-password' ? '191px' : '525px', width: '100%', height: '562px', position: 'absolute', zIndex: 1 }}>
       <ReplacementNotebook src={images.PersonalInfoPage} alt="Personal info" />
       <BackToHome left="15px" top="12px" active={active} />
       <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
         <form onSubmit={(event) => submit(event, 'username')}>
-          <ProfileInput label="New Username:" top="100px" type="text" autoComplete="username" maxLength={30} placeholder={profile.username} value={username} onChange={(event) => setUsername(event.target.value)} disabled={saving} />
+          <ProfileInput label="New Username:" top="94px" type="text" autoComplete="username" maxLength={30} placeholder={profile.username} value={username} onChange={(event) => setUsername(event.target.value)} disabled={saving} />
           <ProfileConfirm top="173px" saving={saving} label="Confirm username change" />
         </form>
         <form onSubmit={(event) => submit(event, 'email')}>
-          <ProfileInput label="New Email:" top="251px" type="email" autoComplete="email" maxLength={254} pattern={'[^\\s@]+@[^\\s@]+\\.[^\\s@]+'} placeholder={profile.email} value={email} onChange={(event) => setEmail(event.target.value)} disabled={saving} />
+          <ProfileInput label="New Email:" top="254px" type="email" autoComplete="email" maxLength={254} pattern={'[^\\s@]+@[^\\s@]+\\.[^\\s@]+'} placeholder={profile.email} value={email} onChange={(event) => setEmail(event.target.value)} disabled={saving} />
           <ProfileConfirm top="324px" saving={saving} label="Confirm email change" />
         </form>
-        <p role="status" style={{ position: 'absolute', left: '28px', top: '396px', width: '345px', fontSize: '16px' }}>{saving ? 'Saving?' : status}</p>
+        <p role="status" style={{ position: 'absolute', left: '28px', top: '403px', width: '280px', fontSize: '16px', lineHeight: '20px', overflowWrap: 'anywhere' }}>{saving ? 'Saving?' : status}</p>
       </div>
       {!active && <Link to="/profile/change-email" aria-label="Open personal info" style={{ position: 'absolute', inset: 0, display: 'block' }} />}
     </div>
@@ -228,6 +237,8 @@ function BackToHome({ left, top, active }) {
   )
 }
 
+const profileViewOrder = { profile: 0, 'change-email': 1, 'change-password': 2 }
+
 export default function ProfilePage() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -236,13 +247,20 @@ export default function ProfilePage() {
     : pathname.endsWith('/change-email')
       ? 'change-email'
       : 'profile'
+  const [transition, setTransition] = useState({ view, direction: 'up' })
+  if (transition.view !== view) {
+    setTransition({
+      view,
+      direction: profileViewOrder[view] < profileViewOrder[transition.view] ? 'down' : 'up',
+    })
+  }
 
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [view])
 
   return (
-    <div className="profile-page-transition" style={pageStyle}>
+    <div className="profile-page-transition" data-view={view} data-direction={transition.direction} style={pageStyle}>
       <img src={images.BgSettings} style={backgroundStyle} alt="" />
       <button type="button" className="profile-logout" onClick={() => navigate('/sign-in', { replace: true })}>Logout</button>
 
