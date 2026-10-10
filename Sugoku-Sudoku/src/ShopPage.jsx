@@ -14,12 +14,40 @@ export default function ShopPage({ initialTab = 'pens' }) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const profile = useProfile()
   const ownedPens = new Set(profile.ownedPens || ['Pencil Pen'])
+  const ownedPacks = new Set(profile.ownedPacks || ['pack-E_1'])
 
   async function onBuyPen(pen) {
+    if (ownedPens.has(pen.name)) return
+    if (profile.sudo < pen.price) throw new Error()
     await saveProfile({
+      sudo: profile.sudo - pen.price,
       selectedPen: pen.name,
       ownedPens: [...new Set([...ownedPens, pen.name])],
     })
+  }
+
+  async function onBuyPack(pack) {
+    if (ownedPacks.has(pack.id)) return
+    if (profile.sudo < pack.price) throw new Error()
+    await saveProfile({
+      sudo: profile.sudo - pack.price,
+      ownedPacks: [...new Set([...ownedPacks, pack.id])],
+    })
+  }
+
+  async function onBuyCurrencyOffer(offer) {
+    const updates = offer.kind === 'hints'
+      ? {
+          sudo: profile.sudo - offer.price,
+          hints: profile.hints + offer.amount,
+        }
+      : { sudo: profile.sudo + offer.amount }
+
+    if (offer.kind === 'hints' && profile.sudo < offer.price) {
+      throw new Error(`You need S ${offer.price} to buy this hint offer.`)
+    }
+
+    await saveProfile(updates)
   }
 
   return (
@@ -44,15 +72,16 @@ export default function ShopPage({ initialTab = 'pens' }) {
         {activeTab === 'pens' && (
           <PensContent
             ownedPens={ownedPens}
+            sudo={profile.sudo}
             selectedPenName={profile.selectedPen}
             onBuyPen={onBuyPen}
             onSelectOwnedPen={(pen) => saveProfile({ selectedPen: pen.name })}
           />
         )}
-        {activeTab === 'packs' && <PacksContent />}
-        {activeTab === 'currency' && <CurrencyContent />}
+        {activeTab === 'packs' && <PacksContent ownedPacks={ownedPacks} onBuyPack={onBuyPack} level={profile.level} sudo={profile.sudo} />}
+        {activeTab === 'currency' && <CurrencyContent profile={profile} onBuyOffer={onBuyCurrencyOffer} />}
       </div>
-      {activeTab !== 'pens' && (
+      {activeTab === 'packs' && (
         <img src={images.BuyButton} style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', maxWidth: 'none' }} alt="BuyButton" />
       )}
       <Link to="/" aria-label="Return to home page" style={{ width: '60px', height: '60px', position: 'absolute', left: '8px', top: '11px', display: 'block', zIndex: 10 }}>
@@ -62,7 +91,7 @@ export default function ShopPage({ initialTab = 'pens' }) {
   )
 }
 
-function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName }) {
+function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName, sudo }) {
   const penCards = [
     { item: penItems.find((pen) => pen.name === 'Pencil Pen'), left: '23px', top: '120px' },
     { item: penItems.find((pen) => pen.name === 'Ink Pen'), left: '148px', top: '534px' },
@@ -152,8 +181,8 @@ function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName })
           type="button"
           aria-label={`Buy ${selectedPen.name} for S ${selectedPen.price}`}
           onClick={buySelectedPen}
-          disabled={isPurchasing}
-          style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2 }}
+          disabled={isPurchasing || sudo < selectedPen.price}
+          style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2, filter: sudo < selectedPen.price ? 'brightness(0.75)' : 'none', opacity: 1 }}
         >
           <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
         </button>
@@ -172,26 +201,45 @@ function PensContent({ ownedPens, onBuyPen, onSelectOwnedPen, selectedPenName })
   )
 }
 
-function PacksContent() {
+function PacksContent({ ownedPacks, onBuyPack, level, sudo }) {
   const packs = [
-    { id: 'pack-1', price: 100, difficulty: 'Easy', type: 'Classic', bought: true, left: 59, top: 172 },
-    { id: 'pack-2', price: 150, difficulty: 'Easy', type: 'Chaos', bought: false, left: 185, top: 172 },
-    { id: 'pack-5', price: 200, difficulty: 'Easy', type: 'Killer', bought: false, left: 311, top: 172 },
-    { id: 'pack-3', price: 150, difficulty: 'Hard', type: 'Chaos', bought: false, left: 185, top: 380 },
-    { id: 'pack-4', price: 200, difficulty: 'Hard', type: 'Classic', bought: false, left: 59, top: 380 },
-    { id: 'pack-6', price: 200, difficulty: 'Hard', type: 'Killer', bought: false, left: 311, top: 380 },
-    { id: 'pack-8', price: 0, difficulty: 'Normal', type: 'Classic', bought: false, left: 59, top: 276 },
-    { id: 'pack-7', price: 0, difficulty: 'Normal', type: 'Chaos', bought: false, left: 185, top: 276 },
-    { id: 'pack-13', price: 0, difficulty: 'Normal', type: 'Killer', bought: false, left: 311, top: 276 },
-    { id: 'pack-9', price: 0, difficulty: 'Expert', type: 'Chaos', bought: false, left: 185, top: 484 },
-    { id: 'pack-10', price: 0, difficulty: 'Expert', type: 'Classic', bought: false, left: 59, top: 484 },
-    { id: 'pack-11', price: 0, difficulty: 'Impossible', type: 'Chaos', bought: false, left: 185, top: 588 },
-    { id: 'pack-12', price: 0, difficulty: 'Impossible', type: 'Classic', bought: false, left: 59, top: 588 },
-    { id: 'pack-14', price: 0, difficulty: 'Expert', type: 'Killer', bought: false, left: 311, top: 484 },
-    { id: 'pack-15', price: 0, difficulty: 'Impossible', type: 'Killer', bought: false, left: 311, top: 588 },
+    { id: 'pack-E_1', price: 100, difficulty: 'Easy', requiredLevel: 0, type: 'Classic', bought: true, left: 59, top: 172 },
+    { id: 'pack-E_2', price: 110, difficulty: 'Easy', requiredLevel: 0, type: 'Chaos', bought: false, left: 185, top: 172 },
+    { id: 'pack-E_3', price: 120, difficulty: 'Easy', requiredLevel: 0, type: 'Killer', bought: false, left: 311, top: 172 },
+    { id: 'pack-H_1', price: 150, difficulty: 'Hard', requiredLevel: 10, type: 'Chaos', bought: false, left: 185, top: 380 },
+    { id: 'pack-H_2', price: 160, difficulty: 'Hard', requiredLevel: 10, type: 'Classic', bought: false, left: 59, top: 380 },
+    { id: 'pack-H_3', price: 180, difficulty: 'Hard', requiredLevel: 10, type: 'Killer', bought: false, left: 311, top: 380 },
+    { id: 'pack-N_1', price: 200, difficulty: 'Normal', requiredLevel: 5, type: 'Classic', bought: false, left: 59, top: 276 },
+    { id: 'pack-N_2', price: 220, difficulty: 'Normal', requiredLevel: 5, type: 'Chaos', bought: false, left: 185, top: 276 },
+    { id: 'pack-N_3', price: 240, difficulty: 'Normal', requiredLevel: 5, type: 'Killer', bought: false, left: 311, top: 276 },
+    { id: 'pack-EX_1', price: 300, difficulty: 'Expert', requiredLevel: 20, type: 'Classic', bought: false, left: 59, top: 484 },
+    { id: 'pack-EX_2', price: 320, difficulty: 'Expert', requiredLevel: 20, type: 'Chaos', bought: false, left: 185, top: 484 },
+    { id: 'pack-EX_3', price: 350, difficulty: 'Expert', requiredLevel: 20, type: 'Killer', bought: false, left: 311, top: 484 },
+    { id: 'pack-I_1', price: 500, difficulty: 'Impossible', requiredLevel: 40, type: 'Classic', bought: false, left: 59, top: 588 },
+    { id: 'pack-I_2', price: 525, difficulty: 'Impossible', requiredLevel: 40, type: 'Chaos', bought: false, left: 185, top: 588 },
+    { id: 'pack-I_3', price: 550, difficulty: 'Impossible', requiredLevel: 40, type: 'Killer', bought: false, left: 311, top: 588 },
   ]
+  const purchasedPacks = packs.map((pack) => ({ ...pack, bought: pack.bought || ownedPacks.has(pack.id) }))
+  const nextLockedTier = [...packs]
+    .sort((first, second) => first.requiredLevel - second.requiredLevel)
+    .find((pack) => pack.requiredLevel > level)
+  const firstLockedPack = nextLockedTier && packs.find((pack) => pack.requiredLevel === nextLockedTier.requiredLevel)
   const [selectedPackId, setSelectedPackId] = useState(packs[0].id)
-  const selectedPack = packs.find((pack) => pack.id === selectedPackId)
+  const selectedPack = purchasedPacks.find((pack) => pack.id === selectedPackId)
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [purchaseError, setPurchaseError] = useState('')
+
+  async function buySelectedPack() {
+    setIsPurchasing(true)
+    setPurchaseError('')
+    try {
+      await onBuyPack(selectedPack)
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : 'Could not buy this pack.')
+    } finally {
+      setIsPurchasing(false)
+    }
+  }
 
   return (
     <>
@@ -200,7 +248,7 @@ function PacksContent() {
         style={{ width: "438px", height: "591px", position: "absolute", left: "-12px", top: "87px", maxWidth: "none" }}
         alt="PacksTabBackground"
       />
-      {packs.map((pack) => (
+      {purchasedPacks.map((pack) => (
         <button
           key={pack.id}
           type="button"
@@ -216,16 +264,41 @@ function PacksContent() {
           />
         </button>
       ))}
+      {firstLockedPack && (
+        <div
+          aria-label={`Requires level ${firstLockedPack.requiredLevel}`}
+          style={{ position: 'absolute', left: 0, top: `${firstLockedPack.top}px`, width: '100%', height: `${663 - firstLockedPack.top}px`, backgroundColor: 'rgba(0, 0, 0, 0.28)', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--font-piedra)', fontSize: '28px', pointerEvents: 'none' }}
+        >
+          Level {firstLockedPack.requiredLevel} Required
+        </div>
+      )}
       {selectedPack.bought && (
         <img
           src={images.BoughtLabel}
-          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '690px', maxWidth: 'none' }}
+          style={{ width: '360px', height: '180px', position: 'absolute', left: '26px', top: '690px', maxWidth: 'none', zIndex: 4 }}
           alt="Pack already bought"
         />
       )}
-      <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '20px', lineHeight: '1.1', width: '205px', position: 'absolute', left: '35px', top: '704px' }}>
-        {selectedPack.difficulty} {selectedPack.type}
-      </p>
+      {!selectedPack.bought && selectedPack.requiredLevel <= level && (
+        <button
+          type="button"
+          aria-label={`Buy ${selectedPack.difficulty} ${selectedPack.type} pack for S ${selectedPack.price}`}
+          onClick={buySelectedPack}
+          disabled={isPurchasing || sudo < selectedPack.price}
+          style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2, filter: sudo < selectedPack.price ? 'brightness(0.75)' : 'none', opacity: 1 }}
+        >
+          <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
+        </button>
+      )}
+      {purchaseError && (
+        <p role="alert" style={{ color: '#a00000', fontSize: '14px', position: 'absolute', left: '20px', top: '830px', zIndex: 3 }}>
+          {purchaseError}
+        </p>
+      )}
+      <div style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '50px', lineHeight: '1', width: '205px', position: 'absolute', left: '20px', top: '710px' }}>
+        <p style={{ margin: 0 }}>{selectedPack.difficulty}</p>
+        <p style={{ margin: 20 }}>{selectedPack.type}</p>
+      </div>
       <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '48px', lineHeight: '1', width: '146px', height: '26px', position: 'absolute', left: '250px', top: '705px' }}>
         S {selectedPack.price}
       </p>
@@ -233,7 +306,34 @@ function PacksContent() {
   )
 }
 
-function CurrencyContent() {
+function CurrencyContent({ profile, onBuyOffer }) {
+  const offers = [
+    { id: 'hint-1', kind: 'hints', amount: 1, price: 75, left: 15, top: 208 },
+    { id: 'hint-5', kind: 'hints', amount: 5, price: 375, left: 148, top: 208 },
+    { id: 'hint-10', kind: 'hints', amount: 10, price: 750, left: 281, top: 208 },
+    { id: 'sudo-100', kind: 'sudo', amount: 100, left: 9, top: 436 },
+    { id: 'sudo-500', kind: 'sudo', amount: 500, left: 139, top: 436 },
+    { id: 'sudo-1000', kind: 'sudo', amount: 1000, left: 269, top: 436 },
+    { id: 'sudo-2500', kind: 'sudo', amount: 2500, left: 72, top: 540 },
+    { id: 'sudo-10000', kind: 'sudo', amount: 10000, left: 202, top: 540 },
+  ]
+  const [selectedOfferId, setSelectedOfferId] = useState(offers[0].id)
+  const selectedOffer = offers.find((offer) => offer.id === selectedOfferId)
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [purchaseError, setPurchaseError] = useState('')
+
+  async function buySelectedOffer() {
+    setIsPurchasing(true)
+    setPurchaseError('')
+    try {
+      await onBuyOffer(selectedOffer)
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : 'Could not complete this purchase.')
+    } finally {
+      setIsPurchasing(false)
+    }
+  }
+
   return (
     <>
       <img
@@ -241,106 +341,61 @@ function CurrencyContent() {
         style={{ width: "185px", height: "75px", position: "absolute", left: "102px", top: "102px", maxWidth: "none" }}
         alt="HintsLabel"
       />
-      <div style={{ width: "119px", height: "83px", position: "absolute", left: "9px", top: "436px" }}>
-        <img
-          src={images.SudoPurchaseFrame}
-          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Sudo purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 100
-        </p>
-      </div>
-      <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "80px", width: "162px", height: "26px", position: "absolute", left: "35px", top: "726px" }}>
-        S100
-      </p>
-      <div style={{ width: "117px", height: "83px", position: "absolute", left: "139px", top: "436px" }}>
-        <img
-          src={images.SudoPurchaseFrame}
-          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Sudo purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 500
-        </p>
-      </div>
-      <div style={{ width: "113px", height: "105px", position: "absolute", left: "15px", top: "208px" }}>
-        <img
-          src={images.HintPurchaseFrame}
-          style={{ width: "105px", height: "105px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Hint purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "47px", lineHeight: 1, width: "48px", height: "68px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          1
-        </p>
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "22px", lineHeight: 1, width: "95px", height: "22px", position: "absolute", left: "5px", top: "79px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 75
-        </p>
-      </div>
-      <div style={{ width: "113px", height: "105px", position: "absolute", left: "148px", top: "208px" }}>
-        <img
-          src={images.HintPurchaseFrame}
-          style={{ width: "105px", height: "105px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Hint purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "47px", lineHeight: 1, width: "48px", height: "68px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          5
-        </p>
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "22px", lineHeight: 1, width: "95px", height: "22px", position: "absolute", left: "5px", top: "79px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 375
-        </p>
-      </div>
-      <div style={{ width: "113px", height: "105px", position: "absolute", left: "281px", top: "208px" }}>
-        <img
-          src={images.HintPurchaseFrame}
-          style={{ width: "105px", height: "105px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Hint purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "47px", lineHeight: 1, width: "48px", height: "68px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          10
-        </p>
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "22px", lineHeight: 1, width: "95px", height: "22px", position: "absolute", left: "5px", top: "79px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 750
-        </p>
-      </div>
-      <div style={{ width: "116px", height: "83px", position: "absolute", left: "72px", top: "540px" }}>
-        <img
-          src={images.SudoPurchaseFrame}
-          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Sudo purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 2500
-        </p>
-      </div>
-      <div style={{ width: "116px", height: "83px", position: "absolute", left: "269px", top: "436px" }}>
-        <img
-          src={images.SudoPurchaseFrame}
-          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Sudo purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 1000
-        </p>
-      </div>
-      <div style={{ width: "116px", height: "83px", position: "absolute", left: "202px", top: "540px" }}>
-        <img
-          src={images.SudoPurchaseFrame}
-          style={{ width: "116px", height: "83px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
-          alt="Sudo purchase frame"
-        />
-        <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "26px", lineHeight: 1, width: "106px", height: "73px", position: "absolute", left: "5px", top: "5px", display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-          S 10000
-        </p>
-      </div>
-      <p style={{ color: "#000", fontFamily: "var(--font-piedra)", fontSize: "48px", lineHeight: "1", width: "146px", height: "26px", position: "absolute", left: "250px", top: "697px" }}>
-        $####
-      </p>
       <img
         src={images.SudoLabel}
         style={{ width: "442px", height: "76px", position: "absolute", left: "-10px", top: "342px", maxWidth: "none" }}
         alt="image 1"
       />
+      {offers.map((offer) => {
+        const isHintOffer = offer.kind === 'hints'
+        const width = isHintOffer ? 113 : 116
+        const height = isHintOffer ? 105 : 83
+
+        return (
+          <button
+            key={offer.id}
+            type="button"
+            aria-label={isHintOffer ? `${offer.amount} hints for S ${offer.price}` : `Add S ${offer.amount}`}
+            aria-pressed={selectedOfferId === offer.id}
+            onClick={() => setSelectedOfferId(offer.id)}
+            style={{ width: `${width}px`, height: `${height}px`, position: 'absolute', left: `${offer.left}px`, top: `${offer.top}px`, padding: 0, border: 0, background: 'transparent', cursor: 'pointer', filter: selectedOfferId === offer.id ? 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7))' : 'none' }}
+          >
+            <img
+              src={isHintOffer ? images.HintPurchaseFrame : images.SudoPurchaseFrame}
+              style={{ width: isHintOffer ? '105px' : '116px', height: `${height}px`, position: 'absolute', left: 0, top: 0, maxWidth: 'none' }}
+              alt=""
+            />
+            <span style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: isHintOffer ? '47px' : '26px', lineHeight: 1, width: isHintOffer ? '48px' : '106px', height: isHintOffer ? '68px' : '73px', position: 'absolute', left: '5px', top: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
+              {isHintOffer ? offer.amount : `S ${offer.amount}`}
+            </span>
+            {isHintOffer && (
+              <span style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '22px', lineHeight: 1, width: '95px', height: '22px', position: 'absolute', left: '5px', top: '79px', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
+                S {offer.price}
+              </span>
+            )}
+          </button>
+        )
+      })}
+      <p style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '24px', lineHeight: '1.1', width: '205px', position: 'absolute', left: '30px', top: '700px' }}>
+        {selectedOffer.kind === 'hints' ? `${selectedOffer.amount} Hints` : `S ${selectedOffer.amount}`}
+      </p>
+      <p aria-live="polite" style={{ color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '48px', lineHeight: 1, width: '146px', height: '52px', position: 'absolute', left: '250px', top: '697px' }}>
+        {selectedOffer.kind === 'hints' ? `S ${selectedOffer.price}` : `+S ${selectedOffer.amount}`}
+      </p>
+      <button
+        type="button"
+        aria-label={`Buy ${selectedOffer.kind === 'hints' ? `${selectedOffer.amount} hints for S ${selectedOffer.price}` : `S ${selectedOffer.amount}`}`}
+        onClick={buySelectedOffer}
+        disabled={isPurchasing || (selectedOffer.kind === 'hints' && profile.sudo < selectedOffer.price)}
+        style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2, filter: selectedOffer.kind === 'hints' && profile.sudo < selectedOffer.price ? 'brightness(0.75)' : 'none', opacity: 1 }}
+      >
+        <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
+      </button>
+      {purchaseError && (
+        <p role="alert" style={{ color: '#a00000', fontSize: '14px', position: 'absolute', left: '20px', top: '830px', zIndex: 3 }}>
+          {purchaseError}
+        </p>
+      )}
     </>
   )
 }

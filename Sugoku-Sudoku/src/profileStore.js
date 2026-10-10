@@ -5,8 +5,12 @@ let profile = {
   username: user.username,
   profileImage: user.profileImage,
   email: user.email,
+  level: Number.isFinite(user.level) ? user.level : 1,
+  sudo: Number.isFinite(user.sudo) ? user.sudo : 0,
+  hints: Number.isFinite(user.hints) ? user.hints : 0,
   selectedPen: user.selectedPen || 'Pencil Pen',
   ownedPens: user.ownedPens || [...new Set(['Pencil Pen', user.selectedPen || 'Pencil Pen'])],
+  ownedPacks: user.ownedPacks || ['pack-E_1'],
 }
 const listeners = new Set()
 const subscribe = (listener) => {
