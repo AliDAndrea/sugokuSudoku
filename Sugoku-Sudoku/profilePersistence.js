@@ -4,11 +4,14 @@ import { Buffer } from 'node:buffer'
 const usernameKey = (username) => username.trim().toLowerCase()
 const penNames = new Set(['Multi Pen', 'Crayon Pen', 'Brush Pen', 'Cheap Pen', 'Ink Pen', 'Marker Pen', 'Mechanical Pen', 'Pen Pen', 'Pencil Pen', 'Quill Pen', 'Stylus Pen', 'Yatate Pen'])
 const packIds = new Set(['pack-E_1', 'pack-E_2', 'pack-E_3', 'pack-H_1', 'pack-H_2', 'pack-H_3', 'pack-N_1', 'pack-N_2', 'pack-N_3', 'pack-EX_1', 'pack-EX_2', 'pack-EX_3', 'pack-I_1', 'pack-I_2', 'pack-I_3'])
-const publicProfile = ({ username, email, profileImage, selectedPen, ownedPens, ownedPacks, sudo, hints, level }) => ({
+const publicProfile = ({ username, email, profileImage, selectedPen, ownedPens, ownedPacks, sudo, hints, level, dailyStreak, puzzlesCompleted, fastestTime }) => ({
   username,
   email,
   profileImage,
   level: Number.isFinite(level) ? level : 1,
+  dailyStreak: Number.isFinite(dailyStreak) ? dailyStreak : 0,
+  puzzlesCompleted: Number.isFinite(puzzlesCompleted) ? puzzlesCompleted : 0,
+  fastestTime: Number.isFinite(fastestTime) ? fastestTime : 0,
   selectedPen: selectedPen || 'Pencil Pen',
   ownedPens: ownedPens || [...new Set(['Pencil Pen', selectedPen || 'Pencil Pen'])],
   ownedPacks: ownedPacks || ['pack-E_1'],
@@ -25,6 +28,19 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
         const route = request.url?.split('?')[0]
         if (!['/profile', '/account'].includes(route)) return next()
         response.setHeader('Content-Type', 'application/json')
+        if (route === '/profile' && request.method === 'GET') {
+          try {
+            const source = await readFile(userFile, 'utf8')
+            const { default: saved } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
+            const { accounts: _accounts, ...current } = structuredClone(saved)
+            void _accounts
+            response.end(JSON.stringify({ ok: true, profile: publicProfile(current) }))
+          } catch (error) {
+            response.statusCode = 500
+            response.end(JSON.stringify({ error: error.message }))
+          }
+          return
+        }
         if (request.method !== 'POST' || !request.headers['content-type']?.startsWith('application/json')) {
           response.statusCode = 405
           response.end(JSON.stringify({ error: 'Use a JSON POST request.' }))
