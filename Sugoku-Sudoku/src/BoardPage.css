@@ -1,14 +1,13 @@
 .board-cell {
   pointer-events: auto;
   position: absolute;
-  width: 7.9208%;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: 2px;
+  border-radius: 0;
+  isolation: isolate;
   background: transparent;
   color: #000;
   font-size: 30px;
@@ -16,17 +15,28 @@
   cursor: pointer;
 }
 
-.board-cell[data-related='true'] {
+.board-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  mask-image: var(--tile-mask);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
+
+.board-cell[data-related='true']::before {
   background: color-mix(in srgb, var(--board-highlight) 30%, transparent);
 }
 
-.board-cell[data-matching='true'] {
+.board-cell[data-matching='true']::before {
   background: color-mix(in srgb, var(--board-highlight) 55%, transparent);
 }
 
-.board-cell[data-selected='true'] {
+.board-cell[data-selected='true']::before {
   background: radial-gradient(circle, color-mix(in srgb, var(--board-highlight) 85%, transparent) 35%, color-mix(in srgb, var(--board-highlight) 15%, transparent) 100%);
-  box-shadow: 0 0 9px 3px color-mix(in srgb, var(--board-highlight) 70%, transparent);
+  box-shadow: inset 0 0 9px 3px color-mix(in srgb, var(--board-highlight) 70%, transparent);
 }
 
 .board-number {

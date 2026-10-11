@@ -6,6 +6,17 @@ import { useProfile } from './profileStore.js'
 import { boardReducer, createBoardState, isRelatedCell, isNumberComplete, userColors } from './boardState.js'
 import { loadBoard, saveBoard } from './boardStore.js'
 import './BoardPage.css'
+import { boardGeometry } from './boardGeometry.js'
+
+const tileLayouts = Object.fromEntries(Object.entries(boardGeometry).map(([size, geometry]) => [size,
+  geometry.cells.map((cell) => ({
+    left: `${cell.x / geometry.width * 100}%`,
+    top: `${cell.y / geometry.height * 400}px`,
+    width: `${cell.width / geometry.width * 100}%`,
+    height: `${cell.height / geometry.height * 400}px`,
+    '--tile-mask': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cell.width} ${cell.height}" preserveAspectRatio="none"><defs><filter id="soft"><feGaussianBlur stdDeviation="0.4"/></filter></defs><path fill="white" filter="url(#soft)" d="${cell.path}"/></svg>`)}")`,
+  })),
+]))
 
 const boardPenStyle = {
   width: '158px',
@@ -170,8 +181,6 @@ export default function BoardPage() {
             const row = Math.floor(index / board.board.size)
             const column = index % board.board.size
             const selected = board.selected === index
-            const sixColumn = [[38, 43], [88, 40], [134, 42], [189, 42], [237, 40], [284, 43]][column]
-            const sixRow = [[43, 40], [89, 38], [139, 40], [185, 38], [236, 38], [280, 40]][row]
             return (
               <button
                 key={index}
@@ -187,10 +196,7 @@ export default function BoardPage() {
                 onPointerDown={(event) => { if (event.button === 0) dispatch({ type: 'select', index }) }}
                 onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
                 style={{
-                  left: `${board.board.size === 6 ? sixColumn[0] / 366 * 100 : [33, 71, 109, 150, 188, 226, 265, 303, 341][column] / 404 * 100}%`,
-                  width: board.board.size === 6 ? `${sixColumn[1] / 366 * 100}%` : undefined,
-                  height: board.board.size === 6 ? `${sixRow[1] / 362 * 400}px` : undefined,
-                  top: `${board.board.size === 6 ? sixRow[0] / 362 * 400 : [35, 71, 107, 147, 183, 219, 260, 296, 332][row]}px`,
+                  ...tileLayouts[board.board.size][index],
                   ...(cell?.pen || pen),
                   color: cell?.color,
                 }}
