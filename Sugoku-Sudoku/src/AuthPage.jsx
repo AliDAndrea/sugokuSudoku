@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import './AuthPage.css'
-import { accessAccount, isSupabaseEnabled } from './profileStore.js'
+import { accessAccount } from './profileStore.js'
 
 function AuthField({ label, ...props }) {
   return <label className="auth-field">
@@ -21,13 +21,8 @@ function AuthNotebook({ signup, active }) {
     if (submitting.current) return
     const data = new FormData(event.currentTarget)
     const username = String(data.get('username') ?? '').trim()
-    const email = String(data.get('email') ?? '').trim()
-    if ((signup && !username) || (!signup && !isSupabaseEnabled && !username)) {
+    if (!username) {
       setStatus('Enter a username.')
-      return
-    }
-    if (isSupabaseEnabled && !email) {
-      setStatus('Enter your email address.')
       return
     }
     if (!data.get('password') || (signup && !data.get('confirmation'))) {
@@ -41,7 +36,7 @@ function AuthNotebook({ signup, active }) {
     submitting.current = true
     setStatus('')
     try {
-      await accessAccount({ action: signup ? 'signup' : 'signin', username, email, password: data.get('password') })
+      await accessAccount({ action: signup ? 'signup' : 'signin', username, password: data.get('password') })
       navigate('/', { replace: true })
     } catch (error) { setStatus(error.message) }
     finally { submitting.current = false }
@@ -51,8 +46,7 @@ function AuthNotebook({ signup, active }) {
     <h1 className="auth-title">{title}</h1>
     <div className="profile-panel-content auth-content" data-active={active} aria-hidden={!active} inert={!active}>
       <form noValidate onSubmit={submit} onChange={() => setStatus('')} className="auth-form">
-        {(signup || !isSupabaseEnabled) && <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} />}
-        {isSupabaseEnabled && <AuthField label="Email:" name="email" type="email" autoComplete="email" maxLength={254} />}
+        <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} />
         <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={1} />
         {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={1} />}
         <div className="auth-actions">

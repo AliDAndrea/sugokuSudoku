@@ -1,4 +1,7 @@
 project_id = "sugoku-sudoku"
 
+[functions.sign-in-with-username]
+verify_jwt = false
+
 [functions.revenuecat-webhook]
 verify_jwt = false

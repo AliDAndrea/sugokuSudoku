@@ -204,17 +204,15 @@ export async function waitForSudoBalance(targetBalance) {
 
 export async function accessAccount(credentials) {
   if (supabase) {
-    const { action, username, email, password } = credentials
-    const result = action === 'signup'
-      ? await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { username } },
-        })
-      : await supabase.auth.signInWithPassword({ email, password })
+    const { action, username, password } = credentials
+    const { data, error } = await supabase.functions.invoke('sign-in-with-username', {
+      body: { action, username, password },
+    })
+    if (error || !data?.session) throw new Error(data?.error || 'Could not access account. Check your username and password.')
+    const result = await supabase.auth.setSession(data.session)
     if (result.error) throw result.error
     if (!result.data.session) {
-      throw new Error('Check your email to finish signing up, then sign in.')
+      throw new Error('Could not start your session. Please try signing in.')
     }
     await loadCloudProfile(result.data.user.id)
     return
