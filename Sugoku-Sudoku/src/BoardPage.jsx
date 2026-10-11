@@ -87,9 +87,10 @@ export default function BoardPage() {
   useEffect(() => {
     if (board.board.archived) return
     if (!board.board.completedAt && !board.board.failedAt && board.board.livesUsed < 5) return
-    const timeout = window.setTimeout(() => navigate(`/results/${board.board.id}`, { replace: true }), board.board.completedAt ? 0 : 450)
+    const completionDelay = board.celebrations.reduce((duration, entry) => Math.max(duration, ...entry.flashes.map((flash) => flash.delay + 500)), 0)
+    const timeout = window.setTimeout(() => navigate(`/results/${board.board.id}`, { replace: true }), board.board.completedAt ? completionDelay : 450)
     return () => window.clearTimeout(timeout)
-  }, [board.board.archived, board.board.id, board.board.completedAt, board.board.failedAt, board.board.livesUsed, navigate])
+  }, [board.board.archived, board.board.id, board.board.completedAt, board.board.failedAt, board.board.livesUsed, board.celebrations, navigate])
 
   useEffect(() => {
     const deselectOutside = (event) => {
@@ -201,6 +202,14 @@ export default function BoardPage() {
                   color: cell?.color,
                 }}
               >
+                {board.celebrations.map((celebration) => {
+                  const flash = celebration.flashes.find((entry) => entry.index === index)
+                  if (!flash) return null
+                  const lastDelay = Math.max(...celebration.flashes.map((entry) => entry.delay))
+                  return <span key={celebration.id} className="board-completion-flash" aria-hidden="true"
+                    style={{ backgroundColor: celebration.color, animationDelay: `${flash.delay}ms` }}
+                    onAnimationEnd={() => { if (flash.delay === lastDelay) dispatch({ type: 'finish-celebration', id: celebration.id }) }} />
+                })}
                 {cell?.kind === 'number' ? cell.number : cell?.kind === 'note' ? (
                   <span className="board-notes">
                     {cell.numbers.map((note) => <span key={note.number} style={{ gridColumn: (note.number - 1) % 3 + 1, gridRow: Math.floor((note.number - 1) / 3) + 1, color: note.color, ...note.pen }}>{note.number}</span>)}

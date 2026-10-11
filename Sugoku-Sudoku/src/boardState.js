@@ -1,4 +1,5 @@
 import { generateClassic } from './classicSudoku.js'
+import { completionFlashes } from './boardCelebration.js'
 
 export const userColors = [
   '#FF294D', '#FFB84C', '#E7FF34', '#0A6D32', '#00FFB2',
@@ -52,7 +53,7 @@ export class Board {
 }
 
 export function createBoardState(board = new Board()) {
-  return { board, selected: null, noteMode: false, message: '' }
+  return { board, selected: null, noteMode: false, message: '', celebrations: [], celebrationSequence: 0 }
 }
 
 export function isRelatedCell(index, selected, size = 9) {
@@ -68,6 +69,8 @@ export function isNumberComplete(board, number) {
 export function boardReducer(state, action) {
   if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['enter', 'erase', 'toggle-notes', 'change-color'].includes(action.type)) return state
   switch (action.type) {
+    case 'finish-celebration':
+      return { ...state, celebrations: state.celebrations.filter((entry) => entry.id !== action.id) }
     case 'change-color': {
       const username = action.user?.username
       if (!userColors.includes(action.color) || !state.board.colors.some((entry) => entry.user.username === username)) return state
@@ -128,7 +131,12 @@ export function boardReducer(state, action) {
         })
       }
       const completed = state.board.solution && cells.every((entry, index) => entry?.kind === 'number' && entry.number === state.board.solution[index])
-      return { ...state, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
+      const completion = state.noteMode ? [] : completionFlashes(state.board, cells, state.selected, Boolean(completed))
+      const correctGuess = !state.noteMode && state.board.solution?.[state.selected] === action.number
+      const flashes = completion.length ? completion : correctGuess ? [{ index: state.selected, delay: 0 }] : []
+      const celebrationSequence = (state.celebrationSequence || 0) + (flashes.length ? 1 : 0)
+      const celebrations = flashes.length ? [...(state.celebrations || []), { id: celebrationSequence, color: assignment.color, flashes }] : state.celebrations
+      return { ...state, celebrations, celebrationSequence, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
     }
     default:
       return state

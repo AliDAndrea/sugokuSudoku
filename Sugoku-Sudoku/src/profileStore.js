@@ -133,7 +133,7 @@ export async function saveProfile(updates) {
     if (!authData.user) throw new Error('Sign in to save profile changes.')
 
     if ('completedBoardId' in updates) {
-      const { error } = await supabase.rpc('reward_puzzle_completion', { p_board_id: updates.completedBoardId })
+      const { error } = await supabase.rpc('reward_puzzle_completion', { p_board_id: updates.completedBoardId, p_completion_seconds: updates.completionSeconds ?? null })
       if (error) throw error
       await loadCloudProfile(authData.user.id)
     }
@@ -158,7 +158,7 @@ export async function saveProfile(updates) {
         .map(([field, value]) => [fieldNames[field], value]),
     )
     const unsupported = Object.keys(updates).filter((field) => (
-      !(field in fieldNames) && field !== 'password' && field !== 'email' && field !== 'completedBoardId'
+      !(field in fieldNames) && field !== 'password' && field !== 'email' && field !== 'completedBoardId' && field !== 'completionSeconds'
     ))
     if (unsupported.length) throw new Error('This profile change is not allowed from the app.')
     if (Object.keys(patch).length) {

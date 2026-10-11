@@ -75,6 +75,22 @@
 
 .board-cell[data-given="true"] { -webkit-text-stroke: 0; }
 
+.board-completion-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  mask-image: var(--tile-mask);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  opacity: 0;
+  animation: board-completion-flash 500ms linear forwards;
+}
+@keyframes board-completion-flash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .board-life { pointer-events: none; transform-origin: center; }
 .board-life[data-lost='true'] { opacity: 0; }
 .board-life[data-animate='true'] { animation: board-life-lost 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards; z-index: 2; }

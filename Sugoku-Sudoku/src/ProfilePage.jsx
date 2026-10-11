@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { isSupabaseEnabled, saveProfile, useProfile } from './profileStore.js'
+import { formatTime } from './time.js'
 
 const pageStyle = {
   backgroundColor: '#fff',
@@ -80,7 +81,7 @@ function ProfileDetails({ view }) {
           <ProfileField label="Puzzles Complete: " value={profile.puzzlesCompleted} top="262px" />
           <ProfileField
             label="Fastest Time:" 
-            value={profile.fastestTime}
+            value={profile.fastestTime > 0 ? formatTime(profile.fastestTime * 1000) : 'None'}
             top="320px"
           />
           <div style={{ position: 'absolute', left: '31px', top: '375px', width: '334px', height: '80px', display: 'flex', alignItems: 'center' }}>

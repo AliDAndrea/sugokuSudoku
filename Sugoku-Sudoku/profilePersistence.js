@@ -73,6 +73,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           if ('level' in updates && (!Number.isSafeInteger(updates.level) || updates.level < 1)) throw new Error('Level must be a positive whole number.')
           if ('sudo' in updates && (!Number.isSafeInteger(updates.sudo) || updates.sudo < 0)) throw new Error('Sudo must be a non-negative whole number.')
           if ('completedBoardId' in updates && (typeof updates.completedBoardId !== 'string' || !updates.completedBoardId || updates.completedBoardId.length > 100)) throw new Error('Invalid board reward.')
+          if ('completionSeconds' in updates && (!updates.completedBoardId || !Number.isInteger(updates.completionSeconds) || updates.completionSeconds < 1 || updates.completionSeconds > 2147483647)) throw new Error('Invalid completion time.')
           if ('hints' in updates && (!Number.isSafeInteger(updates.hints) || updates.hints < 0)) throw new Error('Hints must be a non-negative whole number.')
           if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || !updates.password)) throw new Error('Enter your username and password.')
           let result
@@ -107,6 +108,9 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
                   selected.totalXp = (Number.isFinite(selected.totalXp) ? selected.totalXp : 0) + 5
                   selected.puzzlesCompleted = (Number.isFinite(selected.puzzlesCompleted) ? selected.puzzlesCompleted : 0) + 1
                   selected.rewardedBoards = [...rewardedBoards, updates.completedBoardId]
+                  if (updates.completionSeconds && (!selected.fastestTime || updates.completionSeconds < selected.fastestTime)) {
+                    selected.fastestTime = updates.completionSeconds
+                  }
                 }
               }
               accounts[currentIndex] = selected

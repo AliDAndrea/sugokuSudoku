@@ -4,14 +4,8 @@ import * as images from './figmages/index.js'
 import { saveProfile, useProfile } from './profileStore.js'
 import { getBoard, listBoards, archiveBoard, discardFinishedBoard } from './boardStore.js'
 import { requiredXp } from './xp.js'
+import { formatTime } from './time.js'
 import './ResultsPage.css'
-
-function formatTime(milliseconds) {
-  const seconds = Math.max(0, Math.floor(milliseconds / 1000))
-  const pad = (value) => String(value).padStart(2, '0')
-  const hours = Math.floor(seconds / 3600)
-  return `${hours ? `${pad(hours)}:` : ''}${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`
-}
 
 export default function ResultsPage() {
   const profile = useProfile()
@@ -38,11 +32,11 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!board?.completedAt) return
     let mounted = true
-    saveProfile({ completedBoardId: board.id }).catch(() => {
+    saveProfile({ completedBoardId: board.id, completionSeconds: Math.max(1, Math.floor((board.completedAt - board.createdAt) / 1000)) }).catch(() => {
       if (mounted) setStatus('Could not save your completion rewards.')
     })
     return () => { mounted = false }
-  }, [board?.id, board?.completedAt])
+  }, [board?.id, board?.completedAt, board?.createdAt])
   useLayoutEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }, [])
   if (!board || (!board.completedAt && !board.failedAt && board.livesUsed < 5)) {
     return <main className="results-page"><p className="results-unavailable">No finished board to display. <Link to="/puzzle-reserve">Return to your puzzles</Link></p></main>
