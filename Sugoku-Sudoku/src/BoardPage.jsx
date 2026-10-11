@@ -275,7 +275,7 @@ export default function BoardPage() {
           })}
         </div>}
       </div>
-      <p style={{ color: "#000", fontFamily: "'Piedra', serif", fontSize: "60px", lineHeight: "1", width: "42px", height: "44px", position: "absolute", left: "273px", top: "95px" }}>
+      <p style={{ color: "#000", fontFamily: "'Piedra', serif", fontSize: "60px", lineHeight: "1", width: "42px", height: "44px", position: "absolute", left: "273px", top: "105px" }}>
         {board.board.hintsUsed}
       </p>
       <p role="status" style={{ position: 'absolute', left: '20px', top: '510px', width: '365px', color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '16px', textAlign: 'center', pointerEvents: 'none' }}>{board.board.completedAt ? 'SOLVED' : ''}</p>
