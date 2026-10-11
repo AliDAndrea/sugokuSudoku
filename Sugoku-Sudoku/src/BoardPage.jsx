@@ -212,7 +212,7 @@ export default function BoardPage() {
                 })}
                 {cell?.kind === 'number' ? cell.number : cell?.kind === 'note' ? (
                   <span className="board-notes">
-                    {cell.numbers.map((note) => <span key={note.number} style={{ gridColumn: (note.number - 1) % 3 + 1, gridRow: Math.floor((note.number - 1) / 3) + 1, color: note.color, ...note.pen }}>{note.number}</span>)}
+                    {cell.numbers.map((note) => <span key={note.number} style={{ gridColumn: (note.number - 1) % 3 + 1, gridRow: Math.floor((note.number - 1) / 3) + 1, ...note.pen, color: selectedNumber === note.number ? '#fff' : note.color }}>{note.number}</span>)}
                   </span>
                 ) : null}
               </button>
