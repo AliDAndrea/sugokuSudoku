@@ -125,6 +125,35 @@ test('notes toggle individually, retain author objects, and normal entry clears 
   assert.equal(boardReducer(state, { type: 'enter', number: 2, user, pen }), state)
 })
 
+for (const size of [9, 6]) {
+  test(`${size}x${size} placement removes matching peer notes and preserves other notes`, () => {
+    const board = new Board({ size, type: 'chaos', user })
+    const matching = { number: 4, user, pen }
+    const retained = { number: 2, user, pen }
+    const rowPeer = size - 1
+    const columnPeer = (size - 1) * size
+    const boxPeer = size + 1
+    const unrelated = 2 * size + 3
+    for (const index of [rowPeer, columnPeer, boxPeer, unrelated]) {
+      board.cells[index] = { kind: 'note', numbers: [matching, retained] }
+    }
+    board.cells[1] = { kind: 'note', numbers: [matching] }
+    const state = { ...createBoardState(board), selected: 0 }
+    const next = boardReducer(state, { type: 'enter', number: 4, user, pen })
+    for (const index of [rowPeer, columnPeer, boxPeer]) {
+      assert.deepEqual(next.board.cells[index].numbers, [retained])
+      assert.equal(next.board.cells[index].numbers[0], retained)
+      assert.deepEqual(board.cells[index].numbers, [matching, retained])
+    }
+    assert.equal(next.board.cells[1], null)
+    assert.equal(next.board.cells[unrelated], board.cells[unrelated])
+    const noted = boardReducer({ ...state, noteMode: true }, { type: 'enter', number: 4, user, pen })
+    assert.equal(noted.board.cells[rowPeer], board.cells[rowPeer])
+    const rejected = boardReducer({ ...state, board: { ...board, solution: Array(size * size).fill(2) } }, { type: 'enter', number: 4, user, pen })
+    assert.equal(rejected.board.cells, board.cells)
+  })
+}
+
 test('removing the final note empties a tile', () => {
   let state = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 0 })
   state = boardReducer(state, { type: 'toggle-notes' })

@@ -111,7 +111,22 @@ export function boardReducer(state, action) {
         const existing = notes.some((note) => note.number === action.number)
         const numbers = existing ? notes.filter((note) => note.number !== action.number) : [...notes, number].sort((a, b) => a.number - b.number)
         cells[state.selected] = numbers.length ? { kind: 'note', numbers } : null
-      } else cells[state.selected] = number
+      } else {
+        cells[state.selected] = number
+        const { size, boxRows = size === 6 ? 2 : 3, boxColumns = 3 } = state.board
+        const selectedRow = Math.floor(state.selected / size)
+        const selectedColumn = state.selected % size
+        cells.forEach((entry, index) => {
+          if (entry?.kind !== 'note') return
+          const row = Math.floor(index / size)
+          const column = index % size
+          const sameBox = Math.floor(row / boxRows) === Math.floor(selectedRow / boxRows)
+            && Math.floor(column / boxColumns) === Math.floor(selectedColumn / boxColumns)
+          if (row !== selectedRow && column !== selectedColumn && !sameBox) return
+          const numbers = entry.numbers.filter((note) => note.number !== action.number)
+          if (numbers.length !== entry.numbers.length) cells[index] = numbers.length ? { ...entry, numbers } : null
+        })
+      }
       const completed = state.board.solution && cells.every((entry, index) => entry?.kind === 'number' && entry.number === state.board.solution[index])
       return { ...state, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
     }
