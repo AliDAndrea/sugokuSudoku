@@ -1,20 +1,7 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import './FriendsPage.css'
-
-const sampleFriends = Array.from({ length: 18 }, (_, index) => ({
-  id: `friend-${index + 1}`,
-  name: 'friendO_135x7',
-}))
-const sampleResults = Array.from({ length: 12 }, (_, index) => ({
-  id: `result-${index + 1}`,
-  name: 'friendO_135x7',
-}))
-const sampleRequests = Array.from({ length: 8 }, (_, index) => ({
-  id: `request-${index + 1}`,
-  name: 'friendO_135x7',
-}))
 
 const FRIENDS_PER_PAGE = 6
 
@@ -40,21 +27,54 @@ function RemoveFriendDialog({ friend, onCancel, onConfirm }) {
   )
 }
 
-function FriendRow({ friend, small = false, onRemove }) {
+function FriendName({ name, small }) {
+  const frameRef = useRef(null)
+  const textRef = useRef(null)
+  useLayoutEffect(() => {
+    const frame = frameRef.current
+    const text = textRef.current
+    let active = true
+    const fit = () => {
+      if (!active) return
+      const baseSize = small ? 14 : 18
+      text.style.fontSize = `${baseSize}px`
+      const width = text.getBoundingClientRect().width
+      const availableWidth = Math.max(0, frame.clientWidth - 10)
+      if (width > availableWidth && availableWidth > 0) {
+        text.style.fontSize = `${baseSize * availableWidth / width}px`
+      }
+    }
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(frame)
+    document.fonts.ready.then(fit)
+    document.fonts.addEventListener('loadingdone', fit)
+    return () => {
+      active = false
+      observer.disconnect()
+      document.fonts.removeEventListener('loadingdone', fit)
+    }
+  }, [name, small])
+  return <span className="friends-name" ref={frameRef}><span className="friends-name-text" ref={textRef}>{name}</span></span>
+}
+
+function FriendRow({ friend, small = false, onRemove, onConfirm, disabled, actionLabel }) {
   const hasRemoveAction = Boolean(onRemove)
 
   return (
     <div className={`friends-row${small ? ' friends-row-small' : ''}`}>
-      <span className="friends-avatar" aria-hidden="true" />
-      <span className="friends-name">{friend.name}</span>
+      <span className="friends-avatar" aria-hidden="true">
+        {friend.profileImage && <img src={friend.profileImage} alt="" />}
+      </span>
+      <FriendName name={friend.name} small={small} />
       {hasRemoveAction ? (
         <button type="button" className="friends-remove" aria-label={`Remove ${friend.name}`} onClick={() => onRemove(friend.id)}>
           <img src={images.cancelIcon} alt="" aria-hidden="true" />
         </button>
       ) : small ? (
-        <span className="friends-dot friends-dot-confirm" aria-hidden="true">
+        <button type="button" className="friends-dot friends-dot-confirm" disabled={disabled} aria-label={`${actionLabel} ${friend.name}`} onClick={() => onConfirm(friend.id)}>
           <img src={images.confirmIcon} alt="" aria-hidden="true" />
-        </span>
+        </button>
       ) : (
         <span className="friends-dot" aria-hidden="true" />
       )}
@@ -62,22 +82,50 @@ function FriendRow({ friend, small = false, onRemove }) {
   )
 }
 
-export default function FriendManagement({ friends = sampleFriends, searchResults = sampleResults, friendRequests = sampleRequests }) {
+export default function FriendManagement() {
   const [menu, setMenu] = useState('find')
   const [search, setSearch] = useState('')
-  const [removedIds, setRemovedIds] = useState([])
+  const [data, setData] = useState({ friends: [], searchResults: [], friendRequests: [] })
+  const [status, setStatus] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [revision, setRevision] = useState(0)
+  const query = search.trim()
+  const searchReady = query.length >= 3
+  useEffect(() => {
+    const controller = new AbortController()
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/friends?search=${encodeURIComponent(query.length >= 3 ? query : '')}`, { signal: controller.signal })
+        const result = await response.json()
+        if (!response.ok || !result.ok) throw new Error(result.error || 'Could not load friends.')
+        setData({ ...result, query })
+      } catch (error) {
+        if (error.name !== 'AbortError') setStatus(error.message)
+      }
+    }, query.length >= 3 ? 200 : 0)
+    return () => { clearTimeout(timer); controller.abort() }
+  }, [query, revision])
   const [page, setPage] = useState(0)
   const [pendingRemoval, setPendingRemoval] = useState(null)
-  const remainingFriends = friends.filter((friend) => !removedIds.includes(friend.id))
+  const remainingFriends = data.friends
+  const friendRequests = data.friendRequests
   const pageCount = Math.max(1, Math.ceil(remainingFriends.length / FRIENDS_PER_PAGE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageFriends = remainingFriends.slice(currentPage * FRIENDS_PER_PAGE, (currentPage + 1) * FRIENDS_PER_PAGE)
-  const removeFriend = (id) => {
-    setRemovedIds((ids) => [...ids, id])
-    const nextCount = remainingFriends.filter((friend) => friend.id !== id).length
-    setPage(Math.min(currentPage, Math.max(0, Math.ceil(nextCount / FRIENDS_PER_PAGE) - 1)))
+  const friendAction = async (action, id) => {
+    if (busy) return
+    setBusy(true)
+    setStatus('')
+    try {
+      const response = await fetch('/api/friends', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, id }) })
+      const result = await response.json()
+      if (!response.ok || !result.ok) throw new Error(result.error || 'Could not update friends.')
+      setStatus(action === 'request' ? 'Friend request sent.' : action === 'accept' ? '' : 'Friend removed.')
+      setRevision((value) => value + 1)
+    } catch (error) { setStatus(error.message) }
+    finally { setBusy(false) }
   }
-  const results = searchResults.filter((friend) => friend.name.toLowerCase().includes(search.toLowerCase()))
+  const results = searchReady && data.query === query ? data.searchResults : []
 
   return (
     <div className="friends-page">
@@ -119,12 +167,13 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
       )}
       <div key={menu} className={`friends-results friends-scroll${menu === 'requests' ? ' friends-requests' : ''}`} role="region" aria-label={menu === 'find' ? 'Find friends results' : 'Friend requests list'} tabIndex={0}>
         <div className="friends-rows">
-          {(menu === 'find' ? results : friendRequests).map((friend) => <FriendRow key={friend.id} friend={friend} small />)}
-          {menu === 'find' && results.length === 0 && <p className="friends-empty">No friends found.</p>}
+          {(menu === 'find' ? results : friendRequests).map((friend) => <FriendRow key={friend.id} friend={friend} small disabled={busy} actionLabel={menu === 'find' ? 'Send friend request to' : 'Accept friend request from'} onConfirm={(id) => friendAction(menu === 'find' ? 'request' : 'accept', id)} />)}
+          {menu === 'find' && searchReady && data.query === query && results.length === 0 && <p className="friends-empty friends-search-empty">No users found.</p>}
           {menu === 'requests' && friendRequests.length === 0 && <p className="friends-empty">No friend requests.</p>}
         </div>
       </div>
       </section>
+      <p className="friends-status" role="status">{status}</p>
       <Link to="/" aria-label="Return to home page" className="friends-home">
         <img src={images.Mainmenubutton} alt="Main menu" />
       </Link>
@@ -133,7 +182,7 @@ export default function FriendManagement({ friends = sampleFriends, searchResult
           friend={pendingRemoval}
           onCancel={() => setPendingRemoval(null)}
           onConfirm={() => {
-            removeFriend(pendingRemoval.id)
+            friendAction('remove', pendingRemoval.id)
             setPendingRemoval(null)
           }}
         />

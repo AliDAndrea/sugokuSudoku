@@ -238,6 +238,7 @@
 }
 
 .friends-avatar {
+  overflow: hidden;
   width: 34px;
   height: 34px;
   flex-shrink: 0;
@@ -247,15 +248,23 @@
   box-sizing: border-box;
 }
 
+.friends-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .friends-name {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 18px;
   line-height: 1;
 }
+
+.friends-name-text { display: inline-block; white-space: nowrap; margin-inline: 5px; }
 
 .friends-dot {
   width: 34px;
@@ -266,6 +275,9 @@
 }
 
 .friends-dot-confirm {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -273,6 +285,10 @@
   height: 24px;
   background: transparent;
 }
+
+.friends-dot-confirm:disabled { opacity: .5; cursor: default; }
+.friends-dot-confirm:focus-visible { outline: 2px solid #171614; outline-offset: 3px; }
+.friends-status { position: absolute; bottom: 4px; left: 30px; right: 30px; margin: 0; font-size: 14px; text-align: center; }
 
 .friends-results .friends-rows {
   gap: 8px;
@@ -314,6 +330,18 @@
 
 .friends-empty {
   font-size: 14px;
+}
+
+.friends-search-empty {
+  width: 100%;
+  text-align: center;
+}
+
+.friends-list .friends-empty {
+  margin: 26px 0 0;
+  font-size: 20px;
+  line-height: 24px;
+  text-align: center;
 }
 
 .friends-home {

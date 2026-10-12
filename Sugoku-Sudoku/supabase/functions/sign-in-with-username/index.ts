@@ -16,7 +16,7 @@ Deno.serve(async (request) => {
   try {
     const { action = 'signin', username, password } = await request.json()
     if (action !== 'signin' && action !== 'signup') return json(400, { error: 'Invalid account action.' })
-    if (typeof username !== 'string' || !username.trim() || username.trim().length > 30 ||
+    if (typeof username !== 'string' || !username.trim() || username.trim().length > 35 ||
         typeof password !== 'string' || !password) {
       return json(400, { error: 'Enter your username and password.' })
     }
@@ -25,6 +25,7 @@ Deno.serve(async (request) => {
     const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, options)
     const auth = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, options)
     if (action === 'signup') {
+      if (username.trim().length < 3) return json(400, { error: 'Username must contain at least 3 characters.' })
       if (password.length < 8) return json(400, { error: 'Use a password with at least 8 characters.' })
       // Supabase requires an email identifier internally; players never provide one.
       const email = `${crypto.randomUUID()}@accounts.sugoku.invalid`

@@ -65,8 +65,32 @@ export default function profilePersistence(userFile = new URL('./.local/user.mjs
     configureServer(server) {
       server.middlewares.use('/api', async (request, response, next) => {
         const route = request.url?.split('?')[0]
-        if (!['/profile', '/account'].includes(route)) return next()
+        if (!['/profile', '/account', '/friends'].includes(route)) return next()
         response.setHeader('Content-Type', 'application/json')
+        if (route === '/friends' && request.method === 'GET') {
+          try {
+            await writes
+            const { accounts: savedAccounts, ...current } = await readUser()
+            const accounts = savedAccounts || [current]
+            const ownKey = usernameKey(current.username)
+            const query = new URL(request.url, 'http://localhost').searchParams.get('search')?.trim().toLowerCase() || ''
+            const row = (account) => ({ id: usernameKey(account.username), name: account.username, profileImage: account.profileImage || null })
+            const friends = current.friends || []
+            const requests = current.friendRequests || []
+            response.end(JSON.stringify({ ok: true,
+              friends: accounts.filter((account) => friends.includes(usernameKey(account.username))).map(row),
+              friendRequests: accounts.filter((account) => requests.includes(usernameKey(account.username))).map(row),
+              searchResults: query.length < 3 ? [] : accounts.filter((account) => {
+                const key = usernameKey(account.username)
+                return key !== ownKey && key.includes(query) && !friends.includes(key) && !(account.friendRequests || []).includes(ownKey)
+              }).map(row),
+            }))
+          } catch (error) {
+            response.statusCode = 500
+            response.end(JSON.stringify({ error: error.message }))
+          }
+          return
+        }
         if (route === '/profile' && request.method === 'GET') {
           try {
             const { accounts: _accounts, ...current } = await readUser()
@@ -94,7 +118,7 @@ export default function profilePersistence(userFile = new URL('./.local/user.mjs
           const updates = JSON.parse(Buffer.concat(chunks).toString())
           if (!updates || typeof updates !== 'object' || Array.isArray(updates)) throw new Error('Invalid profile update.')
           if ('username' in updates) {
-            if (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 30) throw new Error('Username must contain 1 to 30 characters.')
+            if (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 35) throw new Error('Username must contain 1 to 35 characters.')
             updates.username = updates.username.trim()
           }
           if ('password' in updates && (typeof updates.password !== 'string' || updates.password.length > 128 || (route !== '/account' && updates.password.length < 8))) throw new Error('Use a password with 8 to 128 characters.')
@@ -113,6 +137,7 @@ export default function profilePersistence(userFile = new URL('./.local/user.mjs
           if ('hints' in updates && (!Number.isSafeInteger(updates.hints) || updates.hints < 0)) throw new Error('Hints must be a non-negative whole number.')
           if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || typeof updates.password !== 'string' || updates.password.length > 128)) throw new Error('Enter your username and password.')
           if (route === '/account' && updates.action === 'signup' && updates.password.length < 8) throw new Error('Use a password with at least 8 characters.')
+          if (route === '/account' && updates.action === 'signup' && updates.username.length < 3) throw new Error('Username must contain at least 3 characters.')
           let result
           const write = writes.then(async () => {
             const { accounts: savedAccounts, ...current } = await readUser()
@@ -121,7 +146,29 @@ export default function profilePersistence(userFile = new URL('./.local/user.mjs
             if (currentIndex >= 0) accounts[currentIndex] = current
             else accounts.push(current)
             let selected
-            if (route === '/account') {
+            if (route === '/friends') {
+              if (!['request', 'accept', 'remove'].includes(updates.action) || typeof updates.id !== 'string') throw new Error('Invalid friend action.')
+              const ownKey = usernameKey(current.username)
+              const target = accounts.find((account) => usernameKey(account.username) === updates.id)
+              if (!target || updates.id === ownKey) throw new Error('Choose another player.')
+              selected = accounts.find((account) => usernameKey(account.username) === ownKey)
+              selected.friends ||= []
+              selected.friendRequests ||= []
+              target.friends ||= []
+              target.friendRequests ||= []
+              if (updates.action === 'request') {
+                if (!selected.friends.includes(updates.id) && !target.friendRequests.includes(ownKey)) target.friendRequests.push(ownKey)
+              } else if (updates.action === 'accept') {
+                if (!selected.friendRequests.includes(updates.id)) throw new Error('Friend request not found.')
+                if (!selected.friends.includes(updates.id)) selected.friends.push(updates.id)
+                if (!target.friends.includes(ownKey)) target.friends.push(ownKey)
+                selected.friendRequests = selected.friendRequests.filter((id) => id !== updates.id)
+                target.friendRequests = target.friendRequests.filter((id) => id !== ownKey)
+              } else {
+                selected.friends = selected.friends.filter((id) => id !== updates.id)
+                target.friends = target.friends.filter((id) => id !== ownKey)
+              }
+            } else if (route === '/account') {
               const existing = accounts.find((account) => usernameKey(account.username) === usernameKey(updates.username))
               if (updates.action === 'signup') {
                 if (existing) throw new Error('That username is already taken. Choose another username.')
@@ -153,6 +200,13 @@ export default function profilePersistence(userFile = new URL('./.local/user.mjs
                 }
               }
               accounts[currentIndex] = selected
+              if (selected.username !== current.username) {
+                for (const account of accounts) {
+                  for (const field of ['friends', 'friendRequests']) {
+                    if (account[field]) account[field] = account[field].map((id) => id === usernameKey(current.username) ? usernameKey(selected.username) : id)
+                  }
+                }
+              }
             }
             await writeUser({ ...selected, accounts })
             result = publicProfile(selected)
