@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import './App.css'
 import { mainPen, penItems } from './PenItem.jsx'
 import { useProfile } from './profileStore.js'
+import { levelProgressPercent } from './xp.js'
 
 // Import All Images
 import * as images from './figmages/index.js'
@@ -9,6 +10,7 @@ import * as images from './figmages/index.js'
 export default function HomePage() {
   const profile = useProfile()
   const selectedPen = penItems.find((pen) => pen.name === profile.selectedPen) || mainPen
+  const progressPercent = levelProgressPercent(profile.level, profile.totalXp)
 
   return (
     <div style={{backgroundColor: '#fff', width: '100%', maxWidth: '390px', aspectRatio: '390 / 844', position: 'relative', overflow: 'hidden', margin: '0 auto',}}>
@@ -24,7 +26,7 @@ export default function HomePage() {
         style={{width: '400px',height: '100px',position: 'absolute',left: '50%',top: '475px',transform: 'translateX(-50%)',}}>
         <img
           src={selectedPen.image}
-          style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: '5px', maxWidth: 'none' }}
+          style={{ width: '400px', height: '100px', position: 'absolute', left: '0', top: ['Marker Pen', 'Pen Pen'].includes(selectedPen.name) ? '-2px' : '5px', maxWidth: 'none' }}
           alt={selectedPen.name}
         />
         <span style={{ color: '#000', WebkitTextStroke: '.5px white', fontFamily: 'Piedra', fontSize: '40px', position: 'absolute', left: '37%', top: '44px', letterSpacing: '0.07em', zIndex: 1 }}>
@@ -50,9 +52,9 @@ export default function HomePage() {
         />
       </Link>
       <img
-        src={images.Levelprogressbar}
-        style={{ width: '133px', height: '97px', position: 'absolute', left: '-35px', top: '676px' }}
-        alt="LevelProgressBar"
+        src={images[`LevelProgressBar${progressPercent}`]}
+        style={{ width: '1100px', height: '800px', position: 'absolute', left: '-352px', top: '82px', pointerEvents: 'none' }}
+        alt={`Level progress: ${progressPercent}%`}
       />
       <Link
         to="/shop"
