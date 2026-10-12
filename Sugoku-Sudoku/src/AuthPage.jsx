@@ -29,6 +29,10 @@ function AuthNotebook({ signup, active }) {
       setStatus(signup ? 'Enter and confirm your password.' : 'Enter your password.')
       return
     }
+    if (signup && String(data.get('password')).length < 8) {
+      setStatus('Use a password with at least 8 characters.')
+      return
+    }
     if (signup && data.get('password') !== data.get('confirmation')) {
       setStatus('Passwords must match.')
       return
@@ -47,8 +51,8 @@ function AuthNotebook({ signup, active }) {
     <div className="profile-panel-content auth-content" data-active={active} aria-hidden={!active} inert={!active}>
       <form noValidate onSubmit={submit} onChange={() => setStatus('')} className="auth-form">
         <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} />
-        <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={1} />
-        {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={1} />}
+        <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={signup ? 8 : 1} maxLength={128} />
+        {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={8} maxLength={128} />}
         <div className="auth-actions">
           <p role="alert" className="auth-status">{status}</p>
           <button type="submit" className="auth-confirm" aria-label={title}><img src={images.ConfirmButton} alt="Confirm" /></button>

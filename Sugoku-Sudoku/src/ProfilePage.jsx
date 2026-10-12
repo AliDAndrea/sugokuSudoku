@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
-import { isSupabaseEnabled, saveProfile, useProfile } from './profileStore.js'
+import { saveProfile, useProfile } from './profileStore.js'
 import { formatTime } from './time.js'
 
 const pageStyle = {
@@ -153,6 +153,7 @@ function ChangePasswordPanel({ view }) {
     event.preventDefault()
     if (saving) return
     if (!password || !confirmation) { setErrorMessage('Enter and confirm your new password.'); return }
+    if (password.length < 8) { setErrorMessage('Use a password with at least 8 characters.'); return }
     if (password !== confirmation) { setErrorMessage('Passwords must match.'); return }
     setErrorMessage('')
     setSaving(true)
@@ -169,8 +170,8 @@ function ChangePasswordPanel({ view }) {
       <ReplacementNotebook src={images.PasswordPage} alt="Change password" />
       <BackToHome left="12px" top="11px" active={active} />
       <form noValidate onSubmit={submit} className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
-        <ProfileInput label="New Password:" top="131px" type="password" autoComplete="new-password" minLength={1} value={password} onChange={(event) => { setPassword(event.target.value); setErrorMessage('') }} disabled={saving} />
-        <ProfileInput label="Confirm New Password:" top="209px" type="password" autoComplete="new-password" minLength={1} value={confirmation} onChange={(event) => { setConfirmation(event.target.value); setErrorMessage('') }} disabled={saving} />
+        <ProfileInput label="New Password:" top="131px" type="password" autoComplete="new-password" minLength={8} maxLength={128} value={password} onChange={(event) => { setPassword(event.target.value); setErrorMessage('') }} disabled={saving} />
+        <ProfileInput label="Confirm New Password:" top="209px" type="password" autoComplete="new-password" minLength={8} maxLength={128} value={confirmation} onChange={(event) => { setConfirmation(event.target.value); setErrorMessage('') }} disabled={saving} />
         <div style={{ position: 'absolute', left: '28px', top: '271px', width: '292px', display: 'flex', flexDirection: 'column', gap: '22px', paddingTop: '22px' }}>
           <p role="alert" style={{ minHeight: '19.5px', width: '280px', fontSize: '16px', lineHeight: '19.5px', overflowWrap: 'anywhere' }}>{errorMessage}</p>
           <ProfileConfirm top="-10px" left="112px" position="relative" saving={saving} label="Confirm password change" />
@@ -200,7 +201,7 @@ function ChangeEmailPanel({ view }) {
       else setEmail('')
       setStatus(field === 'username'
         ? 'Username changed.'
-        : isSupabaseEnabled ? 'Check your new email to confirm the change.' : 'Email changed.')
+        : 'Email changed.')
     } catch (error) { setStatus(error.message) }
     finally { setSaving(false) }
   }

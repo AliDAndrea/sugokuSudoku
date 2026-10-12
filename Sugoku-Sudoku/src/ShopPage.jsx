@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { penItems } from './PenItem.jsx'
-import { isSupabaseEnabled, saveProfile, spendSudo, useProfile, waitForSudoBalance } from './profileStore.js'
+import { saveProfile, useProfile } from './profileStore.js'
 import { canPurchaseSudoInApp, getSudoStoreProducts, purchaseSudoProduct, sudoProducts } from './sudoPurchases.js'
 
 const SUDO_PURCHASES_ON_HOLD = true
@@ -22,28 +22,20 @@ export default function ShopPage({ initialTab = 'pens' }) {
   async function onBuyPen(pen) {
     if (ownedPens.has(pen.name)) return
     if (profile.sudo < pen.price) throw new Error()
-    if (isSupabaseEnabled) {
-      await spendSudo('pen', pen.name)
-    } else {
-      await saveProfile({
-        sudo: profile.sudo - pen.price,
-        selectedPen: pen.name,
-        ownedPens: [...new Set([...ownedPens, pen.name])],
-      })
-    }
+    await saveProfile({
+      sudo: profile.sudo - pen.price,
+      selectedPen: pen.name,
+      ownedPens: [...new Set([...ownedPens, pen.name])],
+    })
   }
 
   async function onBuyPack(pack) {
     if (ownedPacks.has(pack.id)) return
     if (profile.sudo < pack.price) throw new Error()
-    if (isSupabaseEnabled) {
-      await spendSudo('pack', pack.id)
-    } else {
-      await saveProfile({
-        sudo: profile.sudo - pack.price,
-        ownedPacks: [...new Set([...ownedPacks, pack.id])],
-      })
-    }
+    await saveProfile({
+      sudo: profile.sudo - pack.price,
+      ownedPacks: [...new Set([...ownedPacks, pack.id])],
+    })
   }
 
   async function onBuyCurrencyOffer(offer) {
@@ -51,26 +43,16 @@ export default function ShopPage({ initialTab = 'pens' }) {
       if (profile.sudo < offer.price) {
         throw new Error(`You need S ${offer.price} to buy this hint offer.`)
       }
-      if (isSupabaseEnabled) {
-        await spendSudo('hint', offer.id)
-      } else {
-        await saveProfile({
-          sudo: profile.sudo - offer.price,
-          hints: profile.hints + offer.amount,
-        })
-      }
+      await saveProfile({
+        sudo: profile.sudo - offer.price,
+        hints: profile.hints + offer.amount,
+      })
       return { pendingVerification: false }
     }
 
-    if (!profile.authUserId) throw new Error('Sign in to purchase Sudo.')
+    if (!profile.authUserId) throw new Error('Paid Sudo purchases are unavailable for local accounts.')
     await purchaseSudoProduct(offer.id, profile.authUserId)
-    let verified = false
-    try {
-      verified = await waitForSudoBalance(profile.sudo + offer.amount)
-    } catch (error) {
-      console.error('Store payment completed, but Sudo verification is still pending.', error)
-    }
-    return { pendingVerification: !verified }
+    return { pendingVerification: true }
   }
 
   return (
@@ -365,7 +347,6 @@ function CurrencyContent({ profile, onBuyOffer }) {
     return () => { active = false }
   }, [profile.authUserId])
   const storePrices = storePriceState.userId === profile.authUserId ? storePriceState.prices : {}
-  const isSignedOut = isSupabaseEnabled && !profile.authUserId
   const isSelectedSudoUnavailable = selectedOffer.kind === 'sudo'
     && (SUDO_PURCHASES_ON_HOLD || !profile.authUserId || !canPurchaseSudoInApp() || !storePrices[selectedOffer.id])
 
@@ -440,7 +421,7 @@ function CurrencyContent({ profile, onBuyOffer }) {
           ? `S ${selectedOffer.price}`
           : SUDO_PURCHASES_ON_HOLD
             ? 'Coming soon'
-            : storePrices[selectedOffer.id] ?? (isSignedOut ? 'Sign in' : canPurchaseSudoInApp() ? 'Store unavailable' : 'Mobile app only')}
+            : storePrices[selectedOffer.id] ?? (canPurchaseSudoInApp() ? 'Store unavailable' : 'Mobile app only')}
       </p>
       <button
         type="button"
@@ -449,10 +430,9 @@ function CurrencyContent({ profile, onBuyOffer }) {
           : `S ${selectedOffer.amount}, Coming soon`}
         onClick={buySelectedOffer}
         disabled={isPurchasing
-          || isSignedOut
           || (selectedOffer.kind === 'hints' && profile.sudo < selectedOffer.price)
           || isSelectedSudoUnavailable}
-        style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2, filter: (selectedOffer.kind === 'hints' && profile.sudo < selectedOffer.price) || isSignedOut || isSelectedSudoUnavailable ? 'brightness(0.75)' : 'none', opacity: 1 }}
+        style={{ width: '167px', height: '102px', position: 'absolute', right: '-1px', bottom: '-2px', padding: 0, border: 0, background: 'transparent', cursor: isPurchasing ? 'wait' : 'pointer', zIndex: 2, filter: (selectedOffer.kind === 'hints' && profile.sudo < selectedOffer.price) || isSelectedSudoUnavailable ? 'brightness(0.75)' : 'none', opacity: 1 }}
       >
         <img src={images.BuyButton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="" />
       </button>

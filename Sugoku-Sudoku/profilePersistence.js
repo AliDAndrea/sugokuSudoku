@@ -1,7 +1,24 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { Buffer } from 'node:buffer'
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const usernameKey = (username) => username.trim().toLowerCase()
+const hashPassword = (password) => {
+  const salt = randomBytes(16).toString('hex')
+  return `scrypt$${salt}$${scryptSync(password, salt, 64).toString('hex')}`
+}
+const verifyPassword = (password, savedPassword) => {
+  if (typeof savedPassword !== 'string') return false
+  const [algorithm, salt, savedHash] = savedPassword.split('$')
+  if (algorithm !== 'scrypt') return password === savedPassword
+  if (!salt || !savedHash) return false
+  if (!/^[a-f0-9]{32}$/.test(salt) || !/^[a-f0-9]{128}$/.test(savedHash)) return false
+  const expected = Buffer.from(savedHash, 'hex')
+  const actual = scryptSync(password, salt, expected.length)
+  return actual.length === expected.length && timingSafeEqual(actual, expected)
+}
 const penNames = new Set(['Multi Pen', 'Crayon Pen', 'Brush Pen', 'Cheap Pen', 'Ink Pen', 'Marker Pen', 'Mechanical Pen', 'Pen Pen', 'Pencil Pen', 'Quill Pen', 'Stylus Pen', 'Yatate Pen'])
 const packIds = new Set(['pack-E_1', 'pack-E_2', 'pack-E_3', 'pack-H_1', 'pack-H_2', 'pack-H_3', 'pack-N_1', 'pack-N_2', 'pack-N_3', 'pack-EX_1', 'pack-EX_2', 'pack-EX_3', 'pack-I_1', 'pack-I_2', 'pack-I_3'])
 const publicProfile = ({ username, email, profileImage, selectedPen, ownedPens, ownedPacks, sudo, hints, level, totalXp, dailyStreak, puzzlesCompleted, fastestTime }) => ({
@@ -20,8 +37,28 @@ const publicProfile = ({ username, email, profileImage, selectedPen, ownedPens, 
   hints: Number.isFinite(hints) ? hints : 0,
 })
 
-export default function profilePersistence(userFile = new URL('./src/user.js', import.meta.url)) {
+const importSavedUser = async (source) => {
+  const { default: saved } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
+  return structuredClone(saved)
+}
+
+export default function profilePersistence(userFile = new URL('./.local/user.mjs', import.meta.url)) {
+  const seedFile = new URL('./src/user.js', import.meta.url)
   let writes = Promise.resolve()
+  const readUser = async () => {
+    try {
+      return await importSavedUser(await readFile(userFile, 'utf8'))
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error
+      const seeded = await importSavedUser(await readFile(seedFile, 'utf8'))
+      await mkdir(dirname(fileURLToPath(userFile)), { recursive: true })
+      await writeFile(userFile, `const user = ${JSON.stringify(seeded, null, 2)}\n\nexport default user\n`, 'utf8')
+      return seeded
+    }
+  }
+  const writeUser = async (user) => {
+    await writeFile(userFile, `const user = ${JSON.stringify(user, null, 2)}\n\nexport default user\n`, 'utf8')
+  }
   return {
     name: 'local-profile-persistence',
     configureServer(server) {
@@ -31,9 +68,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
         response.setHeader('Content-Type', 'application/json')
         if (route === '/profile' && request.method === 'GET') {
           try {
-            const source = await readFile(userFile, 'utf8')
-            const { default: saved } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
-            const { accounts: _accounts, ...current } = structuredClone(saved)
+            const { accounts: _accounts, ...current } = await readUser()
             void _accounts
             response.end(JSON.stringify({ ok: true, profile: publicProfile(current) }))
           } catch (error) {
@@ -58,10 +93,10 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           const updates = JSON.parse(Buffer.concat(chunks).toString())
           if (!updates || typeof updates !== 'object' || Array.isArray(updates)) throw new Error('Invalid profile update.')
           if ('username' in updates) {
-            if (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 30) throw new Error('Username must contain 1?30 characters.')
+            if (typeof updates.username !== 'string' || !updates.username.trim() || updates.username.trim().length > 30) throw new Error('Username must contain 1 to 30 characters.')
             updates.username = updates.username.trim()
           }
-          if ('password' in updates && (typeof updates.password !== 'string' || !updates.password.trim())) throw new Error('Password must contain at least 1 character.')
+          if ('password' in updates && (typeof updates.password !== 'string' || updates.password.length > 128 || (route !== '/account' && updates.password.length < 8))) throw new Error('Use a password with 8 to 128 characters.')
           if ('email' in updates) {
             if (typeof updates.email !== 'string' || updates.email.trim().length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email.trim())) throw new Error('Enter a valid email address.')
             updates.email = updates.email.trim()
@@ -75,12 +110,11 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
           if ('completedBoardId' in updates && (typeof updates.completedBoardId !== 'string' || !updates.completedBoardId || updates.completedBoardId.length > 100)) throw new Error('Invalid board reward.')
           if ('completionSeconds' in updates && (!updates.completedBoardId || !Number.isInteger(updates.completionSeconds) || updates.completionSeconds < 1 || updates.completionSeconds > 2147483647)) throw new Error('Invalid completion time.')
           if ('hints' in updates && (!Number.isSafeInteger(updates.hints) || updates.hints < 0)) throw new Error('Hints must be a non-negative whole number.')
-          if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || !updates.password)) throw new Error('Enter your username and password.')
+          if (route === '/account' && (!['signup', 'signin'].includes(updates.action) || !updates.username || typeof updates.password !== 'string' || updates.password.length > 128)) throw new Error('Enter your username and password.')
+          if (route === '/account' && updates.action === 'signup' && updates.password.length < 8) throw new Error('Use a password with at least 8 characters.')
           let result
           const write = writes.then(async () => {
-            const source = await readFile(userFile, 'utf8')
-            const { default: saved } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
-            const { accounts: savedAccounts, ...current } = structuredClone(saved)
+            const { accounts: savedAccounts, ...current } = await readUser()
             const accounts = savedAccounts || [current]
             const currentIndex = accounts.findIndex((account) => usernameKey(account.username) === usernameKey(current.username))
             if (currentIndex >= 0) accounts[currentIndex] = current
@@ -90,17 +124,20 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
               const existing = accounts.find((account) => usernameKey(account.username) === usernameKey(updates.username))
               if (updates.action === 'signup') {
                 if (existing) throw new Error('That username is already taken. Choose another username.')
-                selected = { username: updates.username, password: updates.password, email: '', profileImage: null, selectedPen: 'Pencil Pen', ownedPens: ['Pencil Pen'], ownedPacks: ['pack-E_1'], sudo: 0, hints: 0, level: 1, dailyStreak: 0, puzzlesCompleted: 0, fastestTime: 0, totalXp: 0 }
+                selected = { username: updates.username, password: hashPassword(updates.password), email: '', profileImage: null, selectedPen: 'Pencil Pen', ownedPens: ['Pencil Pen'], ownedPacks: ['pack-E_1'], sudo: 0, hints: 0, level: 1, dailyStreak: 0, puzzlesCompleted: 0, fastestTime: 0, totalXp: 0 }
                 accounts.push(selected)
               } else {
-                if (!existing || existing.password !== updates.password) throw new Error('Incorrect username or password.')
+                if (!existing || !verifyPassword(updates.password, existing.password)) throw new Error('Incorrect username or password.')
+                if (typeof existing.password !== 'string' || !existing.password.startsWith('scrypt$')) {
+                  existing.password = hashPassword(updates.password)
+                }
                 selected = existing
               }
             } else {
               if ('username' in updates && accounts.some((account, index) => index !== currentIndex && usernameKey(account.username) === usernameKey(updates.username))) throw new Error('That username is already taken. Choose another username.')
               selected = { ...current }
               for (const field of ['username', 'email', 'password', 'profileImage', 'selectedPen', 'ownedPens', 'ownedPacks', 'level', 'sudo', 'hints']) {
-                if (field in updates) selected[field] = updates[field]
+                if (field in updates) selected[field] = field === 'password' ? hashPassword(updates.password) : updates[field]
               }
               if (updates.completedBoardId) {
                 const rewardedBoards = selected.rewardedBoards || []
@@ -115,7 +152,7 @@ export default function profilePersistence(userFile = new URL('./src/user.js', i
               }
               accounts[currentIndex] = selected
             }
-            await writeFile(userFile, `const user = ${JSON.stringify({ ...selected, accounts }, null, 2)}\n\nexport default user\n`, 'utf8')
+            await writeUser({ ...selected, accounts })
             result = publicProfile(selected)
           })
           writes = write.catch(() => {})

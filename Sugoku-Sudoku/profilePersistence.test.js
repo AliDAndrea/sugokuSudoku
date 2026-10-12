@@ -69,7 +69,27 @@ test('local level, Sudo, and hints persist on the active account', async (t) => 
     { level: savedUser.level, sudo: savedUser.sudo, hints: savedUser.hints },
     { level: 9, sudo: 321, hints: 12 },
   )
+  assert.match(bob.password, /^scrypt\$/)
+  assert.notEqual(bob.password, 'bob-password')
 
   const invalidLevel = await request('POST', '/profile', { level: 0 })
   assert.equal(invalidLevel.status, 400)
+
+  const signup = await request('POST', '/account', {
+    action: 'signup',
+    username: 'Charlie',
+    password: 'charlie-password',
+  })
+  assert.equal(signup.ok, true)
+  assert.equal('password' in signup.profile, false)
+  const afterSignup = await import(`${pathToFileURL(userFile).href}?created=${Date.now()}`)
+  const charlie = afterSignup.default.accounts.find(({ username }) => username === 'Charlie')
+  assert.match(charlie.password, /^scrypt\$/)
+
+  const wrongPassword = await request('POST', '/account', {
+    action: 'signin',
+    username: 'Charlie',
+    password: 'wrong-password',
+  })
+  assert.equal(wrongPassword.status, 400)
 })

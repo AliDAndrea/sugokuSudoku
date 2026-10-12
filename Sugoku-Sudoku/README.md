@@ -25,25 +25,9 @@ npm run cap:open:ios
 npm run cap:open:android
 ```
 
-Create a `.env` file from `.env.example` and configure a Supabase project. Apply all migrations in `supabase/migrations` in filename order and deploy the `revenuecat-webhook` Edge Function. The puzzle completion rewards migration adds XP and awards 5 XP plus one completed puzzle per board, with duplicate claims ignored. Configure email/password authentication in Supabase and set its allowed redirect URLs for the app. Supabase-backed accounts sign up with username and password; accounts stored in the old local `src/user.js` file are not automatically migrated. Set the public RevenueCat SDK keys for each platform in the app environment before building.
+Accounts and profile data use a local development-server store. Run `npm run dev` to sign up or sign in; the first run seeds `.local/user.mjs` from `src/user.js`, and later account/profile changes stay in the ignored `.local/` directory. Passwords are stored as salted scrypt hashes. This local mode has no cross-device sync and is not a production authentication service; do not expose the Vite development server to the public internet. It does not use Supabase for accounts or profile data.
 
-Cloud sign-in and sign-up use username and password. Deploy the `sign-in-with-username` Edge Function from this directory with `supabase functions deploy sign-in-with-username`. Its configuration in `supabase/config.toml` permits requests before login; the function verifies the password with Supabase Auth before returning session tokens. It requires the standard Supabase function environment variables `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Email lookup stays on the server and follows the current profile username, including username changes. Sign-up creates an automatically confirmed internal Auth identifier on the server; players never enter an email or confirm an email message. Redeploy this function when updating either account flow.
-
-Create consumable in-app products in App Store Connect and Google Play Console using these product identifiers:
-
-| Product ID | Sudo |
-| --- | ---: |
-| `sugoku_sudo_100` | 100 |
-| `sugoku_sudo_500` | 500 |
-| `sugoku_sudo_1000` | 1,000 |
-| `sugoku_sudo_2500` | 2,500 |
-| `sugoku_sudo_10000` | 10,000 |
-
-Connect those products to the RevenueCat apps, then enable HMAC signing for the RevenueCat webhook and point it at `https://<project-ref>.supabase.co/functions/v1/revenuecat-webhook`. Set the signing secret as the Supabase function secret `REVENUECAT_WEBHOOK_HMAC_SECRET`; also set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as function secrets. Do not add server secrets to the Vite environment. The webhook verifies the signature and credits each store transaction once; the client never credits purchased Sudo itself.
-
-RevenueCat webhooks require a plan that includes webhook integrations. Create and test the store products as consumable/non-subscription products, and test purchases with the platform sandbox before release.
-
-Store prices are retrieved from the active device's store and shown in its local currency. Paid Sudo bundles are disabled on the web and remain unavailable until Supabase, RevenueCat, and the platform store products are configured.
+Paid Sudo purchases are currently disabled. Local accounts cannot securely associate store receipts or receive verified purchase credits; do not enable the purchase flow while using local-only accounts.
 
 ## React Compiler
 
