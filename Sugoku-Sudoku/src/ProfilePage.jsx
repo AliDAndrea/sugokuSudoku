@@ -211,7 +211,7 @@ function ChangeEmailPanel({ view }) {
       <BackToHome left="15px" top="12px" active={active} />
       <div className="profile-panel-content" data-active={active} aria-hidden={!active} inert={!active}>
         <form onSubmit={(event) => submit(event, 'username')}>
-          <ProfileInput label="New Username:" top="94px" type="text" autoComplete="username" maxLength={30} placeholder={profile.username} value={username} onChange={(event) => setUsername(event.target.value)} disabled={saving} />
+          <ProfileInput label="New Username:" top="94px" type="text" autoComplete="username" maxLength={35} placeholder={profile.username} value={username} onChange={(event) => setUsername(event.target.value)} disabled={saving} />
           <ProfileConfirm top="173px" saving={saving} label="Confirm username change" />
         </form>
         <form onSubmit={(event) => submit(event, 'email')}>

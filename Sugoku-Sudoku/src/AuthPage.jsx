@@ -25,6 +25,10 @@ function AuthNotebook({ signup, active }) {
       setStatus('Enter a username.')
       return
     }
+    if (signup && username.length < 3) {
+      setStatus('Username must contain at least 3 characters.')
+      return
+    }
     if (!data.get('password') || (signup && !data.get('confirmation'))) {
       setStatus(signup ? 'Enter and confirm your password.' : 'Enter your password.')
       return
@@ -50,7 +54,7 @@ function AuthNotebook({ signup, active }) {
     <h1 className="auth-title">{title}</h1>
     <div className="profile-panel-content auth-content" data-active={active} aria-hidden={!active} inert={!active}>
       <form noValidate onSubmit={submit} onChange={() => setStatus('')} className="auth-form">
-        <AuthField label="Username:" name="username" type="text" autoComplete="username" maxLength={30} pattern={'.*\\S.*'} />
+        <AuthField label="Username:" name="username" type="text" autoComplete="username" minLength={signup ? 3 : 1} maxLength={35} pattern={'.*\\S.*'} />
         <AuthField label="Password:" name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={signup ? 8 : 1} maxLength={128} />
         {signup && <AuthField label="Confirm Password:" name="confirmation" type="password" autoComplete="new-password" minLength={8} maxLength={128} />}
         <div className="auth-actions">

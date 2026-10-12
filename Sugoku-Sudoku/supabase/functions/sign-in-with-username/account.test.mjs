@@ -35,6 +35,20 @@ function setup({ duplicate = false, known = true, validPassword = true } = {}) {
   }
 }
 
+test('signup rejects usernames shorter than three trimmed characters', async () => {
+  const app = setup()
+  const response = await app.submit({ action: 'signup', username: ' ab ', password: 'password123' })
+  assert.equal(response.status, 400)
+  assert.match((await response.json()).error, /at least 3/)
+  assert.equal(app.created(), undefined)
+})
+
+test('signup allows 35 username characters and rejects 36', async () => {
+  const app = setup()
+  assert.equal((await app.submit({ action: 'signup', username: 'x'.repeat(35), password: 'password123' })).status, 200)
+  assert.equal((await app.submit({ action: 'signup', username: 'x'.repeat(36), password: 'password123' })).status, 400)
+})
+
 test('signup needs no email and returns a session without email verification', async () => {
   const app = setup()
   const response = await app.submit({ action: 'signup', username: ' Player ', password: 'password123' })
