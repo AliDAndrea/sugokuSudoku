@@ -50,8 +50,9 @@ export function getBoard(id, user, storage = globalThis.localStorage) {
 export function archiveBoard(id, user, storage = globalThis.localStorage) {
   const board = getBoard(id, user, storage)
   if (!board) throw new Error('Board not found.')
+  if (board.failedAt || board.livesUsed >= 5) throw new Error('Failed boards cannot be archived.')
   if (board.archived) return board
-  if (!board.completedAt && !board.failedAt && board.livesUsed < 5) throw new Error('Finish the board before archiving it.')
+  if (!board.completedAt) throw new Error('Finish the board before archiving it.')
   if (listBoards(user, storage).filter((entry) => entry.archived).length >= 5) throw new Error('Your archive is full.')
   return saveBoard({ ...board, archived: true }, storage)
 }

@@ -241,6 +241,18 @@ test('archive moves a finished board out of active listings and deletion removes
   assert.equal(storage.getItem(`sugoku-active-board:${user.username}`), null)
 })
 
+test('failed boards cannot be archived, including boards with exhausted lives and no failure timestamp', () => {
+  const values = new Map()
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }
+  for (const failure of [{ failedAt: Date.now() }, { livesUsed: 5 }, { completedAt: Date.now(), failedAt: Date.now() }]) {
+    const board = createSavedBoard({ user, type: 'chaos' }, storage)
+    saveBoard({ ...board, ...failure }, storage)
+    const before = storage.getItem('sugoku-boards-v1')
+    assert.throws(() => archiveBoard(board.id, user, storage), /Failed boards cannot be archived/)
+    assert.equal(storage.getItem('sugoku-boards-v1'), before)
+  }
+})
+
 test('leaving results discards finished boards but preserves active and archived boards', () => {
   const values = new Map()
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) }

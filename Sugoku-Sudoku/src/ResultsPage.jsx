@@ -45,11 +45,13 @@ export default function ResultsPage() {
   const placed = board.cells.filter((cell, index) => cell?.kind === 'number' && !cell.given && (!board.solution || cell.number === board.solution[index]))
   const solved = placed.filter((cell) => cell.user?.username === profile.username).length
   const total = board.cells.filter((cell) => !cell?.given).length
-  const xp = board.completedAt ? 5 : 0
+  const xp = board.completedAt ? 1000 : 0
   const level = profile.level || 1
   const currentXp = profile.totalXp ?? 0
   const xpTarget = requiredXp(level)
+  const failed = Boolean(board.failedAt || board.livesUsed >= 5)
   const archive = () => {
+    if (failed || !board.completedAt) return
     if (board.archived) return
     if (archivedCount >= 5) { setStatus('Your archive is full.'); return }
     try {
@@ -77,7 +79,7 @@ export default function ResultsPage() {
         <p className="results-level">Level: {level}</p>
         <p className="results-progress-count">{currentXp}/{xpTarget}</p>
       </section>
-      <button type="button" className="results-archive-button" onClick={archive} disabled={board.archived || archivedCount >= 5} aria-label={board.archived ? 'Board archived' : 'Archive board'}><img src={images.ArchiveButton} alt="" /></button>
+      <button type="button" className="results-archive-button" onClick={archive} disabled={failed || !board.completedAt || board.archived || archivedCount >= 5} aria-label={board.archived ? 'Board archived' : 'Archive board'}><img src={images.ArchiveButton} alt="" /></button>
       <p className="results-status" role="status">{status}</p>
       <Link to="/" className="results-home" aria-label="Return to home page"><img src={images.Mainmenubutton} alt="" /></Link>
     </main>

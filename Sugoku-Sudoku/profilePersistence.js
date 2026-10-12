@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer'
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { applyLevelUps } from './src/xp.js'
 
 const usernameKey = (username) => username.trim().toLowerCase()
 const hashPassword = (password) => {
@@ -142,7 +143,8 @@ export default function profilePersistence(userFile = new URL('./.local/user.mjs
               if (updates.completedBoardId) {
                 const rewardedBoards = selected.rewardedBoards || []
                 if (!rewardedBoards.includes(updates.completedBoardId)) {
-                  selected.totalXp = (Number.isFinite(selected.totalXp) ? selected.totalXp : 0) + 5
+                  selected.totalXp = (Number.isFinite(selected.totalXp) ? selected.totalXp : 0) + 1000
+                  Object.assign(selected, applyLevelUps(selected.level, selected.totalXp))
                   selected.puzzlesCompleted = (Number.isFinite(selected.puzzlesCompleted) ? selected.puzzlesCompleted : 0) + 1
                   selected.rewardedBoards = [...rewardedBoards, updates.completedBoardId]
                   if (updates.completionSeconds && (!selected.fastestTime || updates.completionSeconds < selected.fastestTime)) {
