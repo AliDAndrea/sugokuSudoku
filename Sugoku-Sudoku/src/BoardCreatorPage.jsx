@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useProfile } from './profileStore.js'
-import { createSavedBoard } from './boardStore.js'
+import { createSavedBoard, listBoards } from './boardStore.js'
 import * as images from './figmages/index.js'
 
 const selectorGroups = [
@@ -38,6 +38,7 @@ const selectorGroups = [
 export default function BoardCreatorPage() {
   const [selections, setSelections] = useState({ size: '9x9', difficulty: 'easy', type: 'classic' })
   const profile = useProfile()
+  const boardsInProgress = listBoards(profile).filter((board) => !board.archived && board.createdBy.username === profile.username).length
   const navigate = useNavigate()
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
@@ -89,7 +90,7 @@ export default function BoardCreatorPage() {
         />
       </Link>
       <p style={{ color: '#000', fontFamily: 'Piedra', fontSize: '40px', width: '100%', height: '52px', position: 'absolute', left: '35px', top: '45px', letterSpacing: '0.08em' }}>
-        Capacity 00/30
+        Capacity {String(boardsInProgress).padStart(2, '0')}/30
       </p>
       <div style={{ width: '100%', height: '555px', position: 'absolute', left: '0.5px', top: '108px' }}>
         <img

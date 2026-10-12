@@ -6,6 +6,8 @@ export const userColors = [
   '#00B8E6', '#174FC4', '#9234FF', '#FF70C4',
 ]
 
+export const MAX_BOARD_PLAYERS = 9
+
 function randomIndex(length) {
   const sample = new Uint32Array(1)
   const limit = Math.floor(0x100000000 / length) * length
@@ -25,6 +27,8 @@ export function pickUserColor(assignments, chooseIndex = randomIndex) {
 
 export class Board {
   constructor({ size = 9, difficulty = 'easy', type = 'classic', user = { username: 'Guest' }, usersInvited = [], generatedPuzzle = null } = {}) {
+    const participants = [user, ...usersInvited].filter((participant, index, all) => all.findIndex((entry) => entry.username === participant.username) === index)
+    if (participants.length > MAX_BOARD_PLAYERS) throw new Error('A board can have at most 9 players, including the owner.')
     this.id = globalThis.crypto.randomUUID()
     this.createdAt = Date.now()
     this.lastOpenedAt = null
@@ -43,8 +47,7 @@ export class Board {
     this.hintsUsed = 0
     this.livesUsed = 0
     this.createdBy = { ...user }
-    this.usersInvited = usersInvited.map((participant) => ({ ...participant }))
-    const participants = [user, ...usersInvited].filter((participant, index, all) => all.findIndex((entry) => entry.username === participant.username) === index)
+    this.usersInvited = participants.slice(1).map((participant) => ({ ...participant }))
     this.colors = []
     for (const participant of participants) {
       this.colors.push({ user: { ...participant }, color: pickUserColor(this.colors) })
@@ -69,6 +72,8 @@ export function isNumberComplete(board, number) {
 export function boardReducer(state, action) {
   if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['enter', 'erase', 'toggle-notes', 'change-color'].includes(action.type)) return state
   switch (action.type) {
+    case 'sync-board':
+      return action.board.id === state.board.id ? { ...state, board: action.board } : state
     case 'finish-celebration':
       return { ...state, celebrations: state.celebrations.filter((entry) => entry.id !== action.id) }
     case 'change-color': {

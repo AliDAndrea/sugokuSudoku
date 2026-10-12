@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { mainPen, penItems } from './PenItem.jsx'
 import { useProfile } from './profileStore.js'
-import { boardReducer, createBoardState, isRelatedCell, isNumberComplete, userColors } from './boardState.js'
-import { loadBoard, saveBoard } from './boardStore.js'
+import { boardReducer, createBoardState, isRelatedCell, isNumberComplete, MAX_BOARD_PLAYERS, userColors } from './boardState.js'
+import { getBoard, inviteFriendToBoard, loadBoard, saveBoard } from './boardStore.js'
 import './BoardPage.css'
 import { boardGeometry } from './boardGeometry.js'
 
@@ -39,6 +39,76 @@ function ColorCircle({ color }) {
   </svg>
 }
 
+function BoardParticipant({ user, color }) {
+  const ref = useRef(null)
+  useLayoutEffect(() => {
+    const text = ref.current
+    let active = true
+    const fit = () => {
+      if (!active) return
+      text.style.fontSize = '10px'
+      const width = text.getBoundingClientRect().width
+      const available = text.parentElement.clientWidth - 12
+      if (width > available) text.style.fontSize = `${10 * available / width}px`
+    }
+    fit()
+    document.fonts.ready.then(fit)
+    const observer = new ResizeObserver(fit)
+    observer.observe(text.parentElement)
+    return () => { active = false; observer.disconnect() }
+  }, [user.username])
+  return <span className="board-participant" style={{ backgroundColor: color }} title={user.username}><span ref={ref}>{user.username}</span></span>
+}
+
+function BoardInviteMenu({ board, profile, onUpdate, onClose }) {
+  const dialogRef = useRef(null)
+  const [friends, setFriends] = useState([])
+  const [status, setStatus] = useState('Loading friends...')
+  const [busy, setBusy] = useState(false)
+  const atCapacity = board.usersInvited.length + 1 >= MAX_BOARD_PLAYERS
+  useEffect(() => {
+    const dialog = dialogRef.current
+    dialog.showModal()
+    const controller = new AbortController()
+    fetch('/api/friends', { signal: controller.signal }).then(async (response) => {
+      const result = await response.json()
+      if (!response.ok || !result.ok) throw new Error(result.error || 'Could not load friends.')
+      setFriends(result.friends)
+      setStatus('')
+    }).catch((error) => { if (error.name !== 'AbortError') setStatus(error.message) })
+    return () => { controller.abort(); dialog.close() }
+  }, [])
+  const invite = async (friend) => {
+    if (busy) return
+    setBusy(true)
+    setStatus('')
+    try {
+      const response = await fetch('/api/friends')
+      const result = await response.json()
+      if (!response.ok || !result.ok) throw new Error(result.error || 'Could not load friends.')
+      onUpdate(inviteFriendToBoard(board.id, profile, friend, result.friends))
+    } catch (error) { setStatus(error.message) }
+    finally { setBusy(false) }
+  }
+  return <dialog ref={dialogRef} className="board-invite-menu" aria-labelledby="board-invite-title" onCancel={onClose}>
+    <h2 id="board-invite-title">Invite friends</h2>
+    <p>{board.usersInvited.length + 1}/{MAX_BOARD_PLAYERS} players{atCapacity ? ' — Board full.' : ''}</p>
+    <button type="button" className="board-invite-close" aria-label="Close invitations" onClick={onClose}>×</button>
+    <div className="board-invite-list">
+      {friends.map((friend) => {
+        const added = [board.createdBy, ...board.usersInvited].some((user) => user.username === friend.name)
+        return <div className="board-invite-friend" key={friend.id}>
+          <span className="board-invite-avatar">{friend.profileImage && <img src={friend.profileImage} alt="" />}</span>
+          <span className="board-invite-name">{friend.name}</span>
+          <button type="button" disabled={busy || added || atCapacity} aria-label={added ? `${friend.name} already added` : `Add ${friend.name} to board`} onClick={() => invite(friend)}><img src={images.confirmIcon} alt="" /></button>
+        </div>
+      })}
+      {!status && friends.length === 0 && <p>No friends yet.</p>}
+    </div>
+    <p role="status">{status}</p>
+  </dialog>
+}
+
 function BoardTimer({ createdAt, endedAt }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -64,6 +134,7 @@ export default function BoardPage() {
   const selectedPen = penItems.find((pen) => pen.name === profile.selectedPen) || mainPen
   const [board, dispatch] = useReducer(boardReducer, profile, (currentUser) => createBoardState(loadBoard(currentUser)))
   const [colorPickerOpen, setColorPickerOpen] = useState(false)
+  const [inviteOpen, setInviteOpen] = useState(false)
   const highlightColor = board.board.colors.find(({ user }) => user.username === profile.username)?.color || '#174FC4'
   const selectedCell = board.selected === null ? null : board.board.cells[board.selected]
   const selectedNumber = selectedCell?.kind === 'number' ? selectedCell.number : null
@@ -84,6 +155,15 @@ export default function BoardPage() {
   }, [colorPickerOpen])
 
   useEffect(() => { saveBoard(board.board) }, [board.board])
+  useEffect(() => {
+    const sync = (event) => {
+      if (event.key !== 'sugoku-boards-v1') return
+      const updated = getBoard(board.board.id, profile)
+      if (updated) dispatch({ type: 'sync-board', board: updated })
+    }
+    window.addEventListener('storage', sync)
+    return () => window.removeEventListener('storage', sync)
+  }, [board.board.id, profile])
   useEffect(() => {
     if (board.board.archived) return
     if (!board.board.completedAt && !board.board.failedAt && board.board.livesUsed < 5) return
@@ -159,11 +239,7 @@ export default function BoardPage() {
           </button>
         )
       })}
-      <img
-        src={images.InviteButton}
-        style={{ width: "131px", height: "76px", position: "absolute", left: "14px", top: "704px", maxWidth: "none" }}
-        alt="InviteButton"
-      />
+      {board.board.createdBy.username === profile.username && <button type="button" className="board-invite-button" aria-label="Invite friends to board" aria-haspopup="dialog" disabled={Boolean(board.board.archived || board.board.completedAt || board.board.failedAt || board.board.livesUsed >= 5)} onClick={() => setInviteOpen(true)}><img src={images.InviteButton} alt="" /></button>}
       {Array.from({ length: 5 }, (_, index) => <LifeHeart key={index} index={index} lost={board.board.livesUsed >= 5 - index} />)}
       <button type="button" data-board-notes disabled={Boolean(board.board.archived)} className="board-note-toggle" aria-label="Note mode" aria-pressed={board.noteMode} onClick={() => dispatch({ type: 'toggle-notes' })}>
         <img src={images.Takenote} alt="" />
@@ -220,62 +296,8 @@ export default function BoardPage() {
           })}
         </div>
       </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "90px", top: "794px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "90px", top: "832px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "192px", top: "794px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "160px", top: "755px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "192px", top: "832px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "294px", top: "794px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "262px", top: "755px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
-      <div style={{ width: "90px", height: "25px", position: "absolute", left: "294px", top: "832px" }}>
-        <div style={{ borderRadius: "9px", borderWidth: "2px", borderStyle: "solid", borderColor: "#000", backgroundColor: "#F9EAE2", width: "85px", height: "25px", position: "absolute", left: "0px", top: "0px" }}></div>
-        <div style={{ width: "14px", height: "14px", position: "absolute", left: "4px", top: "5px" }}></div>
-        <p style={{ display: "flex", flexDirection: "column", justifyContent: "center", color: "#000", fontFamily: "'Piedra', serif", fontSize: "10px", width: "82px", height: "10px", position: "absolute", left: "8px", top: "8px", textAlign: "center" }}>
-          friendO_135x7
-        </p>
-      </div>
+      <div className="board-participants" data-owner={board.board.createdBy.username === profile.username} aria-label="Board participants">{board.board.colors.map(({ user, color }) => <BoardParticipant key={user.username} user={user} color={color} />)}</div>
+      {inviteOpen && board.board.createdBy.username === profile.username && <BoardInviteMenu board={board.board} profile={profile} onUpdate={(updated) => dispatch({ type: 'sync-board', board: updated })} onClose={() => setInviteOpen(false)} />}
       <div className="board-color-control" data-board-colors>
         <button type="button" className="board-color-current" aria-label="Change your board color" aria-expanded={colorPickerOpen} aria-controls="board-color-picker" disabled={Boolean(board.board.archived || board.board.completedAt || board.board.failedAt || board.board.livesUsed >= 5)} onClick={() => setColorPickerOpen((open) => !open)}>
           <ColorCircle color={highlightColor} />
@@ -285,7 +307,7 @@ export default function BoardPage() {
             const owner = board.board.colors.find((entry) => entry.color === color && entry.user.username !== profile.username)
             return <button key={color} type="button" className="board-color-option" disabled={Boolean(owner)} aria-label={owner ? `${color}, taken by ${owner.user.username}` : `Use ${color}`} aria-pressed={color === highlightColor} title={owner ? `Taken by ${owner.user.username}` : color} onClick={() => { dispatch({ type: 'change-color', color, user: profile }); setColorPickerOpen(false) }}>
               <ColorCircle color={color} />
-              {owner && <span className="board-color-lock" aria-hidden="true">🔒</span>}
+              {owner && <span className="board-color-lock" aria-hidden="true">&#128274;</span>}
             </button>
           })}
         </div>}

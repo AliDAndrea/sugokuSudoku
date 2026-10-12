@@ -1,4 +1,4 @@
-import { Board } from './boardState.js'
+import { Board, MAX_BOARD_PLAYERS, pickUserColor } from './boardState.js'
 
 const storageKey = 'sugoku-boards-v1'
 
@@ -12,6 +12,20 @@ export function saveBoard(board, storage = globalThis.localStorage) {
 
 export function createSavedBoard(options, storage = globalThis.localStorage) {
   return saveBoard(new Board(options), storage)
+}
+
+export function inviteFriendToBoard(id, user, friend, friends, storage = globalThis.localStorage) {
+  const board = getBoard(id, user, storage)
+  if (!board) throw new Error('Board not found.')
+  if (board.createdBy.username !== user.username) throw new Error('Only the board owner can invite friends.')
+  if (board.archived || board.completedAt || board.failedAt || board.livesUsed >= 5) throw new Error('Only boards in progress can receive invitations.')
+  if (!friends.some((entry) => entry.name === friend.name)) throw new Error('Choose someone from your friends list.')
+  if ([board.createdBy, ...board.usersInvited].some((entry) => entry.username === friend.name)) return board
+  if (new Set([board.createdBy, ...board.usersInvited].map((participant) => participant.username)).size >= MAX_BOARD_PLAYERS) throw new Error('This board already has the maximum of 9 participants.')
+  const friendBoards = listBoards({ username: friend.name }, storage).filter((entry) => !entry.archived && entry.createdBy.username !== friend.name)
+  if (friendBoards.length >= 10) throw new Error(`${friend.name}'s Friends' Puzzles section is full (10/10).`)
+  const participant = { username: friend.name, profileImage: friend.profileImage || null }
+  return saveBoard({ ...board, usersInvited: [...board.usersInvited, participant], colors: [...board.colors, { user: participant, color: pickUserColor(board.colors) }] }, storage)
 }
 
 export function loadBoard(user, storage = globalThis.localStorage) {

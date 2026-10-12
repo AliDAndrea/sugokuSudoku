@@ -138,3 +138,25 @@
 .board-color-option[aria-pressed='true'] { outline: 2px solid #000; outline-offset: 1px; border-radius: 50%; }
 .board-color-option:disabled svg { opacity: .45; }
 .board-color-lock { position: absolute; inset: 0; display: grid; place-items: center; font-size: 18px; }
+
+.board-invite-button { position: absolute; left: 14px; top: 704px; width: 131px; height: 76px; padding: 0; border: 0; background: transparent; cursor: pointer; z-index: 2; }
+.board-invite-button img { width: 100%; height: 100%; display: block; }
+.board-invite-button:disabled { opacity: .5; cursor: default; }
+.board-invite-button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
+.board-participants { position: absolute; left: 90px; right: 20px; top: 785px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.board-participants[data-owner='false'] { top: 747px; }
+.board-participant { box-sizing: border-box; min-width: 0; height: 25px; border: 2px solid #000; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #000; font-family: var(--font-piedra); }
+.board-participant span { display: inline-block; white-space: nowrap; }
+.board-invite-menu { width: min(330px, calc(100vw - 48px)); max-height: 70vh; padding: 24px 16px; border: 3px solid #000; border-radius: 16px; background: #f9eae2; color: #000; font-family: var(--font-piedra); }
+.board-invite-menu::backdrop { background: rgb(0 0 0 / 45%); }
+.board-invite-menu h2 { margin: 0 32px 20px 0; }
+.board-invite-close { position: absolute; right: 12px; top: 12px; border: 0; background: transparent; font-size: 28px; cursor: pointer; }
+.board-invite-list { display: flex; flex-direction: column; gap: 12px; }
+.board-invite-friend { display: flex; align-items: center; gap: 10px; }
+.board-invite-avatar { width: 32px; height: 32px; flex-shrink: 0; border: 1px solid #000; border-radius: 50%; overflow: hidden; background: #d9dddd; }
+.board-invite-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.board-invite-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.board-invite-friend button { width: 30px; height: 30px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.board-invite-friend button img { width: 100%; height: 100%; }
+.board-invite-friend button:disabled { opacity: .4; cursor: default; }
+.board-invite-menu button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }

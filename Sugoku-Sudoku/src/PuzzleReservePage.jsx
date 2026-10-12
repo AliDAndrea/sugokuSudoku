@@ -27,6 +27,13 @@ export default function PuzzleReserve() {
   const visibleBoards = boards.filter((board) => !board.archived && board.createdBy.username === profile.username).slice(0, MAX_BOARDS)
   const visibleFriendBoards = boards.filter((board) => !board.archived && board.createdBy.username !== profile.username).slice(0, MAX_FRIEND_BOARDS)
   const archivedBoards = boards.filter((board) => board.archived)
+  useEffect(() => {
+    const refresh = () => setBoards(listBoards({ username: profile.username }))
+    const sync = (event) => { if (event.key === 'sugoku-boards-v1') refresh() }
+    refresh()
+    window.addEventListener('storage', sync)
+    return () => window.removeEventListener('storage', sync)
+  }, [profile.username])
   const removeSelected = () => {
     if (!selected) return
     try {
