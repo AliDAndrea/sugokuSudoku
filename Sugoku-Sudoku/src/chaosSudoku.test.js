@@ -1,9 +1,25 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { generateChaos, regionAt } from './chaosSudoku.js'
+import { generateChaos, regionAt, regionColors, gridColorsForPlayers } from './chaosSudoku.js'
 import { solveClassic } from './classicSudoku.js'
-import { Board, boardReducer, createBoardState } from './boardState.js'
+import { Board, boardReducer, createBoardState, userColors, isRelatedCell } from './boardState.js'
 import { completionFlashes } from './boardCelebration.js'
+
+test('grid palette stays distinct from player colors, including existing matching assignments', () => {
+  assert.equal(new Set(regionColors).size, 9)
+  for (const grid of regionColors) for (const player of userColors) {
+    assert.notEqual(grid, player)
+    const rgb = (hex) => [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16))
+    assert.ok(Math.hypot(...rgb(grid).map((channel, index) => channel - rgb(player)[index])) > 64)
+  }
+  const players = regionColors.map((color) => color.toLowerCase())
+  const adjusted = gridColorsForPlayers(players)
+  assert.equal(new Set(adjusted).size, 9)
+  assert.ok(adjusted.every((color) => !players.includes(color.toLowerCase())))
+  assert.deepEqual(gridColorsForPlayers(userColors), regionColors)
+  assert.notEqual(gridColorsForPlayers([regionColors[0]])[0], regionColors[0])
+  assert.equal(gridColorsForPlayers(['#fff'])[0], regionColors[0])
+})
 
 for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', 'expert', 'impossible']) {
   test(`Chaos ${size} ${difficulty}: connected, balanced regions and unique puzzle`, () => {
@@ -42,3 +58,15 @@ for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', '
     assert.deepEqual(new Set(completionFlashes(board, filled, selected).map((flash) => flash.index)), new Set(generated.regions.flatMap((region, index) => region === generated.regions[selected] ? [index] : [])))
   })
 }
+
+test('Chaos region peers receive the same related highlight as row and column peers', () => {
+  const regions = Array(36).fill(1)
+  regions[0] = regions[14] = 0
+  assert.equal(isRelatedCell(14, 0, 6, regions), true)
+  assert.equal(isRelatedCell(1, 0, 6, regions), true)
+  assert.equal(isRelatedCell(6, 0, 6, regions), true)
+  assert.equal(isRelatedCell(7, 0, 6, regions), false)
+  assert.equal(isRelatedCell(0, 0, 6, regions), false)
+  assert.equal(isRelatedCell(14, null, 6, regions), false)
+  assert.equal(isRelatedCell(14, 0, 6), false)
+})

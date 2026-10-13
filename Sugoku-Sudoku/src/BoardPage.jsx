@@ -1,5 +1,4 @@
-import { ChaosBorders } from './ChaosBorders.jsx'
-import { regionColors } from './chaosSudoku.js'
+import { ChaosBoardArtwork } from './ChaosBoardArtwork.jsx'
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
@@ -12,6 +11,7 @@ import { boardGeometry } from './boardGeometry.js'
 
 const tileLayouts = Object.fromEntries(Object.entries(boardGeometry).map(([size, geometry]) => [size,
   geometry.cells.map((cell) => ({
+    '--tile-mask-sharp': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cell.width} ${cell.height}" preserveAspectRatio="none"><path fill="white" d="${cell.path}"/></svg>`)}")`,
     left: `${cell.x / geometry.width * 100}%`,
     top: `${cell.y / geometry.height * 400}px`,
     width: `${cell.width / geometry.width * 100}%`,
@@ -255,7 +255,7 @@ export default function BoardPage() {
           style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt={`${board.board.size} by ${board.board.size} board`}
         />
-        {board.board.regions && <ChaosBorders size={board.board.size} regions={board.board.regions} />}
+        {board.board.regions && <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} selected={board.selected} playerColors={board.board.colors.map((assignment) => assignment.color)} />}
         <div role="group" aria-label="Sudoku board">
           {board.board.cells.map((cell, index) => {
             const row = Math.floor(index / board.board.size)
@@ -268,9 +268,10 @@ export default function BoardPage() {
                 data-board-cell={index}
                 className="board-cell"
                 data-chaos={Boolean(board.board.regions)}
+                data-selected-region={Boolean(board.board.regions && board.selected !== null && board.board.regions[index] === board.board.regions[board.selected])}
                 data-selected={selected}
                 data-given={Boolean(cell?.given)}
-                data-related={isRelatedCell(index, board.selected, board.board.size)}
+                data-related={isRelatedCell(index, board.selected, board.board.size, board.board.regions)}
                 data-matching={selectedNumber !== null && cell?.kind === 'number' && cell.number === selectedNumber}
                 aria-label={`Row ${row + 1}, column ${column + 1}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
                 aria-pressed={selected}
@@ -278,12 +279,10 @@ export default function BoardPage() {
                 onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
                 style={{
                   ...tileLayouts[board.board.size][index],
-                  '--region-color': board.board.regions ? regionColors[board.board.regions[index]] : undefined,
                   ...(cell?.pen || pen),
                   color: cell?.color,
                 }}
               >
-                {board.board.regions && <span className="board-region-fill" aria-hidden="true" />}
                 {board.celebrations.map((celebration) => {
                   const flash = celebration.flashes.find((entry) => entry.index === index)
                   if (!flash) return null
