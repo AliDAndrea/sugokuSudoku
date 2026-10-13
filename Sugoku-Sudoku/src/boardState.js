@@ -61,9 +61,9 @@ export function createBoardState(board = new Board()) {
   return { board, selected: null, noteMode: false, message: '', celebrations: [], celebrationSequence: 0 }
 }
 
-export function isRelatedCell(index, selected, size = 9) {
+export function isRelatedCell(index, selected, size = 9, regions = null) {
   return selected !== null && index !== selected && (
-    Math.floor(index / size) === Math.floor(selected / size) || index % size === selected % size
+    Math.floor(index / size) === Math.floor(selected / size) || index % size === selected % size || (regions !== null && regions[index] === regions[selected])
   )
 }
 

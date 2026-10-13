@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { generateChaos, regionAt, regionColors, gridColorsForPlayers } from './chaosSudoku.js'
 import { solveClassic } from './classicSudoku.js'
-import { Board, boardReducer, createBoardState, userColors } from './boardState.js'
+import { Board, boardReducer, createBoardState, userColors, isRelatedCell } from './boardState.js'
 import { completionFlashes } from './boardCelebration.js'
 
 test('grid palette stays distinct from player colors, including existing matching assignments', () => {
@@ -58,3 +58,15 @@ for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', '
     assert.deepEqual(new Set(completionFlashes(board, filled, selected).map((flash) => flash.index)), new Set(generated.regions.flatMap((region, index) => region === generated.regions[selected] ? [index] : [])))
   })
 }
+
+test('Chaos region peers receive the same related highlight as row and column peers', () => {
+  const regions = Array(36).fill(1)
+  regions[0] = regions[14] = 0
+  assert.equal(isRelatedCell(14, 0, 6, regions), true)
+  assert.equal(isRelatedCell(1, 0, 6, regions), true)
+  assert.equal(isRelatedCell(6, 0, 6, regions), true)
+  assert.equal(isRelatedCell(7, 0, 6, regions), false)
+  assert.equal(isRelatedCell(0, 0, 6, regions), false)
+  assert.equal(isRelatedCell(14, null, 6, regions), false)
+  assert.equal(isRelatedCell(14, 0, 6), false)
+})

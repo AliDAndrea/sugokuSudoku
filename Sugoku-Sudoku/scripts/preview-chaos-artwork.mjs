@@ -19,7 +19,7 @@ try {
     const image = `<img alt="Original ${size} by ${size} board artwork" src="data:image/png;base64,${artwork.toString('base64')}">`
     const cards = [`<figure><figcaption>Original artwork</figcaption><div class="board">${image}</div></figure>`]
     for (const colored of [false, true]) {
-      const sketch = renderToStaticMarkup(createElement(ChaosBoardArtwork, { size, regions, colored }), { identifierPrefix: `paper-${size}-${colored}-` })
+      const sketch = renderToStaticMarkup(createElement(ChaosBoardArtwork, { size, regions, colored }), { identifierPrefix: `paper-${size}-${colored}-` }).replace(/href="[^"]*"/g, `href="data:image/png;base64,${artwork.toString('base64')}"`)
       const borders = renderToStaticMarkup(createElement(ChaosBorders, { size, regions, sketch: true }), { identifierPrefix: `border-${size}-${colored}-` })
       cards.push(`<figure><figcaption>${colored ? 'Chaos with region colors' : 'Chaos in the original paper colors'}</figcaption><div class="board">${image}${sketch}${borders}</div></figure>`)
     }
