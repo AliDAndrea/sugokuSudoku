@@ -1,6 +1,24 @@
 import { generateClassic, solveClassic } from './classicSudoku.js'
 
-export const regionColors = ['#FF8A80', '#FFBE66', '#FFEB62', '#9DDA70', '#54DCC3', '#70C8FF', '#9BA1FF', '#CD8EF0', '#F18BCB']
+export const regionColors = ['#FF8A80', '#FFD28A', '#FFF39B', '#9DDA70', '#54DCC3', '#70C8FF', '#9BA1FF', '#CD8EF0', '#F6B4CD']
+
+export function gridColorsForPlayers(playerColors = []) {
+  const normalize = (color) => color.toUpperCase().replace(/^#([0-9A-F])([0-9A-F])([0-9A-F])$/, '#$1$1$2$2$3$3')
+  const unavailable = new Set(playerColors.map(normalize))
+  return regionColors.map((base) => {
+    let color = base, shade = 0
+    // Keep the region's hue, adjusting its lightness only when a player uses it.
+    while (unavailable.has(color)) {
+      shade += 0.04
+      color = '#' + [1, 3, 5].map((offset) => {
+        const channel = parseInt(base.slice(offset, offset + 2), 16)
+        return Math.round(channel + (255 - channel) * shade).toString(16).padStart(2, '0')
+      }).join('').toUpperCase()
+    }
+    unavailable.add(color)
+    return color
+  })
+}
 
 export function regionAt(board, index) {
   return board.regions?.[index] ?? Math.floor(Math.floor(index / board.size) / (board.boxRows || (board.size === 6 ? 2 : 3))) * (board.size / 3) + Math.floor(index % board.size / 3)

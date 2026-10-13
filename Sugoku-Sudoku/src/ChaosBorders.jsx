@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { boardGeometry } from './boardGeometry.js'
 
-export function ChaosBorders({ size, regions }) {
+export function ChaosBorders({ size, regions, sketch = false }) {
   const id = useId().replace(/:/g, '')
   const geometry = boardGeometry[size], cells = geometry.cells
   // Shared axes align adjoining edges across the hand-drawn tile geometry.
@@ -22,14 +22,25 @@ export function ChaosBorders({ size, regions }) {
   return <svg aria-hidden="true" viewBox={`0 0 ${geometry.width} ${geometry.height}`} preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '400px', zIndex: 2, pointerEvents: 'none' }}>
     <defs>
       <clipPath id={`${id}-bounds`}><rect x={x[0] - 2.25} y={y[0] - 2.25} width={x[size] - x[0] + 4.5} height={y[size] - y[0] + 4.5} /></clipPath>
+      {/* Apply after the graphite filter so neither widening nor roughness enters a tile. */}
+      <mask id={`${id}-gutters`} maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height} style={{ maskType: 'luminance' }}>
+        <rect width={geometry.width} height={geometry.height} fill="white" />
+        {cells.map((cell, index) => <rect key={index} x={cell.x - 0.5} y={cell.y - 0.5} width={cell.width + 1} height={cell.height + 1} fill="black" />)}
+      </mask>
       <filter id={`${id}-graphite`} x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
         <feTurbulence type="fractalNoise" baseFrequency="0.48" numOctaves="3" seed="17" result="grain" />
-        <feDisplacementMap in="SourceGraphic" in2="grain" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="rough" />
+        {sketch && <>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="1.1" result="outline" />
+          <feFlood floodColor="#000000" result="lead" />
+          <feComposite in="lead" in2="outline" operator="in" result="edge" />
+          <feMerge><feMergeNode in="edge" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </>}
+        <feDisplacementMap in={sketch ? undefined : 'SourceGraphic'} in2="grain" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="rough" />
         <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0.35 0 0 0 0 0.33 0 0 0 0 0.30 0 0 0 0.65 -0.12" result="pencil" />
         <feComposite in="pencil" in2="rough" operator="in" result="texture" />
-        <feBlend in="rough" in2="texture" mode="screen" />
+        {sketch ? <feMerge><feMergeNode in="rough" /></feMerge> : <feBlend in="rough" in2="texture" mode="screen" />}
       </filter>
     </defs>
-    <g clipPath={`url(#${id}-bounds)`}><path d={shapes.join(' ')} fill="#080706" fillRule="nonzero" filter={`url(#${id}-graphite)`} /></g>
+    <g clipPath={`url(#${id}-bounds)`} mask={`url(#${id}-gutters)`}><path d={shapes.join(' ')} fill={sketch ? '#c37a67' : '#080706'} fillRule="nonzero" filter={`url(#${id}-graphite)`} /></g>
   </svg>
 }
