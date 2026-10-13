@@ -1,4 +1,3 @@
-import { ChaosBorders } from './ChaosBorders.jsx'
 import { ChaosBoardArtwork } from './ChaosBoardArtwork.jsx'
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -255,10 +254,7 @@ export default function BoardPage() {
           style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt={`${board.board.size} by ${board.board.size} board`}
         />
-        {board.board.regions && <>
-          <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} playerColors={board.board.colors.map((assignment) => assignment.color)} />
-          <ChaosBorders size={board.board.size} regions={board.board.regions} sketch />
-        </>}
+        {board.board.regions && <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} playerColors={board.board.colors.map((assignment) => assignment.color)} />}
         <div role="group" aria-label="Sudoku board">
           {board.board.cells.map((cell, index) => {
             const row = Math.floor(index / board.board.size)

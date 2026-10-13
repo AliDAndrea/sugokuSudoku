@@ -29,18 +29,20 @@ export function ChaosBorders({ size, regions, sketch = false }) {
       </mask>
       <filter id={`${id}-graphite`} x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
         <feTurbulence type="fractalNoise" baseFrequency="0.48" numOctaves="3" seed="17" result="grain" />
-        {sketch && <>
-          <feMorphology in="SourceAlpha" operator="dilate" radius="1.1" result="outline" />
-          <feFlood floodColor="#000000" result="lead" />
-          <feComposite in="lead" in2="outline" operator="in" result="edge" />
-          <feMerge><feMergeNode in="edge" /><feMergeNode in="SourceGraphic" /></feMerge>
+        <feDisplacementMap in="SourceGraphic" in2="grain" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="rough" />
+        {sketch ? (
+          <feComposite in="rough" in2="SourceAlpha" operator="in" />
+        ) : <>
+          <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0.35 0 0 0 0 0.33 0 0 0 0 0.30 0 0 0 0.65 -0.12" result="pencil" />
+          <feComposite in="pencil" in2="rough" operator="in" result="texture" />
+          <feBlend in="rough" in2="texture" mode="screen" />
         </>}
-        <feDisplacementMap in={sketch ? undefined : 'SourceGraphic'} in2="grain" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="rough" />
-        <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0.35 0 0 0 0 0.33 0 0 0 0 0.30 0 0 0 0.65 -0.12" result="pencil" />
-        <feComposite in="pencil" in2="rough" operator="in" result="texture" />
-        {sketch ? <feMerge><feMergeNode in="rough" /></feMerge> : <feBlend in="rough" in2="texture" mode="screen" />}
       </filter>
     </defs>
-    <g clipPath={`url(#${id}-bounds)`} mask={`url(#${id}-gutters)`}><path d={shapes.join(' ')} fill={sketch ? '#c37a67' : '#080706'} fillRule="nonzero" filter={`url(#${id}-graphite)`} /></g>
+    <g clipPath={`url(#${id}-bounds)`} mask={`url(#${id}-gutters)`}>
+      <g filter={`url(#${id}-graphite)`}>
+        <path d={shapes.join(' ')} fill={sketch ? '#c37a67' : '#080706'} fillRule="nonzero" mask={`url(#${id}-gutters)`} />
+      </g>
+    </g>
   </svg>
 }
