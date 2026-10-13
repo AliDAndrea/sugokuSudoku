@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+﻿import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useProfile } from './profileStore.js'
 import { boardName, listBoards, openBoard, deleteBoard } from './boardStore.js'
@@ -7,6 +7,22 @@ import playTriangle from './figmages/PlayTriangle.svg'
 
 const MAX_BOARDS = 30
 const MAX_FRIEND_BOARDS = 10
+
+function useScrollOverflow(axis, itemCount) {
+  const ref = useRef(null)
+  const [overflows, setOverflows] = useState(false)
+  useLayoutEffect(() => {
+    const element = ref.current
+    if (!element) return
+    const measure = () => setOverflows(axis === 'y' ? element.scrollHeight > element.clientHeight : element.scrollWidth > element.clientWidth)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    if (element.firstElementChild) observer.observe(element.firstElementChild)
+    return () => observer.disconnect()
+  }, [axis, itemCount])
+  return [ref, overflows]
+}
 
 function ReserveBoard({ board, image, selected, onSelect, onOpen }) {
   return <div data-reserve-board={board.id} style={{ position: 'relative', width: '74px', height: '71px', flexShrink: 0 }}>
@@ -27,6 +43,8 @@ export default function PuzzleReserve() {
   const visibleBoards = boards.filter((board) => !board.archived && board.createdBy.username === profile.username).slice(0, MAX_BOARDS)
   const visibleFriendBoards = boards.filter((board) => !board.archived && board.createdBy.username !== profile.username).slice(0, MAX_FRIEND_BOARDS)
   const archivedBoards = boards.filter((board) => board.archived)
+  const [savedBoardsRef, savedBoardsOverflow] = useScrollOverflow('y', visibleBoards.length)
+  const [friendBoardsRef, friendBoardsOverflow] = useScrollOverflow('x', visibleFriendBoards.length)
   useEffect(() => {
     const refresh = () => setBoards(listBoards({ username: profile.username }))
     const sync = (event) => { if (event.key === 'sugoku-boards-v1') refresh() }
@@ -131,10 +149,11 @@ export default function PuzzleReserve() {
       {selected && <p role="status" style={{ position: 'absolute', left: 0, top: '221px', width: '100%', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0, color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '30px', lineHeight: '36px', textAlign: 'center' }}>{boardName(selected)}</p>}
       <div
         className="saved-boards-scroll"
+        ref={savedBoardsRef}
         role="region"
         aria-label="Saved boards, maximum 30"
         tabIndex={0}
-        style={{ width: '283px', height: '353px', position: 'absolute', left: -5, top: '280px', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', boxSizing: 'border-box' }}
+        style={{ width: '283px', height: '353px', position: 'absolute', left: -5, top: '280px', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: savedBoardsOverflow ? 'contain' : 'auto', boxSizing: 'border-box' }}
       >
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 74px)', columnGap: '20.5px', rowGap: '8px', padding: '10px 9px', width: 'fit-content' }}>
           {visibleBoards.map((board) => <ReserveBoard key={board.id} board={board} image={images.Puzzleselecttemplate} selected={selectedId === board.id} onSelect={setSelectedId} onOpen={play} />)}
@@ -147,10 +166,11 @@ export default function PuzzleReserve() {
       />
       <div
         className="friend-boards-scroll"
+        ref={friendBoardsRef}
         role="region"
         aria-label="Friends' puzzles, maximum 10 boards"
         tabIndex={0}
-        style={{ width: '310px', height: '93px', position: 'absolute', left: '44px', top: '91px', overflowX: 'auto', overflowY: 'hidden', overscrollBehaviorX: 'contain', boxSizing: 'border-box' }}
+        style={{ width: '310px', height: '93px', position: 'absolute', left: '44px', top: '91px', overflowX: 'auto', overflowY: 'hidden', overscrollBehaviorX: friendBoardsOverflow ? 'contain' : 'auto', boxSizing: 'border-box' }}
       >
         <div style={{ display: 'flex', gap: '12px', padding: '0 10px 8px', width: 'max-content' }}>
           {visibleFriendBoards.map((board) => <ReserveBoard key={board.id} board={board} image={images.FriendPuzzleTemplate} selected={selectedId === board.id} onSelect={setSelectedId} onOpen={play} />)}

@@ -1,3 +1,5 @@
+import { ChaosBorders } from './ChaosBorders.jsx'
+import { regionColors } from './chaosSudoku.js'
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
@@ -253,6 +255,7 @@ export default function BoardPage() {
           style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt={`${board.board.size} by ${board.board.size} board`}
         />
+        {board.board.regions && <ChaosBorders size={board.board.size} regions={board.board.regions} />}
         <div role="group" aria-label="Sudoku board">
           {board.board.cells.map((cell, index) => {
             const row = Math.floor(index / board.board.size)
@@ -264,20 +267,23 @@ export default function BoardPage() {
                 type="button"
                 data-board-cell={index}
                 className="board-cell"
+                data-chaos={Boolean(board.board.regions)}
                 data-selected={selected}
                 data-given={Boolean(cell?.given)}
                 data-related={isRelatedCell(index, board.selected, board.board.size)}
                 data-matching={selectedNumber !== null && cell?.kind === 'number' && cell.number === selectedNumber}
-                aria-label={`Row ${row + 1}, column ${column + 1}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
+                aria-label={`Row ${row + 1}, column ${column + 1}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
                 aria-pressed={selected}
                 onPointerDown={(event) => { if (event.button === 0) dispatch({ type: 'select', index }) }}
                 onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
                 style={{
                   ...tileLayouts[board.board.size][index],
+                  '--region-color': board.board.regions ? regionColors[board.board.regions[index]] : undefined,
                   ...(cell?.pen || pen),
                   color: cell?.color,
                 }}
               >
+                {board.board.regions && <span className="board-region-fill" aria-hidden="true" />}
                 {board.celebrations.map((celebration) => {
                   const flash = celebration.flashes.find((entry) => entry.index === index)
                   if (!flash) return null

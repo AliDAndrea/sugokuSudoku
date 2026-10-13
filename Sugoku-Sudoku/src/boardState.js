@@ -1,3 +1,4 @@
+import { generateChaos, regionAt } from './chaosSudoku.js'
 import { generateClassic } from './classicSudoku.js'
 import { completionFlashes } from './boardCelebration.js'
 
@@ -35,7 +36,8 @@ export class Board {
     this.size = size === 6 || size === '6x6' ? 6 : 9
     this.difficulty = difficulty
     this.type = type
-    const generated = type === 'classic' ? generatedPuzzle || generateClassic(this.size, difficulty) : null
+    const generated = generatedPuzzle || (type === 'classic' ? generateClassic(this.size, difficulty) : type === 'chaos' ? generateChaos(this.size, difficulty) : null)
+    this.regions = generated?.regions || null
     this.solution = generated?.solution || null
     this.rating = generated?.rating || null
     this.boxRows = this.size === 6 ? 2 : 3
@@ -121,15 +123,14 @@ export function boardReducer(state, action) {
         cells[state.selected] = numbers.length ? { kind: 'note', numbers } : null
       } else {
         cells[state.selected] = number
-        const { size, boxRows = size === 6 ? 2 : 3, boxColumns = 3 } = state.board
+        const { size } = state.board
         const selectedRow = Math.floor(state.selected / size)
         const selectedColumn = state.selected % size
         cells.forEach((entry, index) => {
           if (entry?.kind !== 'note') return
           const row = Math.floor(index / size)
           const column = index % size
-          const sameBox = Math.floor(row / boxRows) === Math.floor(selectedRow / boxRows)
-            && Math.floor(column / boxColumns) === Math.floor(selectedColumn / boxColumns)
+          const sameBox = regionAt(state.board, index) === regionAt(state.board, state.selected)
           if (row !== selectedRow && column !== selectedColumn && !sameBox) return
           const numbers = entry.numbers.filter((note) => note.number !== action.number)
           if (numbers.length !== entry.numbers.length) cells[index] = numbers.length ? { ...entry, numbers } : null

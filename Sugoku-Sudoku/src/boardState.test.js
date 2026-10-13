@@ -9,7 +9,7 @@ const pen = { fontFamily: 'Libertinus Mono', fontWeight: 'normal' }
 
 test('changing board color recolors only the player entries, rejects taken colors, and persists', () => {
   const other = { username: 'Other' }
-  const board = new Board({ type: 'chaos', user, usersInvited: [other] })
+  const board = new Board({ type: 'killer', user, usersInvited: [other] })
   board.colors = [{ user, color: userColors[0] }, { user: other, color: userColors[1] }]
   board.cells[0] = { kind: 'number', number: 1, user, color: userColors[0], pen }
   board.cells[1] = { kind: 'number', number: 2, user: other, color: userColors[1], pen }
@@ -38,7 +38,7 @@ test('changing board color recolors only the player entries, rejects taken color
 })
 
 test('a new board has 81 empty cells and no selection or highlights', () => {
-  const state = createBoardState(new Board({ type: 'chaos' }))
+  const state = createBoardState(new Board({ type: 'killer' }))
   assert.equal(state.board.cells.length, 81)
   assert.ok(state.board.cells.every((cell) => cell === null))
   assert.equal(state.selected, null)
@@ -46,7 +46,7 @@ test('a new board has 81 empty cells and no selection or highlights', () => {
 })
 
 test('clicking a tile selects it, clicking it again deselects, and another tile changes selection', () => {
-  const selected = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 40 })
+  const selected = boardReducer(createBoardState(new Board({ type: 'killer' })), { type: 'select', index: 40 })
   assert.equal(selected.selected, 40)
   assert.equal(boardReducer(selected, { type: 'select', index: 40 }).selected, null)
   assert.equal(boardReducer(selected, { type: 'select', index: 8 }).selected, 8)
@@ -62,7 +62,7 @@ test('only the other sixteen cells in the selected row and column are highlighte
 })
 
 test('keyboard entry fills only the selected cell and retains selection and its pen font', () => {
-  const state = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 40 })
+  const state = boardReducer(createBoardState(new Board({ type: 'killer' })), { type: 'select', index: 40 })
   const next = boardReducer(state, { type: 'enter', number: 7, pen, user })
   assert.deepEqual(next.board.cells[40], { kind: 'number', number: 7, pen, user, color: next.board.colors[0].color })
   assert.equal(next.selected, 40)
@@ -71,21 +71,21 @@ test('keyboard entry fills only the selected cell and retains selection and its 
 })
 
 test('number button entry fills the cell and keeps it selected', () => {
-  const state = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 0 })
+  const state = boardReducer(createBoardState(new Board({ type: 'killer' })), { type: 'select', index: 0 })
   const next = boardReducer(state, { type: 'enter', number: 9, pen, user })
   assert.equal(next.board.cells[0].number, 9)
   assert.equal(next.selected, 0)
 })
 
 test('entry does not overwrite an occupied tile or change its original font', () => {
-  let state = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 0 })
+  let state = boardReducer(createBoardState(new Board({ type: 'killer' })), { type: 'select', index: 0 })
   state = boardReducer(state, { type: 'enter', number: 3, pen, user })
   const next = boardReducer(state, { type: 'enter', number: 5, user, pen: { fontFamily: 'Victor Mono' } })
   assert.deepEqual(next.board.cells[0], { kind: 'number', number: 3, pen, user, color: next.board.colors[0].color })
 })
 
 test('unselected entry and numbers outside 1–9 do not change the board', () => {
-  const initial = createBoardState(new Board({ type: 'chaos' }))
+  const initial = createBoardState(new Board({ type: 'killer' }))
   assert.equal(boardReducer(initial, { type: 'enter', number: 4, pen }), initial)
   const selected = boardReducer(initial, { type: 'select', index: 0 })
   for (const number of [0, 10, -1, 1.5, '3']) {
@@ -96,11 +96,11 @@ test('unselected entry and numbers outside 1–9 do not change the board', () =>
 
 test('creation preserves options, invited user objects, distinct colors, and shared counters', () => {
   const invited = { username: 'Friend' }
-  const board = new Board({ size: '6x6', difficulty: 'hard', type: 'chaos', user, usersInvited: [invited] })
+  const board = new Board({ size: '6x6', difficulty: 'hard', type: 'killer', user, usersInvited: [invited] })
   assert.equal(board.size, 6)
   assert.equal(board.cells.length, 36)
   assert.equal(board.difficulty, 'hard')
-  assert.equal(board.type, 'chaos')
+  assert.equal(board.type, 'killer')
   assert.deepEqual(board.usersInvited, [invited])
   assert.equal(board.hintsUsed, 0)
   assert.equal(board.livesUsed, 0)
@@ -108,7 +108,7 @@ test('creation preserves options, invited user objects, distinct colors, and sha
 })
 
 test('notes toggle individually, retain author objects, and normal entry clears all notes', () => {
-  let state = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 0 })
+  let state = boardReducer(createBoardState(new Board({ type: 'killer' })), { type: 'select', index: 0 })
   state = boardReducer(state, { type: 'toggle-notes' })
   for (const number of [1, 5, 9]) state = boardReducer(state, { type: 'enter', number, user, pen })
   assert.deepEqual(state.board.cells[0].numbers.map((note) => note.number), [1, 5, 9])
@@ -127,7 +127,7 @@ test('notes toggle individually, retain author objects, and normal entry clears 
 
 for (const size of [9, 6]) {
   test(`${size}x${size} placement removes matching peer notes and preserves other notes`, () => {
-    const board = new Board({ size, type: 'chaos', user })
+    const board = new Board({ size, type: 'killer', user })
     const matching = { number: 4, user, pen }
     const retained = { number: 2, user, pen }
     const rowPeer = size - 1
@@ -155,7 +155,7 @@ for (const size of [9, 6]) {
 }
 
 test('removing the final note empties a tile', () => {
-  let state = boardReducer(createBoardState(new Board({ type: 'chaos' })), { type: 'select', index: 0 })
+  let state = boardReducer(createBoardState(new Board({ type: 'killer' })), { type: 'select', index: 0 })
   state = boardReducer(state, { type: 'toggle-notes' })
   state = boardReducer(state, { type: 'enter', number: 4, user, pen })
   state = boardReducer(state, { type: 'enter', number: 4, user, pen })
@@ -166,7 +166,7 @@ test('removing the final note empties a tile', () => {
 test('saved boards restore notes and numbers, settings and participants without resetting', () => {
   const values = new Map()
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }
-  const original = createSavedBoard({ user, type: 'chaos', difficulty: 'expert', usersInvited: [{ username: 'Friend' }] }, storage)
+  const original = createSavedBoard({ user, type: 'killer', difficulty: 'expert', usersInvited: [{ username: 'Friend' }] }, storage)
   let state = boardReducer(createBoardState(original), { type: 'select', index: 4 })
   state = boardReducer(state, { type: 'enter', number: 8, user, pen })
   state = boardReducer(state, { type: 'select', index: 5 })
@@ -200,7 +200,7 @@ test('reserve lists real boards by latest opened and opening selects the exact s
 
 
 test('6x6 rejects digits 7-9 in both normal and note mode', () => {
-  let state = boardReducer(createBoardState(new Board({ size: 6, user, type: 'chaos' })), { type: 'select', index: 0 })
+  let state = boardReducer(createBoardState(new Board({ size: 6, user, type: 'killer' })), { type: 'select', index: 0 })
   for (const noteMode of [false, true]) {
     if (noteMode) state = boardReducer(state, { type: 'toggle-notes' })
     for (const number of [7, 8, 9]) assert.equal(boardReducer(state, { type: 'enter', number, user, pen }), state)
@@ -225,7 +225,7 @@ test('color pool has exactly nine distinct colors and each participant gets a un
 test('archive moves a finished board out of active listings and deletion removes its saved references', () => {
   const values = new Map()
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) }
-  const board = createSavedBoard({ user, type: 'chaos' }, storage)
+  const board = createSavedBoard({ user, type: 'killer' }, storage)
   assert.throws(() => archiveBoard(board.id, user, storage), /Finish/)
   saveBoard({ ...board, completedAt: Date.now() }, storage)
   assert.equal(listBoards(user, storage).length, 0)
@@ -245,7 +245,7 @@ test('failed boards cannot be archived, including boards with exhausted lives an
   const values = new Map()
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }
   for (const failure of [{ failedAt: Date.now() }, { livesUsed: 5 }, { completedAt: Date.now(), failedAt: Date.now() }]) {
-    const board = createSavedBoard({ user, type: 'chaos' }, storage)
+    const board = createSavedBoard({ user, type: 'killer' }, storage)
     saveBoard({ ...board, ...failure }, storage)
     const before = storage.getItem('sugoku-boards-v1')
     assert.throws(() => archiveBoard(board.id, user, storage), /Failed boards cannot be archived/)
@@ -256,11 +256,11 @@ test('failed boards cannot be archived, including boards with exhausted lives an
 test('leaving results discards finished boards but preserves active and archived boards', () => {
   const values = new Map()
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) }
-  const active = createSavedBoard({ user, type: 'chaos' }, storage)
+  const active = createSavedBoard({ user, type: 'killer' }, storage)
   discardFinishedBoard(active.id, user, storage)
   assert.ok(getBoard(active.id, user, storage))
   for (const finish of [{ completedAt: Date.now() }, { failedAt: Date.now(), livesUsed: 5 }]) {
-    const board = createSavedBoard({ user, type: 'chaos' }, storage)
+    const board = createSavedBoard({ user, type: 'killer' }, storage)
     saveBoard({ ...board, ...finish }, storage)
     assert.equal(listBoards(user, storage).some((entry) => entry.id === board.id), false)
     discardFinishedBoard(board.id, user, storage)
@@ -277,7 +277,7 @@ test('leaving results discards finished boards but preserves active and archived
 test('archive capacity is reusable after deleting an archived board', () => {
   const values = new Map()
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) }
-  const boards = Array.from({ length: 6 }, () => createSavedBoard({ user, type: 'chaos' }, storage))
+  const boards = Array.from({ length: 6 }, () => createSavedBoard({ user, type: 'killer' }, storage))
   for (const board of boards) saveBoard({ ...board, completedAt: Date.now() }, storage)
   for (const board of boards.slice(0, 5)) archiveBoard(board.id, user, storage)
   assert.throws(() => archiveBoard(boards[5].id, user, storage), /full/)
@@ -288,7 +288,7 @@ test('archive capacity is reusable after deleting an archived board', () => {
 
 
 test('archived boards allow selection but reject all editing actions', () => {
-  const board = new Board({ type: 'chaos', user })
+  const board = new Board({ type: 'killer', user })
   board.archived = true
   let state = createBoardState(board)
   state = boardReducer(state, { type: 'select', index: 0 })
@@ -301,7 +301,7 @@ test('archived boards allow selection but reject all editing actions', () => {
 
 
 test('completed digits count givens and player entries, ignore notes, block entry, and return after erasing', () => {
-  const board = new Board({ size: 6, type: 'chaos', user })
+  const board = new Board({ size: 6, type: 'killer', user })
   board.cells[0] = { kind: 'number', number: 2, given: true }
   for (let index = 1; index < 6; index++) board.cells[index] = { kind: 'number', number: 2, user }
   board.cells[6] = { kind: 'note', numbers: [{ number: 3, user }] }

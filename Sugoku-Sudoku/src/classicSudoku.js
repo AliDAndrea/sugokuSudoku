@@ -7,22 +7,22 @@ const cache = new Map()
 const popcount = (mask) => { let count = 0; for (; mask; mask &= mask - 1) count++; return count }
 const digit = (bit) => 32 - Math.clz32(bit)
 
-function topology(size) {
+function topology(size, regions = null) {
   if (!configurations[size]) throw new Error('Classic supports only 6x6 and 9x9 boards.')
-  if (cache.has(size)) return cache.get(size)
+  if (!regions && cache.has(size)) return cache.get(size)
   const boxHeight = size === 6 ? 2 : 3
   const boxesAcross = size / 3
   const units = Array.from({ length: size * 3 }, () => [])
   const cells = Array.from({ length: size * size }, (_, index) => {
     const row = Math.floor(index / size), column = index % size
-    const box = Math.floor(row / boxHeight) * boxesAcross + Math.floor(column / 3)
+    const box = regions ? regions[index] : Math.floor(row / boxHeight) * boxesAcross + Math.floor(column / 3)
     const groups = [row, size + column, size * 2 + box]
     groups.forEach((group) => units[group].push(index))
     return { row, column, box, groups }
   })
   const peers = cells.map(({ groups }, index) => [...new Set(groups.flatMap((group) => units[group]))].filter((peer) => peer !== index))
   const result = { cells, units, peers, full: (1 << size) - 1 }
-  cache.set(size, result)
+  if (!regions) cache.set(size, result)
   return result
 }
 
@@ -34,8 +34,8 @@ function shuffle(values, random) {
   return values
 }
 
-export function solveClassic(puzzle, size, { limit = 2, nodeLimit = 100000, random = null } = {}) {
-  const { cells, full } = topology(size)
+export function solveClassic(puzzle, size, { limit = 2, nodeLimit = 100000, random = null, regions = null } = {}) {
+  const { cells, full } = topology(size, regions)
   if (puzzle.length !== size * size) throw new Error('Invalid puzzle length.')
   const values = [...puzzle], rows = new Uint16Array(size), columns = new Uint16Array(size), boxes = new Uint16Array(size)
   let count = 0, solution = null, nodes = 0, branches = 0, exhausted = false
@@ -78,8 +78,8 @@ export function solveClassic(puzzle, size, { limit = 2, nodeLimit = 100000, rand
 }
 
 // Rate using naked/hidden singles, then measure the remaining constrained search.
-export function rateClassic(puzzle, size) {
-  const { cells, units, full } = topology(size)
+export function rateClassic(puzzle, size, regions = null) {
+  const { cells, units, full } = topology(size, regions)
   const values = [...puzzle]
   let hiddenSingles = 0
   for (;;) {
@@ -101,17 +101,17 @@ export function rateClassic(puzzle, size) {
     }
     if (!found) break
   }
-  const search = values.every(Boolean) ? { branches: 0, nodes: 0 } : solveClassic(values, size, { limit: 1 })
+  const search = values.every(Boolean) ? { branches: 0, nodes: 0 } : solveClassic(values, size, { limit: 1, regions })
   return { technique: search.branches ? 'search' : hiddenSingles ? 'hidden-singles' : 'naked-singles', hiddenSingles, branches: search.branches, nodes: search.nodes }
 }
 
-export function generateClassic(size, difficulty = 'easy', { random = Math.random, attempts = 24 } = {}) {
-  topology(size)
+export function generateClassic(size, difficulty = 'easy', { random = Math.random, attempts = 24, regions = null, fixedSolution = null } = {}) {
+  topology(size, regions)
   const target = configurations[size][difficulty]
   if (!target) throw new Error('Choose a valid Classic difficulty.')
   let best = null, bestScore = -Infinity
   for (let attempt = 0; attempt < attempts; attempt++) {
-    const solution = solveClassic(Array(size * size).fill(0), size, { limit: 1, random }).solution
+    const solution = fixedSolution || solveClassic(Array(size * size).fill(0), size, { limit: 1, random, regions }).solution
     if (!solution) continue
     const puzzle = [...solution]
     let clues = puzzle.length
@@ -119,14 +119,14 @@ export function generateClassic(size, difficulty = 'easy', { random = Math.rando
       if (clues <= target) break
       const value = puzzle[index]
       puzzle[index] = 0
-      const check = solveClassic(puzzle, size, { nodeLimit: 20000 })
+      const check = solveClassic(puzzle, size, { nodeLimit: 20000, regions })
       // An interrupted search is never accepted as a uniqueness proof.
       if (check.count !== 1 || check.exhausted) { puzzle[index] = value; continue }
-      if (difficulty === 'easy' && rateClassic(puzzle, size).technique !== 'naked-singles') { puzzle[index] = value; continue }
-      if (difficulty === 'normal' && rateClassic(puzzle, size).technique === 'search') { puzzle[index] = value; continue }
+      if (difficulty === 'easy' && rateClassic(puzzle, size, regions).technique !== 'naked-singles') { puzzle[index] = value; continue }
+      if (difficulty === 'normal' && rateClassic(puzzle, size, regions).technique === 'search') { puzzle[index] = value; continue }
       clues--
     }
-    const rating = rateClassic(puzzle, size)
+    const rating = rateClassic(puzzle, size, regions)
     const score = (size * size - clues) * 2 + rating.hiddenSingles + Math.log2(1 + rating.nodes) * 12 + rating.branches * 3
     if (score > bestScore) { bestScore = score; best = { puzzle, solution, rating: { ...rating, score, clues }, boxRows: size === 6 ? 2 : 3, boxColumns: 3 } }
     if ((difficulty === 'easy' || difficulty === 'normal') && clues <= target) break

@@ -44,7 +44,7 @@ export default function BoardCreatorPage() {
   const [error, setError] = useState('')
   const create = async () => {
     if (generating) return
-    if (selections.type !== 'classic') { setError('Only Classic puzzles are available right now.'); return }
+    if (selections.type === 'killer') { setError('Killer puzzles are not available yet.'); return }
     setGenerating(true)
     setError('')
     const worker = new Worker(new URL('./classicSudoku.worker.js', import.meta.url), { type: 'module' })
@@ -52,9 +52,9 @@ export default function BoardCreatorPage() {
       const generatedPuzzle = await new Promise((resolve, reject) => {
         worker.onmessage = ({ data }) => data.error ? reject(new Error(data.error)) : resolve(data.puzzle)
         worker.onerror = () => reject(new Error('Puzzle generation failed. Please try again.'))
-        worker.postMessage({ size: selections.size === '6x6' ? 6 : 9, difficulty: selections.difficulty })
+        worker.postMessage({ size: selections.size === '6x6' ? 6 : 9, difficulty: selections.difficulty, type: selections.type })
       })
-      createSavedBoard({ user: profile, size: selections.size, difficulty: selections.difficulty, type: 'classic', generatedPuzzle })
+      createSavedBoard({ user: profile, size: selections.size, difficulty: selections.difficulty, type: selections.type, generatedPuzzle })
       navigate('/board')
     } catch (failure) { setError(failure.message) }
     finally { worker.terminate(); setGenerating(false) }

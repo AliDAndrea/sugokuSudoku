@@ -5,7 +5,7 @@ import { Board, boardReducer, createBoardState } from './boardState.js'
 
 for (const size of [6, 9]) {
   test(`${size}x${size} flashes completed rows, columns and boxes with distance offsets`, () => {
-    const board = new Board({ size, type: 'chaos' })
+    const board = new Board({ size, type: 'killer' })
     assert.deepEqual(completionFlashes(board, board.cells, 0), [])
     for (let index = 0; index < size; index++) board.cells[index] = { kind: 'number', number: index + 1 }
     assert.deepEqual(completionFlashes(board, board.cells, 0), Array.from({ length: size }, (_, index) => ({ index, delay: index * 50 })))
@@ -29,7 +29,7 @@ for (const size of [6, 9]) {
 
 test('only number placement triggers a celebration in the completing player color', () => {
   const user = { username: 'Player' }
-  const board = new Board({ size: 6, type: 'chaos', user })
+  const board = new Board({ size: 6, type: 'killer', user })
   for (let index = 1; index < 6; index++) board.cells[index] = { kind: 'number', number: index + 1 }
   const initial = { ...createBoardState(board), selected: 0 }
   assert.deepEqual(boardReducer({ ...initial, noteMode: true }, { type: 'enter', number: 1, user }).celebrations, [])
@@ -42,7 +42,7 @@ test('only number placement triggers a celebration in the completing player colo
 
 test('a correct guess flashes only its tile, while incorrect guesses and notes do not flash', () => {
   const user = { username: 'Player' }
-  const board = new Board({ size: 6, type: 'chaos', user })
+  const board = new Board({ size: 6, type: 'killer', user })
   board.solution = Array(36).fill(1)
   const initial = { ...createBoardState(board), selected: 7 }
   const correct = boardReducer(initial, { type: 'enter', number: 1, user })
