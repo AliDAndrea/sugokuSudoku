@@ -261,6 +261,7 @@ export default function BoardPage() {
             const row = Math.floor(index / board.board.size)
             const column = index % board.board.size
             const selected = board.selected === index
+            const cage = board.board.cages?.find((entry) => entry.cells.includes(index))
             return (
               <button
                 key={index}
@@ -273,7 +274,7 @@ export default function BoardPage() {
                 data-given={Boolean(cell?.given)}
                 data-related={isRelatedCell(index, board.selected, board.board.size, board.board.regions)}
                 data-matching={selectedNumber !== null && cell?.kind === 'number' && cell.number === selectedNumber}
-                aria-label={`Row ${row + 1}, column ${column + 1}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
+                aria-label={`Row ${row + 1}, column ${column + 1}${cage ? `, cage sum ${cage.sum}` : ''}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
                 aria-pressed={selected}
                 onPointerDown={(event) => { if (event.button === 0) dispatch({ type: 'select', index }) }}
                 onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
@@ -283,6 +284,8 @@ export default function BoardPage() {
                   color: cell?.color,
                 }}
               >
+                {cage && <span className="board-region-fill" style={{ '--region-color': cage.color }} aria-hidden="true" />}
+                {cage?.cells[0] === index && <span className="board-cage-sum" aria-hidden="true">{cage.sum}</span>}
                 {board.celebrations.map((celebration) => {
                   const flash = celebration.flashes.find((entry) => entry.index === index)
                   if (!flash) return null

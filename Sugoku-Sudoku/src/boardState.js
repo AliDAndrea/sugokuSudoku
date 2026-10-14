@@ -1,5 +1,6 @@
 import { generateChaos, regionAt } from './chaosSudoku.js'
 import { generateClassic } from './classicSudoku.js'
+import { generateKiller } from './killerSudoku.js'
 import { completionFlashes } from './boardCelebration.js'
 
 export const userColors = [
@@ -36,7 +37,8 @@ export class Board {
     this.size = size === 6 || size === '6x6' ? 6 : 9
     this.difficulty = difficulty
     this.type = type
-    const generated = generatedPuzzle || (type === 'classic' ? generateClassic(this.size, difficulty) : type === 'chaos' ? generateChaos(this.size, difficulty) : null)
+    const generated = generatedPuzzle || (type === 'classic' ? generateClassic(this.size, difficulty) : type === 'chaos' ? generateChaos(this.size, difficulty) : type === 'killer' ? generateKiller(this.size, difficulty) : null)
+    this.cages = generated?.cages || null
     this.regions = generated?.regions || null
     this.solution = generated?.solution || null
     this.rating = generated?.rating || null

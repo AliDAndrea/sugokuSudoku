@@ -44,7 +44,6 @@ export default function BoardCreatorPage() {
   const [error, setError] = useState('')
   const create = async () => {
     if (generating) return
-    if (selections.type === 'killer') { setError('Killer puzzles are not available yet.'); return }
     setGenerating(true)
     setError('')
     const worker = new Worker(new URL('./classicSudoku.worker.js', import.meta.url), { type: 'module' })

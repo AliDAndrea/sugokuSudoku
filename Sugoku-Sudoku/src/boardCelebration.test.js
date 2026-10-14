@@ -1,7 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { completionFlashes } from './boardCelebration.js'
-import { Board, boardReducer, createBoardState } from './boardState.js'
+import { boardReducer, createBoardState } from './boardState.js'
+import { EmptyBoard as Board } from './boardTestFixtures.js'
 
 for (const size of [6, 9]) {
   test(`${size}x${size} flashes completed rows, columns and boxes with distance offsets`, () => {

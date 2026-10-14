@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { boardReducer, createBoardState, isRelatedCell, Board, userColors, pickUserColor, isNumberComplete } from './boardState.js'
+import { boardReducer, createBoardState, isRelatedCell, userColors, pickUserColor, isNumberComplete } from './boardState.js'
+import { EmptyBoard as Board } from './boardTestFixtures.js'
 
 import { createSavedBoard, loadBoard, saveBoard, listBoards, openBoard, boardName, archiveBoard, deleteBoard, getBoard, discardFinishedBoard } from './boardStore.js'
 

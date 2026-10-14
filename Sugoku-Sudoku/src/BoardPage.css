@@ -77,6 +77,19 @@
 
 .board-cell[data-given="true"] { -webkit-text-stroke: 0; }
 
+.board-cage-sum {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  z-index: 2;
+  color: #171614;
+  font: bold 10px/1 sans-serif;
+  -webkit-text-stroke: 0;
+  pointer-events: none;
+}
+
+.board-cell:has(.board-cage-sum) .board-notes { padding-top: 12px; }
+
 .board-completion-flash {
   position: absolute;
   inset: 0;
