@@ -9,15 +9,14 @@ const digit = (bit) => 32 - Math.clz32(bit)
 
 function topology(size, regions = null) {
   if (!configurations[size]) throw new Error('Classic supports only 6x6 and 9x9 boards.')
-  // regions === false explicitly selects row/column-only Chaos rules.
   if (regions === null && cache.has(size)) return cache.get(size)
   const boxHeight = size === 6 ? 2 : 3
   const boxesAcross = size / 3
-  const units = Array.from({ length: size * (regions === false ? 2 : 3) }, () => [])
+  const units = Array.from({ length: size * 3 }, () => [])
   const cells = Array.from({ length: size * size }, (_, index) => {
     const row = Math.floor(index / size), column = index % size
-    const box = regions === false ? row : regions ? regions[index] : Math.floor(row / boxHeight) * boxesAcross + Math.floor(column / 3)
-    const groups = regions === false ? [row, size + column] : [row, size + column, size * 2 + box]
+    const box = regions ? regions[index] : Math.floor(row / boxHeight) * boxesAcross + Math.floor(column / 3)
+    const groups = [row, size + column, size * 2 + box]
     groups.forEach((group) => units[group].push(index))
     return { row, column, box, groups }
   })
