@@ -262,6 +262,9 @@ export default function BoardPage() {
             const column = index % board.board.size
             const selected = board.selected === index
             const cage = board.board.cages?.find((entry) => entry.cells.includes(index))
+            const selectedRegion = board.selected !== null && (cage
+              ? cage.cells.includes(board.selected)
+              : Boolean(board.board.regions && board.board.regions[index] === board.board.regions[board.selected]))
             return (
               <button
                 key={index}
@@ -269,7 +272,9 @@ export default function BoardPage() {
                 data-board-cell={index}
                 className="board-cell"
                 data-chaos={Boolean(board.board.regions)}
-                data-selected-region={Boolean(board.board.regions && board.selected !== null && board.board.regions[index] === board.board.regions[board.selected])}
+                data-regional={Boolean(board.board.regions || cage)}
+                data-region-muted={Boolean(cage && board.selected !== null && !selectedRegion)}
+                data-selected-region={selectedRegion}
                 data-selected={selected}
                 data-given={Boolean(cell?.given)}
                 data-related={isRelatedCell(index, board.selected, board.board.size, board.board.regions)}
@@ -294,7 +299,7 @@ export default function BoardPage() {
                     style={{ backgroundColor: celebration.color, animationDelay: `${flash.delay}ms` }}
                     onAnimationEnd={() => { if (flash.delay === lastDelay) dispatch({ type: 'finish-celebration', id: celebration.id }) }} />
                 })}
-                {cell?.kind === 'number' ? cell.number : cell?.kind === 'note' ? (
+                {cell?.kind === 'number' ? <span className="board-cell-value">{cell.number}</span> : cell?.kind === 'note' ? (
                   <span className="board-notes">
                     {cell.numbers.map((note) => <span key={note.number} style={{ gridColumn: (note.number - 1) % 3 + 1, gridRow: Math.floor((note.number - 1) / 3) + 1, ...note.pen, color: selectedNumber === note.number ? '#fff' : note.color }}>{note.number}</span>)}
                   </span>
