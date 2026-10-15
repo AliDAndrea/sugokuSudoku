@@ -8,7 +8,7 @@ export function completionFlashes(board, cells, selected, wholeBoard = false) {
   const groups = wholeBoard ? [indices] : [
     indices.filter((index) => Math.floor(index / size) === row),
     indices.filter((index) => index % size === column),
-    indices.filter((index) => regionAt(board, index) === regionAt(board, selected)),
+    ...(board.type === 'chaos' ? [] : [indices.filter((index) => regionAt(board, index) === regionAt(board, selected))]),
   ].filter((group) => group.every((index) => cells[index]?.kind === 'number'))
   const affected = [...new Set(groups.flat())]
   const distance = (index) => Math.max(Math.abs(Math.floor(index / size) - row), Math.abs(index % size - column))
