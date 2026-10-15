@@ -255,12 +255,16 @@ export default function BoardPage() {
           style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt={`${board.board.size} by ${board.board.size} board`}
         />
-        {board.board.regions && <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} selected={board.selected} playerColors={board.board.colors.map((assignment) => assignment.color)} />}
+        {board.board.regions && <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} playerColors={board.board.colors.map((assignment) => assignment.color)} />}
         <div role="group" aria-label="Sudoku board">
           {board.board.cells.map((cell, index) => {
             const row = Math.floor(index / board.board.size)
             const column = index % board.board.size
             const selected = board.selected === index
+            const cage = board.board.cages?.find((entry) => entry.cells.includes(index))
+            const selectedRegion = board.selected !== null && (cage
+              ? cage.cells.includes(board.selected)
+              : Boolean(board.board.regions && board.board.regions[index] === board.board.regions[board.selected]))
             return (
               <button
                 key={index}
@@ -268,12 +272,13 @@ export default function BoardPage() {
                 data-board-cell={index}
                 className="board-cell"
                 data-chaos={Boolean(board.board.regions)}
-                data-selected-region={Boolean(board.board.regions && board.selected !== null && board.board.regions[index] === board.board.regions[board.selected])}
+                data-regional={Boolean(board.board.regions || cage)}
+                data-selected-region={selectedRegion}
                 data-selected={selected}
                 data-given={Boolean(cell?.given)}
                 data-related={isRelatedCell(index, board.selected, board.board.size, board.board.regions)}
                 data-matching={selectedNumber !== null && cell?.kind === 'number' && cell.number === selectedNumber}
-                aria-label={`Row ${row + 1}, column ${column + 1}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
+                aria-label={`Row ${row + 1}, column ${column + 1}${cage ? `, cage sum ${cage.sum}` : ''}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
                 aria-pressed={selected}
                 onPointerDown={(event) => { if (event.button === 0) dispatch({ type: 'select', index }) }}
                 onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
@@ -283,6 +288,8 @@ export default function BoardPage() {
                   color: cell?.color,
                 }}
               >
+                {cage && <span className="board-region-fill" style={{ '--region-color': cage.color }} aria-hidden="true" />}
+                {cage?.cells[0] === index && <span className="board-cage-sum" aria-hidden="true">{cage.sum}</span>}
                 {board.celebrations.map((celebration) => {
                   const flash = celebration.flashes.find((entry) => entry.index === index)
                   if (!flash) return null
@@ -291,7 +298,7 @@ export default function BoardPage() {
                     style={{ backgroundColor: celebration.color, animationDelay: `${flash.delay}ms` }}
                     onAnimationEnd={() => { if (flash.delay === lastDelay) dispatch({ type: 'finish-celebration', id: celebration.id }) }} />
                 })}
-                {cell?.kind === 'number' ? cell.number : cell?.kind === 'note' ? (
+                {cell?.kind === 'number' ? <span className="board-cell-value">{cell.number}</span> : cell?.kind === 'note' ? (
                   <span className="board-notes">
                     {cell.numbers.map((note) => <span key={note.number} style={{ gridColumn: (note.number - 1) % 3 + 1, gridRow: Math.floor((note.number - 1) / 3) + 1, ...note.pen, color: selectedNumber === note.number ? '#fff' : note.color }}>{note.number}</span>)}
                   </span>
