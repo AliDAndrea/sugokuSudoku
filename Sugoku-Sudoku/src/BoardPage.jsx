@@ -255,7 +255,7 @@ export default function BoardPage() {
           style={{ width: "100%", height: "400px", position: "absolute", left: "0px", top: "0px", maxWidth: "none" }}
           alt={`${board.board.size} by ${board.board.size} board`}
         />
-        {board.board.regions && <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} selected={board.selected} playerColors={board.board.colors.map((assignment) => assignment.color)} />}
+        {board.board.regions && <ChaosBoardArtwork size={board.board.size} regions={board.board.regions} playerColors={board.board.colors.map((assignment) => assignment.color)} />}
         <div role="group" aria-label="Sudoku board">
           {board.board.cells.map((cell, index) => {
             const row = Math.floor(index / board.board.size)
@@ -273,7 +273,6 @@ export default function BoardPage() {
                 className="board-cell"
                 data-chaos={Boolean(board.board.regions)}
                 data-regional={Boolean(board.board.regions || cage)}
-                data-region-muted={Boolean(cage && board.selected !== null && !selectedRegion)}
                 data-selected-region={selectedRegion}
                 data-selected={selected}
                 data-given={Boolean(cell?.given)}

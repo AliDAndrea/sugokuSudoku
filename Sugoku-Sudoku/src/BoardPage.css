@@ -75,7 +75,7 @@
   paint-order: stroke fill;
 }
 
-.board-cell[data-given="true"] { -webkit-text-stroke: 0; }
+.board-cell[data-given="true"] .board-cell-value { -webkit-text-stroke: 2px #fff; }
 
 .board-cage-sum {
   position: absolute;
@@ -202,10 +202,6 @@
 .board-cell[data-chaos='true']::before,
 .board-cell[data-chaos='true'] .board-completion-flash {
   mask-image: var(--tile-mask-sharp);
-}
-
-.board-cell[data-region-muted='true'] .board-region-fill {
-  filter: saturate(0.4);
 }
 
 .board-cell[data-regional='true'][data-related='true'][data-selected-region='false']:not([data-selected='true'])::before {

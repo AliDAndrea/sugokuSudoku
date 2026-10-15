@@ -5,10 +5,9 @@ import { boardGeometry } from './boardGeometry.js'
 import { gridColorsForPlayers } from './chaosSudoku.js'
 
 // Reuse the traced tile shapes so the sketch lines up with input and highlights.
-export function ChaosBoardArtwork({ size, regions, colored = true, playerColors = [], selected = null }) {
+export function ChaosBoardArtwork({ size, regions, colored = true, playerColors = [] }) {
   const id = useId().replace(/:/g, '')
   const geometry = boardGeometry[size]
-  const selectedRegion = selected === null ? null : regions[selected]
   const regionColors = gridColorsForPlayers(playerColors)
   const left = Math.min(...geometry.cells.map((cell) => cell.x)) - 3
   const top = Math.min(...geometry.cells.map((cell) => cell.y)) - 3
@@ -24,9 +23,6 @@ export function ChaosBoardArtwork({ size, regions, colored = true, playerColors 
         <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.508876 0 0 0 1" />
         <feComposite in2="SourceAlpha" operator="in" />
       </filter>
-      <filter id={`${id}-muted`} colorInterpolationFilters="sRGB">
-        <feColorMatrix type="saturate" values="0.4" />
-      </filter>
       <filter id={`${id}-paper`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
         <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="29" result="grain" />
         <feColorMatrix in="grain" type="saturate" values="0" />
@@ -36,7 +32,7 @@ export function ChaosBoardArtwork({ size, regions, colored = true, playerColors 
     </defs>
     <rect x={left} y={top} width={right - left} height={bottom - top} fill="#c37a67" />
     <g filter={colored ? `url(#${id}-paper)` : undefined}>
-      {geometry.cells.map((cell, index) => <path key={index} transform={`translate(${cell.x} ${cell.y})`} d={cell.path} fill={colored ? regionColors[regions[index]] : '#a96054'} filter={colored && selectedRegion !== null && regions[index] !== selectedRegion ? `url(#${id}-muted)` : undefined} />)}
+      {geometry.cells.map((cell, index) => <path key={index} transform={`translate(${cell.x} ${cell.y})`} d={cell.path} fill={colored ? regionColors[regions[index]] : '#a96054'} />)}
     </g>
     <g clipPath={`url(#${id}-tile-area)`}>
       <image href={size === 6 ? classic6 : classic9} width={geometry.width} height={geometry.height} preserveAspectRatio="none" filter={`url(#${id}-classic-edges)`} />
