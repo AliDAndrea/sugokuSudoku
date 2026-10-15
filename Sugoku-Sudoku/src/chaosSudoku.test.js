@@ -30,6 +30,7 @@ for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', '
     for (let region = 0; region < size; region++) {
       const cells = generated.regions.flatMap((entry, index) => entry === region ? [index] : [])
       assert.equal(cells.length, size)
+      assert.equal(new Set(cells.map((index) => generated.solution[index])).size, size)
       const seen = new Set([cells[0]]), queue = [cells[0]]
       while (queue.length) {
         const index = queue.pop()
@@ -37,7 +38,7 @@ for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', '
       }
       assert.equal(seen.size, size)
     }
-    const solved = solveChaos(generated.puzzle, size)
+    const solved = solveChaos(generated.puzzle, size, { regions: generated.regions })
     assert.equal(solved.exhausted, false)
     assert.equal(solved.count, 1)
     assert.deepEqual(solved.solution, generated.solution)
@@ -50,7 +51,7 @@ for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', '
     const updated = boardReducer(state, { type: 'enter', number, user: { username: 'Guest' }, pen: {} })
     notes.forEach((cell, index) => {
       if (cell?.kind !== 'note') return
-      const related = Math.floor(index / size) === Math.floor(selected / size) || index % size === selected % size
+      const related = Math.floor(index / size) === Math.floor(selected / size) || index % size === selected % size || generated.regions[index] === generated.regions[selected]
       assert.equal(updated.board.cells[index] === null, related)
     })
     for (let row = 0; row < size; row++) {
@@ -58,7 +59,7 @@ for (const size of [6, 9]) for (const difficulty of ['easy', 'normal', 'hard', '
       assert.equal(new Set(Array.from({ length: size }, (_, r) => generated.solution[r * size + row])).size, size)
     }
     const filled = board.cells.map((cell, index) => generated.regions[index] === generated.regions[selected] ? { kind: 'number', number: generated.solution[index] } : null)
-    assert.deepEqual(completionFlashes(board, filled, selected), [])
+    assert.deepEqual(new Set(completionFlashes(board, filled, selected).map((flash) => flash.index)), new Set(generated.regions.flatMap((region, index) => region === generated.regions[selected] ? [index] : [])))
   })
 }
 
@@ -72,46 +73,6 @@ test('Chaos region peers receive the same related highlight as row and column pe
   assert.equal(isRelatedCell(0, 0, 6, regions), false)
   assert.equal(isRelatedCell(14, null, 6, regions), false)
   assert.equal(isRelatedCell(14, 0, 6), false)
-})
-
-test('Chaos accepts repeated digits in Classic boxes and colored regions, but rejects row/column duplicates', () => {
-  for (const size of [6, 9]) {
-    const solution = Array.from({ length: size * size }, (_, index) => (Math.floor(index / size) + index % size) % size + 1)
-    assert.equal(solveChaos(solution, size).count, 1)
-    assert.equal(solveClassic(solution, size).count, 0)
-    // Warm Classic topology caches must not change Chaos solving.
-    assert.equal(solveChaos(solution, size).count, 1)
-    const invalid = [...solution]
-    invalid[1] = invalid[0]
-    assert.equal(solveChaos(invalid, size).count, 0)
-    const selected = size + 1
-    const puzzle = [...solution]
-    puzzle[selected] = 0
-    const board = new Board({ size, type: 'chaos', generatedPuzzle: { puzzle, solution, regions: Array(size * size).fill(0) } })
-    const state = { ...createBoardState(board), selected }
-    const updated = boardReducer(state, { type: 'enter', number: solution[selected], user: { username: 'Guest' }, pen: {} })
-    assert.equal(updated.board.livesUsed, 0)
-    assert.ok(updated.board.completedAt)
-  }
-})
-
-test('saved Chaos boards accept an alternative row/column completion without losing a life', () => {
-  const size = 6
-  const solution = solveClassic(Array(size * size).fill(0), size, { limit: 1 }).solution
-  const board = new Board({ size, type: 'chaos', generatedPuzzle: { puzzle: Array(size * size).fill(0), solution } })
-  const selected = size + 1, number = solution[0]
-  board.cells[0] = { kind: 'number', number, given: true }
-  board.cells[2 * size + 2] = { kind: 'note', numbers: [{ number }] }
-  const state = { ...createBoardState(board), selected }
-  const updated = boardReducer(state, { type: 'enter', number, user: { username: 'Guest' }, pen: {} })
-  assert.equal(updated.board.livesUsed, 0)
-  assert.equal(updated.board.cells[selected].number, number)
-  assert.equal(updated.board.cells[2 * size + 2].numbers[0].number, number)
-  assert.equal(solveChaos(updated.board.solution, size).count, 1)
-  const duplicateRow = boardReducer({ ...updated, selected: size + 2 }, { type: 'enter', number, user: { username: 'Guest' }, pen: {} })
-  assert.equal(duplicateRow.board.livesUsed, 1)
-  const duplicateColumn = boardReducer({ ...updated, selected: 2 * size + 1 }, { type: 'enter', number, user: { username: 'Guest' }, pen: {} })
-  assert.equal(duplicateColumn.board.livesUsed, 1)
 })
 
 for (const size of [6, 9]) test(`${size}x${size} regions vary substantially across many seeds`, () => {
@@ -140,4 +101,32 @@ for (const size of [6, 9]) test(`${size}x${size} regions vary substantially acro
     assert.equal(irregular, size)
   }
   assert.equal(layouts.size, 40)
+})
+
+for (const size of [6, 9]) test(`${size}x${size} Chaos enforces colored regions and permits Classic-box repeats`, () => {
+  let seed = size * 199
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32 }
+  const generated = generateChaos(size, 'easy', { random, attempts: 1 })
+  assert.equal(solveChaos(generated.solution, size, { regions: generated.regions }).count, 1)
+  assert.equal(solveClassic(generated.solution, size).count, 0)
+  let first = -1, second = -1
+  for (let a = 0; a < size * size && second < 0; a++) {
+    const b = generated.regions.findIndex((region, index) => region === generated.regions[a] && Math.floor(index / size) !== Math.floor(a / size) && index % size !== a % size)
+    if (b >= 0) { first = a; second = b }
+  }
+  assert.ok(first >= 0 && second >= 0)
+  const partial = Array(size * size).fill(0)
+  partial[first] = partial[second] = generated.solution[first]
+  assert.equal(solveChaos(partial, size, { regions: generated.regions }).count, 0)
+  // Even a stale cached solution cannot permit a duplicate within a region.
+  const board = new Board({ size, type: 'chaos', generatedPuzzle: generated })
+  board.cells = Array(size * size).fill(null)
+  board.cells[first] = { kind: 'number', number: generated.solution[first], given: true }
+  board.solution = [...generated.solution]
+  board.solution[second] = generated.solution[first]
+  const state = { ...createBoardState(board), selected: second }
+  const updated = boardReducer(state, { type: 'enter', number: generated.solution[first], user: { username: 'Guest' }, pen: {} })
+  assert.equal(updated.board.cells[second], null)
+  assert.equal(updated.board.livesUsed, 1)
+  assert.throws(() => solveChaos(partial, size), /requires the board regions/)
 })

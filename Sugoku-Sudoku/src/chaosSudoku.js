@@ -29,7 +29,8 @@ function neighbors(index, size) {
 }
 
 export function solveChaos(puzzle, size, options = {}) {
-  return solveClassic(puzzle, size, { ...options, regions: false })
+  if (!Array.isArray(options.regions) || options.regions.length !== size * size) throw new Error('Chaos solving requires the board regions.')
+  return solveClassic(puzzle, size, options)
 }
 
 // A randomized board-spanning path gives equal-sized, connected regions without
@@ -73,6 +74,13 @@ export function generateChaosRegions(size, { random = Math.random } = {}) {
 }
 
 export function generateChaos(size, difficulty = 'easy', { random = Math.random, attempts = 24 } = {}) {
-  const regions = generateChaosRegions(size, { random })
-  return { ...generateClassic(size, difficulty, { random, attempts, regions: false }), regions }
+  // Some connected partitions have no valid Sudoku filling. Retry the shapes,
+  // and only remove clues after finding a solution under the colored regions.
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const regions = generateChaosRegions(size, { random })
+    const { solution } = solveChaos(Array(size * size).fill(0), size, { regions, random, limit: 1 })
+    if (!solution) continue
+    return { ...generateClassic(size, difficulty, { random, attempts, regions, fixedSolution: solution }), regions }
+  }
+  throw new Error('Could not generate a valid Chaos puzzle. Please try again.')
 }

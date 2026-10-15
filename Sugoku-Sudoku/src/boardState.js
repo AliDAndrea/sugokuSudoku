@@ -1,4 +1,4 @@
-import { generateChaos, solveChaos, regionAt } from './chaosSudoku.js'
+import { generateChaos, regionAt } from './chaosSudoku.js'
 import { generateClassic } from './classicSudoku.js'
 import { completionFlashes } from './boardCelebration.js'
 
@@ -104,16 +104,14 @@ export function boardReducer(state, action) {
       if (isNumberComplete(state.board, action.number)) return state
       const cell = state.board.cells[state.selected]
       if (cell?.kind === 'number') return state
-      let solution = state.board.solution
-      if (!state.noteMode && solution && solution[state.selected] !== action.number && state.board.type === 'chaos') {
-        // Older Chaos boards may have several row/column-only completions.
-        // Accept an alternative that still allows the current puzzle to finish.
-        const puzzle = state.board.cells.map((entry, index) => index === state.selected ? action.number : entry?.kind === 'number' ? entry.number : 0)
-        const check = solveChaos(puzzle, state.board.size, { limit: 1 })
-        if (check.solution) solution = check.solution
-        else if (check.exhausted) return { ...state, message: 'Could not verify this move. Please try another tile.' }
-      }
-      if (!state.noteMode && solution && solution[state.selected] !== action.number) {
+      const solution = state.board.solution
+      const chaosConflict = !state.noteMode && state.board.type === 'chaos' && state.board.cells.some((entry, index) =>
+        index !== state.selected && entry?.kind === 'number' && entry.number === action.number && (
+          Math.floor(index / state.board.size) === Math.floor(state.selected / state.board.size)
+          || index % state.board.size === state.selected % state.board.size
+          || regionAt(state.board, index) === regionAt(state.board, state.selected)
+        ))
+      if (!state.noteMode && (chaosConflict || (solution && solution[state.selected] !== action.number))) {
         const livesUsed = state.board.livesUsed + 1
         return { ...state, message: '', board: { ...state.board, livesUsed, failedAt: livesUsed >= 5 ? Date.now() : null } }
       }
@@ -139,7 +137,7 @@ export function boardReducer(state, action) {
           if (entry?.kind !== 'note') return
           const row = Math.floor(index / size)
           const column = index % size
-          const sameBox = state.board.type !== 'chaos' && regionAt(state.board, index) === regionAt(state.board, state.selected)
+          const sameBox = regionAt(state.board, index) === regionAt(state.board, state.selected)
           if (row !== selectedRow && column !== selectedColumn && !sameBox) return
           const numbers = entry.numbers.filter((note) => note.number !== action.number)
           if (numbers.length !== entry.numbers.length) cells[index] = numbers.length ? { ...entry, numbers } : null
