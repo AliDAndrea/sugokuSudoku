@@ -116,3 +116,20 @@ test('when no highlight is possible, fallback fills one tile and counts one hint
   assert.equal(boardReducer(state, { ...action, provenTargets: [index] }), state)
   assert.equal(boardReducer(state, { ...action, analyzedCells: [] }), state)
 })
+
+test('other players cannot highlight or fallback-fill an occupied hint tile', async () => {
+  const { hintFillTarget } = await import('./boardState.js')
+  const { advancedHintTiles } = await import('./advancedHints.js')
+  const board = { ...puzzle([0, 8]), solution, colors: [{ user: player, color: '#174FC4' }] }
+  const state = boardReducer(createBoardState(board), { type: 'hint', index: 0, user: player })
+  assert.equal(hintTarget(state, () => 0, other), 8)
+  assert.equal(hintFillTarget(state.board, () => 0), 8)
+  assert.deepEqual(advancedHintTiles(state.board), [8])
+  const request = { type: 'hint', index: 0, user: other, pen, analyzedCells: state.board.cells }
+  assert.equal(boardReducer(state, request), state)
+  assert.equal(boardReducer(state, { ...request, provenTargets: [0] }), state)
+  assert.equal(boardReducer(state, { ...request, fillFallback: true, provenTargets: [] }), state)
+  const filled = boardReducer(state, { ...request, user: player })
+  assert.equal(filled.board.cells[0].number, solution[0])
+  assert.equal(filled.board.hintsUsed, 2)
+})

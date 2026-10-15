@@ -91,7 +91,8 @@ export function hintTarget(state, chooseIndex = randomIndex, user = null) {
 
 export function hintFillTarget(board, chooseIndex = randomIndex) {
   if (board.archived || board.completedAt || board.failedAt || board.livesUsed >= 5) return null
-  const targets = board.cells.flatMap((cell, index) => cell?.kind !== 'number' && Number.isInteger(board.solution?.[index]) && board.solution[index] >= 1 && board.solution[index] <= board.size ? [index] : [])
+  const occupied = new Set((board.activeHints || []).map(hint => hint.index))
+  const targets = board.cells.flatMap((cell, index) => cell?.kind !== 'number' && !occupied.has(index) && Number.isInteger(board.solution?.[index]) && board.solution[index] >= 1 && board.solution[index] <= board.size ? [index] : [])
   return targets.length ? targets[chooseIndex(targets.length)] : null
 }
 
@@ -107,6 +108,7 @@ export function boardReducer(state, action) {
         if (next.board.cells[current.index]?.kind !== 'number') return state
         return { ...next, selected: state.selected, noteMode: state.noteMode, board: { ...next.board, hintsUsed: state.board.hintsUsed + 1 } }
       }
+      if ((state.board.activeHints || []).some(hint => hint.index === action.index && state.board.cells[hint.index]?.kind !== 'number')) return state
       if (action.fillFallback) {
         if (action.analyzedCells !== state.board.cells || !Array.isArray(action.provenTargets) || action.provenTargets.length || state.board.cells[action.index]?.kind === 'number') return state
         const number = state.board.solution?.[action.index]
