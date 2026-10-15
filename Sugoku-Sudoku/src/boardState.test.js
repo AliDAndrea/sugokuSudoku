@@ -316,3 +316,4 @@ test('completed digits count givens and player entries, ignore notes, block entr
   state = boardReducer(state, { type: 'erase' })
   assert.equal(isNumberComplete(state.board, 2), false)
 })
+

@@ -3,8 +3,8 @@ import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as images from './figmages/index.js'
 import { mainPen, penItems } from './PenItem.jsx'
-import { useProfile } from './profileStore.js'
-import { boardReducer, createBoardState, isRelatedCell, isNumberComplete, MAX_BOARD_PLAYERS, userColors } from './boardState.js'
+import { saveProfile, useProfile } from './profileStore.js'
+import { boardReducer, createBoardState, activeHint, hintTarget, hintFillTarget, isRelatedCell, isNumberComplete, MAX_BOARD_PLAYERS, userColors } from './boardState.js'
 import { getBoard, inviteFriendToBoard, loadBoard, saveBoard } from './boardStore.js'
 import './BoardPage.css'
 import { boardGeometry } from './boardGeometry.js'
@@ -137,10 +137,53 @@ export default function BoardPage() {
   const [board, dispatch] = useReducer(boardReducer, profile, (currentUser) => createBoardState(loadBoard(currentUser)))
   const [colorPickerOpen, setColorPickerOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [hintBusy, setHintBusy] = useState(false)
+  const [hintError, setHintError] = useState('')
+  const hintLock = useRef(false)
+  const hintWorker = useRef(null)
+  const latestBoard = useRef(board.board)
+  useLayoutEffect(() => { latestBoard.current = board.board }, [board.board])
+  useEffect(() => () => hintWorker.current?.terminate(), [])
   const highlightColor = board.board.colors.find(({ user }) => user.username === profile.username)?.color || '#174FC4'
   const selectedCell = board.selected === null ? null : board.board.cells[board.selected]
   const selectedNumber = selectedCell?.kind === 'number' ? selectedCell.number : null
   const pen = { fontFamily: selectedPen.fontType, fontWeight: selectedPen.boldness === 'black' ? 900 : selectedPen.boldness }
+
+  const useHint = async () => {
+    if (hintLock.current || profile.hints < 1) return
+    hintLock.current = true
+    setHintBusy(true)
+    setHintError('')
+    try {
+      let index = hintTarget(board, undefined, profile)
+      let provenTargets
+      let fillFallback = false
+      if (index === null) {
+        provenTargets = await new Promise((resolve, reject) => {
+          const worker = new Worker(new URL('./boardHints.worker.js', import.meta.url), { type: 'module' })
+          hintWorker.current = worker
+          worker.onmessage = ({ data }) => {
+            worker.terminate()
+            hintWorker.current = null
+            if (data.error) reject(new Error(data.error))
+            else resolve(data.targets)
+          }
+          worker.onerror = () => { worker.terminate(); hintWorker.current = null; reject(new Error('Could not analyze this board. No hint used.')) }
+          worker.postMessage(board.board)
+        })
+        if (provenTargets.length) index = provenTargets[globalThis.crypto.getRandomValues(new Uint32Array(1))[0] % provenTargets.length]
+      }
+      if (latestBoard.current !== board.board) { setHintError('The board changed. Try your hint again. No hint used.'); return }
+      if (index === null) {
+        index = hintFillTarget(board.board)
+        fillFallback = true
+      }
+      if (index === null) { setHintError('No empty tile has a saved answer. No hint used.'); return }
+      await saveProfile({ hints: profile.hints - 1 })
+      dispatch({ type: 'hint', index, color: highlightColor, user: profile, pen, provenTargets, fillFallback, analyzedCells: board.board.cells })
+    } catch (error) { setHintError(error.message) }
+    finally { hintLock.current = false; setHintBusy(false) }
+  }
 
   useEffect(() => {
     if (!colorPickerOpen) return
@@ -176,11 +219,12 @@ export default function BoardPage() {
 
   useEffect(() => {
     const deselectOutside = (event) => {
-      if (!event.target.closest?.('[data-board-cell], [data-board-number], [data-board-notes]')) {
+      if (!event.target.closest?.('[data-board-cell], [data-board-number], [data-board-notes], [data-board-hint]')) {
         dispatch({ type: 'deselect' })
       }
     }
     const enterNumber = (event) => {
+      if (hintLock.current) return
       if (board.board.archived) return
       if (event.ctrlKey || event.metaKey || event.altKey || event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return
       if (['Backspace', 'Delete'].includes(event.key) && board.selected !== null) { event.preventDefault(); dispatch({ type: 'erase' }) }
@@ -214,6 +258,7 @@ export default function BoardPage() {
         style={{ width: "143px", height: "169px", position: "absolute", left: "254px", top: "5px", maxWidth: "none" }}
         alt="HintDisplay"
       />
+      <button type="button" data-board-hint aria-label={activeHint(board.board, profile) ? "Use one hint to fill your highlighted tile" : "Use one hint to highlight a solvable tile"} title={profile.hints < 1 ? 'No hints remaining' : activeHint(board.board, profile) ? 'Fill your highlighted tile with the correct number' : 'Highlight a random tile you can solve from the filled tiles'} disabled={hintBusy || profile.hints < 1 || Boolean(board.board.archived || board.board.completedAt || board.board.failedAt || board.board.livesUsed >= 5)} onClick={useHint} style={{ position: 'absolute', left: '284px', top: '5px', width: '90px', height: '99px', border: 0, padding: 0, background: 'transparent', cursor: hintBusy ? 'wait' : 'pointer', zIndex: 10 }} />
       <BoardTimer createdAt={board.board.createdAt} endedAt={board.board.completedAt || board.board.failedAt} />
       <Link to="/" aria-label="Return to home page" style={{ width: "67px", height: "69px", position: "absolute", left: "9px", top: "9px", maxWidth: "none" , display: 'block', zIndex: 10 }}>
         <img src={images.Mainmenubutton} style={{ width: '100%', height: '100%', maxWidth: 'none' }} alt="MainMenuButton" />
@@ -232,7 +277,7 @@ export default function BoardPage() {
             type="button"
             data-board-number={number}
             className="board-number"
-            disabled={Boolean(board.board.archived)}
+            disabled={hintBusy || Boolean(board.board.archived)}
             aria-label={`Enter ${number}`}
             onClick={() => dispatch({ type: 'enter', number, pen, user: profile })}
             style={{ left: `${[178, 242, 305][index % 3]}px`, top: `${(board.board.size === 6 ? [568, 633] : [536, 600, 665])[Math.floor(index / 3)]}px` }}
@@ -261,6 +306,7 @@ export default function BoardPage() {
             const row = Math.floor(index / board.board.size)
             const column = index % board.board.size
             const selected = board.selected === index
+            const hint = (board.board.activeHints || []).find(hint => hint.index === index && cell?.kind !== 'number')
             const cage = board.board.cages?.find((entry) => entry.cells.includes(index))
             const selectedRegion = board.selected !== null && (cage
               ? cage.cells.includes(board.selected)
@@ -270,15 +316,17 @@ export default function BoardPage() {
                 key={index}
                 type="button"
                 data-board-cell={index}
+                disabled={hintBusy}
                 className="board-cell"
                 data-chaos={Boolean(board.board.regions)}
                 data-regional={Boolean(board.board.regions || cage)}
                 data-selected-region={selectedRegion}
                 data-selected={selected}
+                data-hinted={Boolean(hint)}
                 data-given={Boolean(cell?.given)}
                 data-related={isRelatedCell(index, board.selected, board.board.size, board.board.regions)}
                 data-matching={selectedNumber !== null && cell?.kind === 'number' && cell.number === selectedNumber}
-                aria-label={`Row ${row + 1}, column ${column + 1}${cage ? `, cage sum ${cage.sum}` : ''}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
+                aria-label={`Row ${row + 1}, column ${column + 1}${cage ? `, cage sum ${cage.sum}` : ''}${board.board.regions ? `, region ${board.board.regions[index] + 1}` : ''}${hint ? ', hint: solvable tile' : ''}${cell?.kind === 'number' ? `, ${cell.number}` : cell?.kind === 'note' ? `, notes ${cell.numbers.map((note) => note.number).join(', ')}` : ', empty'}`}
                 aria-pressed={selected}
                 onPointerDown={(event) => { if (event.button === 0) dispatch({ type: 'select', index }) }}
                 onClick={(event) => { if (event.detail === 0) dispatch({ type: 'select', index }) }}
@@ -286,6 +334,7 @@ export default function BoardPage() {
                   ...tileLayouts[board.board.size][index],
                   ...(cell?.pen || pen),
                   color: cell?.color,
+                  '--hint-color': hint?.color || highlightColor,
                 }}
               >
                 {cage && <span className="board-region-fill" style={{ '--region-color': cage.color }} aria-hidden="true" />}
@@ -324,10 +373,10 @@ export default function BoardPage() {
           })}
         </div>}
       </div>
-      <p style={{ color: "#000", fontFamily: "'Piedra', serif", fontSize: "60px", lineHeight: "1", width: "42px", height: "44px", position: "absolute", left: "273px", top: "105px" }}>
-        {board.board.hintsUsed}
+      <p aria-label={`Hints remaining: ${profile.hints}`} style={{ color: "#000", fontFamily: "'Piedra', serif", fontSize: profile.hints > 9 ? '34px' : '60px', lineHeight: "1", width: "42px", height: "44px", position: "absolute", left: "273px", top: profile.hints > 9 ? '119px' : '105px', textAlign: 'center' }}>
+        {profile.hints}
       </p>
-      <p role="status" style={{ position: 'absolute', left: '20px', top: '510px', width: '365px', color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '16px', textAlign: 'center', pointerEvents: 'none' }}>{board.board.completedAt ? 'SOLVED' : ''}</p>
+      <p role="status" style={{ position: 'absolute', left: '20px', top: '510px', width: '365px', color: '#000', fontFamily: 'var(--font-piedra)', fontSize: '16px', textAlign: 'center', pointerEvents: 'none' }}>{hintError}</p>
     </div>
   );
 }

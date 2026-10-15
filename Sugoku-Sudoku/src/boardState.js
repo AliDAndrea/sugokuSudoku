@@ -2,6 +2,7 @@ import { generateChaos, regionAt } from './chaosSudoku.js'
 import { generateClassic } from './classicSudoku.js'
 import { generateKiller } from './killerSudoku.js'
 import { completionFlashes } from './boardCelebration.js'
+import { logicalHintTiles } from './boardHints.js'
 
 export const userColors = [
   '#FF294D', '#FFB84C', '#E7FF34', '#0A6D32', '#00FFB2',
@@ -49,6 +50,7 @@ export class Board {
     this.xpEarned = 0
     this.cells = generated ? generated.puzzle.map((number) => number ? { kind: 'number', number, given: true, user: null, color: '#171614', pen: { fontFamily: 'Intel One Mono', fontWeight: 'bold' } } : null) : Array(this.size * this.size).fill(null)
     this.hintsUsed = 0
+    this.activeHints = []
     this.livesUsed = 0
     this.createdBy = { ...user }
     this.usersInvited = participants.slice(1).map((participant) => ({ ...participant }))
@@ -73,9 +75,53 @@ export function isNumberComplete(board, number) {
   return board.cells.filter((cell) => cell?.kind === 'number' && cell.number === number).length >= board.size
 }
 
+export function activeHint(board, user) {
+  return (board.activeHints || []).find(hint => hint.username === user?.username && board.cells[hint.index]?.kind !== 'number')
+}
+
+export function hintTarget(state, chooseIndex = randomIndex, user = null) {
+  const board = state.board
+  if (board.archived || board.completedAt || board.failedAt || board.livesUsed >= 5) return null
+  const current = activeHint(board, user)
+  if (current) return Number.isInteger(board.solution?.[current.index]) ? current.index : null
+  const occupied = new Set((board.activeHints || []).filter(hint => board.cells[hint.index]?.kind !== 'number').map(hint => hint.index))
+  const targets = logicalHintTiles(board).filter(index => !occupied.has(index))
+  return targets.length ? targets[chooseIndex(targets.length)] : null
+}
+
+export function hintFillTarget(board, chooseIndex = randomIndex) {
+  if (board.archived || board.completedAt || board.failedAt || board.livesUsed >= 5) return null
+  const targets = board.cells.flatMap((cell, index) => cell?.kind !== 'number' && Number.isInteger(board.solution?.[index]) && board.solution[index] >= 1 && board.solution[index] <= board.size ? [index] : [])
+  return targets.length ? targets[chooseIndex(targets.length)] : null
+}
+
 export function boardReducer(state, action) {
-  if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['enter', 'erase', 'toggle-notes', 'change-color'].includes(action.type)) return state
+  if ((state.board.archived || state.board.completedAt || state.board.failedAt || state.board.livesUsed >= 5) && ['hint', 'enter', 'erase', 'toggle-notes', 'change-color'].includes(action.type)) return state
   switch (action.type) {
+    case 'hint': {
+      if (!action.user?.username) return state
+      const current = activeHint(state.board, action.user)
+      if (current) {
+        if (action.index !== current.index || !Number.isInteger(state.board.solution?.[current.index])) return state
+        const next = boardReducer({ ...state, selected: current.index, noteMode: false }, { ...action, type: 'enter', number: state.board.solution[current.index] })
+        if (next.board.cells[current.index]?.kind !== 'number') return state
+        return { ...next, selected: state.selected, noteMode: state.noteMode, board: { ...next.board, hintsUsed: state.board.hintsUsed + 1 } }
+      }
+      if (action.fillFallback) {
+        if (action.analyzedCells !== state.board.cells || !Array.isArray(action.provenTargets) || action.provenTargets.length || state.board.cells[action.index]?.kind === 'number') return state
+        const number = state.board.solution?.[action.index]
+        if (!Number.isInteger(number) || number < 1 || number > state.board.size) return state
+        const next = boardReducer({ ...state, selected: action.index, noteMode: false }, { ...action, type: 'enter', number })
+        if (next.board.cells[action.index]?.kind !== 'number') return state
+        return { ...next, selected: state.selected, noteMode: state.noteMode, board: { ...next.board, hintsUsed: state.board.hintsUsed + 1 } }
+      }
+      const targets = action.analyzedCells === state.board.cells && Array.isArray(action.provenTargets) ? action.provenTargets : logicalHintTiles(state.board)
+      if (!targets.includes(action.index)) return state
+      const activeHints = (state.board.activeHints || []).filter(hint => state.board.cells[hint.index]?.kind !== 'number')
+      if (activeHints.some(hint => hint.index === action.index)) return state
+      const color = state.board.colors?.find(entry => entry.user.username === action.user.username)?.color || action.color || '#174FC4'
+      return { ...state, message: '', board: { ...state.board, activeHints: [...activeHints, { index: action.index, username: action.user.username, color }], hintsUsed: state.board.hintsUsed + 1 } }
+    }
     case 'sync-board':
       return action.board.id === state.board.id ? { ...state, board: action.board } : state
     case 'finish-celebration':
@@ -151,7 +197,8 @@ export function boardReducer(state, action) {
       const flashes = completion.length ? completion : correctGuess ? [{ index: state.selected, delay: 0 }] : []
       const celebrationSequence = (state.celebrationSequence || 0) + (flashes.length ? 1 : 0)
       const celebrations = flashes.length ? [...(state.celebrations || []), { id: celebrationSequence, color: assignment.color, flashes }] : state.celebrations
-      return { ...state, celebrations, celebrationSequence, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, solution, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
+      const activeHints = (state.board.activeHints || []).filter(hint => cells[hint.index]?.kind !== 'number')
+      return { ...state, celebrations, celebrationSequence, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, solution, activeHints, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
     }
     default:
       return state
