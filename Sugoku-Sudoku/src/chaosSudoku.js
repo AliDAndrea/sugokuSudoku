@@ -28,37 +28,51 @@ function neighbors(index, size) {
   return [index % size ? index - 1 : -1, index % size < size - 1 ? index + 1 : -1, index - size, index + size].filter((cell) => cell >= 0 && cell < size * size)
 }
 
-function connected(regions, region, size) {
-  const start = regions.indexOf(region), seen = new Set([start]), pending = [start]
-  while (pending.length) for (const cell of neighbors(pending.pop(), size)) {
-    if (regions[cell] === region && !seen.has(cell)) { seen.add(cell); pending.push(cell) }
-  }
-  return seen.size === size
+export function solveChaos(puzzle, size, options = {}) {
+  return solveClassic(puzzle, size, { ...options, regions: false })
 }
 
-// Trade equal digits along region boundaries: sizes and solution validity stay intact.
-export function generateChaos(size, difficulty = 'easy', { random = Math.random, attempts = 24 } = {}) {
+// A randomized board-spanning path gives equal-sized, connected regions without
+// starting from Classic boxes. Backbite moves fold and untangle the whole path.
+export function generateChaosRegions(size, { random = Math.random } = {}) {
   if (size !== 6 && size !== 9) throw new Error('Chaos supports only 6x6 and 9x9 boards.')
-  for (let attempt = 0; attempt < 40; attempt++) {
-    const solution = solveClassic(Array(size * size).fill(0), size, { limit: 1, random }).solution
-    if (!solution) continue
-    const regions = Array.from({ length: size * size }, (_, index) => regionAt({ size }, index))
-    const original = [...regions]
-    for (let round = 0; round < size * 5; round++) {
-      const candidates = []
-      for (let a = 0; a < regions.length; a++) for (let b = a + 1; b < regions.length; b++) {
-        if (regions[a] === regions[b] || solution[a] !== solution[b]) continue
-        if (!neighbors(a, size).some((cell) => cell !== b && regions[cell] === regions[b]) || !neighbors(b, size).some((cell) => cell !== a && regions[cell] === regions[a])) continue
-        candidates.push([a, b])
-      }
-      if (!candidates.length) break
-      const [a, b] = candidates[Math.floor(random() * candidates.length)]
-      const first = regions[a], second = regions[b]
-      regions[a] = second; regions[b] = first
-      if (!connected(regions, first, size) || !connected(regions, second, size)) { regions[a] = first; regions[b] = second }
+  const count = size * size
+  const adjacent = Array.from({ length: count }, (_, index) => neighbors(index, size))
+  for (let attempt = 0; attempt < 100; attempt++) {
+    let path = Array.from({ length: count }, (_, index) => {
+      const row = Math.floor(index / size), column = index % size
+      return row * size + (row % 2 ? size - 1 - column : column)
+    })
+    const positions = new Int16Array(count)
+    for (let step = 0; step < count * 80; step++) {
+      if (random() < 0.5) path.reverse()
+      path.forEach((cell, index) => { positions[cell] = index })
+      const options = adjacent[path[0]].filter((cell) => positions[cell] > 1)
+      if (!options.length) continue
+      const end = positions[options[Math.floor(random() * options.length)]]
+      path = [...path.slice(0, end).reverse(), ...path.slice(end)]
     }
-    if (regions.every((region, index) => region === original[index])) continue
-    return { ...generateClassic(size, difficulty, { random, attempts, regions, fixedSolution: solution }), regions }
+    const regions = Array(count)
+    path.forEach((cell, index) => { regions[cell] = Math.floor(index / size) })
+    let irregular = 0, scattered = true
+    for (let region = 0; region < size; region++) {
+      const cells = path.slice(region * size, (region + 1) * size)
+      const rows = cells.map((cell) => Math.floor(cell / size)), columns = cells.map((cell) => cell % size)
+      if ((Math.max(...rows) - Math.min(...rows) + 1) * (Math.max(...columns) - Math.min(...columns) + 1) > size) irregular++
+      const overlaps = new Map()
+      for (const cell of cells) {
+        const box = regionAt({ size }, cell)
+        overlaps.set(box, (overlaps.get(box) || 0) + 1)
+      }
+      // No region may look like a Classic box with just one tile traded away.
+      if (Math.max(...overlaps.values()) > size - 2) scattered = false
+    }
+    if (scattered && irregular === size) return regions
   }
-  throw new Error('Could not generate a Chaos puzzle. Please try again.')
+  throw new Error('Could not generate scattered Chaos regions. Please try again.')
+}
+
+export function generateChaos(size, difficulty = 'easy', { random = Math.random, attempts = 24 } = {}) {
+  const regions = generateChaosRegions(size, { random })
+  return { ...generateClassic(size, difficulty, { random, attempts, regions: false }), regions }
 }

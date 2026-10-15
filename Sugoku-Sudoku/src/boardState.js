@@ -1,4 +1,4 @@
-import { generateChaos, regionAt } from './chaosSudoku.js'
+import { generateChaos, solveChaos, regionAt } from './chaosSudoku.js'
 import { generateClassic } from './classicSudoku.js'
 import { generateKiller } from './killerSudoku.js'
 import { completionFlashes } from './boardCelebration.js'
@@ -106,7 +106,16 @@ export function boardReducer(state, action) {
       if (isNumberComplete(state.board, action.number)) return state
       const cell = state.board.cells[state.selected]
       if (cell?.kind === 'number') return state
-      if (!state.noteMode && state.board.solution && state.board.solution[state.selected] !== action.number) {
+      let solution = state.board.solution
+      if (!state.noteMode && solution && solution[state.selected] !== action.number && state.board.type === 'chaos') {
+        // Older Chaos boards may have several row/column-only completions.
+        // Accept an alternative that still allows the current puzzle to finish.
+        const puzzle = state.board.cells.map((entry, index) => index === state.selected ? action.number : entry?.kind === 'number' ? entry.number : 0)
+        const check = solveChaos(puzzle, state.board.size, { limit: 1 })
+        if (check.solution) solution = check.solution
+        else if (check.exhausted) return { ...state, message: 'Could not verify this move. Please try another tile.' }
+      }
+      if (!state.noteMode && solution && solution[state.selected] !== action.number) {
         const livesUsed = state.board.livesUsed + 1
         return { ...state, message: '', board: { ...state.board, livesUsed, failedAt: livesUsed >= 5 ? Date.now() : null } }
       }
@@ -132,19 +141,19 @@ export function boardReducer(state, action) {
           if (entry?.kind !== 'note') return
           const row = Math.floor(index / size)
           const column = index % size
-          const sameBox = regionAt(state.board, index) === regionAt(state.board, state.selected)
+          const sameBox = state.board.type !== 'chaos' && regionAt(state.board, index) === regionAt(state.board, state.selected)
           if (row !== selectedRow && column !== selectedColumn && !sameBox) return
           const numbers = entry.numbers.filter((note) => note.number !== action.number)
           if (numbers.length !== entry.numbers.length) cells[index] = numbers.length ? { ...entry, numbers } : null
         })
       }
-      const completed = state.board.solution && cells.every((entry, index) => entry?.kind === 'number' && entry.number === state.board.solution[index])
+      const completed = solution && cells.every((entry, index) => entry?.kind === 'number' && entry.number === solution[index])
       const completion = state.noteMode ? [] : completionFlashes(state.board, cells, state.selected, Boolean(completed))
-      const correctGuess = !state.noteMode && state.board.solution?.[state.selected] === action.number
+      const correctGuess = !state.noteMode && solution?.[state.selected] === action.number
       const flashes = completion.length ? completion : correctGuess ? [{ index: state.selected, delay: 0 }] : []
       const celebrationSequence = (state.celebrationSequence || 0) + (flashes.length ? 1 : 0)
       const celebrations = flashes.length ? [...(state.celebrations || []), { id: celebrationSequence, color: assignment.color, flashes }] : state.celebrations
-      return { ...state, celebrations, celebrationSequence, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
+      return { ...state, celebrations, celebrationSequence, message: completed ? 'Puzzle complete!' : '', board: { ...state.board, cells, colors, solution, xpEarned: completed ? 5 : 0, completedAt: completed ? state.board.completedAt || Date.now() : null } }
     }
     default:
       return state
